@@ -1,0 +1,34 @@
+/* ── Google Font ───────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+
+/* ── Tailwind v4 ───────────────────────────────────── */
+@import "tailwindcss";
+
+/* ── CIL Theme Colors ──────────────────────────────── */
+@theme {
+  --color-cil-gold:    #c49a3c;
+  --color-cil-gold-lt: #e8d4a0;
+  --color-cil-ink:     #1a1610;
+  --color-cil-green:   #2d6a4f;
+  --color-cil-red:     #9b2335;
+  --color-cil-blue:    #1a4068;
+  --font-sans: 'DM Sans', sans-serif;
+}
+
+/* ── Base Styles ───────────────────────────────────── */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background-color: #faf8f3;
+  color: #1a1610;
+}
+
+/* ── Scrollbar ─────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f0ece2; }
+::-webkit-scrollbar-thumb { background: #c49a3c; border-radius: 3px; }
