@@ -6,6 +6,8 @@ import UserManagement   from '../components/admin/UserManagement';
 import LDCManagement    from '../components/admin/LDCManagement';
 import ParticipantSync  from '../components/admin/ParticipantSync';
 import ParticipantList  from '../components/admin/ParticipantList';
+import SubjectManagement from '../components/admin/SubjectManagement';
+import GradeManagement from '../components/admin/GradeManagement';
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -19,10 +21,12 @@ export default function AdminDashboard() {
 
 const tabs = [
   { id: 'overview',      label: 'Overview'          },
-  { id: 'participants',  label: 'Participants'       },
+  { id: 'participants',  label: 'Participants'      },
   { id: 'users',         label: 'User Management'   },
   { id: 'ldcs',          label: 'LDC Management'    },
   { id: 'sync',          label: 'Participant Sync'  },
+  { id: 'subjects',      label: 'Subjects'          },
+  { id: 'grades',        label: 'Grades'            },
 ];
 
   return (
@@ -80,6 +84,8 @@ const tabs = [
       {activeTab === 'users'        && <UserManagement />}
       {activeTab === 'ldcs'         && <LDCManagement />}
       {activeTab === 'sync'         && <ParticipantSync />}
+      {activeTab === 'subjects'     && <SubjectManagement />}
+      {activeTab === 'grades'       && <GradeManagement />}
     </main>
     </div>
   );

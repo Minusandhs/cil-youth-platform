@@ -60,3 +60,10 @@ Build Participant Profile with 5 tabs:
 5. TES Application (scholarship application form)
 
 ## File Map
+
+## Known Issues / Pre-deployment Tasks
+- Delete all test data before going live
+  - Test participants (LK010100001 to LK010100005)
+  - Test OL/AL results entered during development
+  - Test LDC staff accounts (lk0101staff, lk0101staff2)
+  - Keep only real LDC centres and super admin account
