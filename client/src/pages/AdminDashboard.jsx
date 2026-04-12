@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import AdminOverview from '../components/admin/AdminOverview';
-import UserManagement from '../components/admin/UserManagement';
-import LDCManagement from '../components/admin/LDCManagement';
+import AdminOverview    from '../components/admin/AdminOverview';
+import UserManagement   from '../components/admin/UserManagement';
+import LDCManagement    from '../components/admin/LDCManagement';
+import ParticipantSync  from '../components/admin/ParticipantSync';
+import ParticipantList  from '../components/admin/ParticipantList';
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -16,10 +18,12 @@ export default function AdminDashboard() {
   }
 
 const tabs = [
-    { id: 'overview', label: 'Overview'        },
-    { id: 'users',    label: 'User Management' },
-    { id: 'ldcs',     label: 'LDC Management'  },
-  ];
+  { id: 'overview',      label: 'Overview'          },
+  { id: 'participants',  label: 'Participants'       },
+  { id: 'users',         label: 'User Management'   },
+  { id: 'ldcs',          label: 'LDC Management'    },
+  { id: 'sync',          label: 'Participant Sync'  },
+];
 
   return (
     <div style={{minHeight:'100vh', background:'#faf8f3'}}>
@@ -70,11 +74,13 @@ const tabs = [
           </div>
         </div>
       </header>
-      <main style={{maxWidth:'1200px', margin:'0 auto', padding:'24px'}}>
-        {activeTab === 'overview' && <AdminOverview />}
-        {activeTab === 'users'    && <UserManagement />}
-        {activeTab === 'ldcs'     && <LDCManagement />}
-      </main>
+    <main style={{maxWidth:'1200px', margin:'0 auto', padding:'24px'}}>
+      {activeTab === 'overview'     && <AdminOverview />}
+      {activeTab === 'participants' && <ParticipantList />}
+      {activeTab === 'users'        && <UserManagement />}
+      {activeTab === 'ldcs'         && <LDCManagement />}
+      {activeTab === 'sync'         && <ParticipantSync />}
+    </main>
     </div>
   );
 }

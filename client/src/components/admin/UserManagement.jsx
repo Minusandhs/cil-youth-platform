@@ -2,15 +2,18 @@ import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 
 export default function UserManagement() {
-  const [users, setUsers] = useState([]);
-  const [ldcs, setLdcs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [users,    setUsers   ] = useState([]);
+  const [ldcs,     setLdcs    ] = useState([]);
+  const [loading,  setLoading ] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [editUser, setEditUser] = useState(null);
+  const [showPwForm, setShowPwForm] = useState(null);
+  const [error,    setError   ] = useState('');
+  const [success,  setSuccess ] = useState('');
   const [form, setForm] = useState({
     username:'', password:'', full_name:'', role:'ldc_staff', ldc_id:''
   });
+  const [newPassword, setNewPassword] = useState('');
 
   useEffect(() => { loadData(); }, []);
 
@@ -29,17 +32,72 @@ export default function UserManagement() {
     }
   }
 
-  async function handleCreate(e) {
+  function openCreate() {
+    setEditUser(null);
+    setForm({ username:'', password:'', full_name:'', role:'ldc_staff', ldc_id:'' });
+    setShowForm(true);
+    setError(''); setSuccess('');
+  }
+
+  function openEdit(user) {
+    setEditUser(user);
+    setForm({
+      username : user.username,
+      full_name: user.full_name,
+      role     : user.role,
+      ldc_id   : user.ldc_id || '',
+      password : ''
+    });
+    setShowForm(true);
+    setError(''); setSuccess('');
+  }
+
+  function cancelForm() {
+    setShowForm(false);
+    setEditUser(null);
+    setShowPwForm(null);
+    setNewPassword('');
+    setError(''); setSuccess('');
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault();
     setError(''); setSuccess('');
     try {
-      await api.post('/api/auth/users', form);
-      setSuccess('User created successfully');
+      if (editUser) {
+        await api.put(`/api/auth/users/${editUser.id}`, {
+          full_name: form.full_name,
+          is_active: editUser.is_active,
+          ldc_id   : form.ldc_id || null
+        });
+        setSuccess('User updated successfully');
+      } else {
+        await api.post('/api/auth/users', form);
+        setSuccess('User created successfully');
+      }
       setShowForm(false);
+      setEditUser(null);
       setForm({ username:'', password:'', full_name:'', role:'ldc_staff', ldc_id:'' });
       loadData();
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to create user');
+      setError(err.response?.data?.error || 'Failed to save user');
+    }
+  }
+
+  async function handleResetPassword(userId) {
+    if (!newPassword || newPassword.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    try {
+      await api.put(`/api/auth/users/${userId}/password`, {
+        password: newPassword
+      });
+      setSuccess('Password reset successfully');
+      setShowPwForm(null);
+      setNewPassword('');
+    } catch {
+      setError('Failed to reset password');
     }
   }
 
@@ -48,8 +106,9 @@ export default function UserManagement() {
       await api.put(`/api/auth/users/${user.id}`, {
         full_name: user.full_name,
         is_active: !user.is_active,
-        ldc_id: user.ldc_id
+        ldc_id   : user.ldc_id
       });
+      setSuccess(`User ${!user.is_active ? 'activated' : 'deactivated'} successfully`);
       loadData();
     } catch {
       setError('Failed to update user');
@@ -85,12 +144,12 @@ export default function UserManagement() {
             Create and manage LDC staff accounts
           </p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} style={{
+        <button onClick={openCreate} style={{
           background:'#1a1610', color:'#c49a3c', border:'none',
           borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
           fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
         }}>
-          {showForm ? '✕ Cancel' : '+ New User'}
+          + New User
         </button>
       </div>
 
@@ -109,18 +168,17 @@ export default function UserManagement() {
         }}>{success}</div>
       )}
 
+      {/* Create / Edit Form */}
       {showForm && (
         <div style={{
           background:'#fffef9', border:'1px solid #d4c9b0',
           borderRadius:'8px', padding:'20px', marginBottom:'24px'
         }}>
           <h3 style={{fontSize:'14px', fontWeight:'700', marginBottom:'16px'}}>
-            Create New User
+            {editUser ? `Edit User — ${editUser.username}` : 'Create New User'}
           </h3>
-          <form onSubmit={handleCreate}>
-            <div style={{
-              display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'
-            }}>
+          <form onSubmit={handleSubmit}>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'}}>
               <div>
                 <label style={labelStyle}>Full Name</label>
                 <input style={inputStyle} value={form.full_name}
@@ -129,20 +187,35 @@ export default function UserManagement() {
               </div>
               <div>
                 <label style={labelStyle}>Username</label>
-                <input style={inputStyle} value={form.username}
-                  onChange={e => setForm({...form, username:e.target.value})}
-                  placeholder="e.g. lk0401staff" required />
+                <input style={{
+                  ...inputStyle,
+                  background: editUser ? '#f0ece2' : '#faf8f3',
+                  color: editUser ? '#a09080' : '#1a1610'
+                }}
+                value={form.username}
+                onChange={e => setForm({...form, username:e.target.value})}
+                placeholder="e.g. lk0101staff"
+                readOnly={!!editUser}
+                required />
+                {editUser && (
+                  <div style={{fontSize:'11px', color:'#a09080', marginTop:'3px'}}>
+                    Username cannot be changed
+                  </div>
+                )}
               </div>
-              <div>
-                <label style={labelStyle}>Password</label>
-                <input style={inputStyle} type="password" value={form.password}
-                  onChange={e => setForm({...form, password:e.target.value})}
-                  placeholder="Min 6 characters" required />
-              </div>
+              {!editUser && (
+                <div>
+                  <label style={labelStyle}>Password</label>
+                  <input style={inputStyle} type="password" value={form.password}
+                    onChange={e => setForm({...form, password:e.target.value})}
+                    placeholder="Min 6 characters" required />
+                </div>
+              )}
               <div>
                 <label style={labelStyle}>Role</label>
                 <select style={inputStyle} value={form.role}
-                  onChange={e => setForm({...form, role:e.target.value})}>
+                  onChange={e => setForm({...form, role:e.target.value})}
+                  disabled={!!editUser}>
                   <option value="ldc_staff">LDC Staff</option>
                   <option value="super_admin">Super Admin</option>
                 </select>
@@ -151,7 +224,8 @@ export default function UserManagement() {
                 <div style={{gridColumn:'1/-1'}}>
                   <label style={labelStyle}>Assign LDC</label>
                   <select style={inputStyle} value={form.ldc_id}
-                    onChange={e => setForm({...form, ldc_id:e.target.value})} required>
+                    onChange={e => setForm({...form, ldc_id:e.target.value})}
+                    required>
                     <option value="">— Select LDC —</option>
                     {ldcs.map(l => (
                       <option key={l.id} value={l.id}>
@@ -162,18 +236,68 @@ export default function UserManagement() {
                 </div>
               )}
             </div>
-            <button type="submit" style={{
-              marginTop:'16px', background:'#2d6a4f', color:'#fff',
-              border:'none', borderRadius:'6px', padding:'10px 24px',
-              fontSize:'13px', fontWeight:'700', cursor:'pointer',
-              fontFamily:'inherit'
-            }}>
-              Create User
-            </button>
+            <div style={{display:'flex', gap:'10px', marginTop:'16px'}}>
+              <button type="submit" style={{
+                background:'#2d6a4f', color:'#fff', border:'none',
+                borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
+                fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+              }}>
+                {editUser ? 'Save Changes' : 'Create User'}
+              </button>
+              <button type="button" onClick={cancelForm} style={{
+                background:'transparent', color:'#6b5e4a',
+                border:'1px solid #d4c9b0', borderRadius:'6px',
+                padding:'10px 24px', fontSize:'13px',
+                cursor:'pointer', fontFamily:'inherit'
+              }}>
+                Cancel
+              </button>
+            </div>
           </form>
         </div>
       )}
 
+      {/* Reset Password Form */}
+      {showPwForm && (
+        <div style={{
+          background:'#fffef9', border:'1px solid #c49a3c',
+          borderRadius:'8px', padding:'20px', marginBottom:'24px'
+        }}>
+          <h3 style={{fontSize:'14px', fontWeight:'700', marginBottom:'4px'}}>
+            Reset Password — {showPwForm.full_name}
+          </h3>
+          <p style={{fontSize:'12px', color:'#6b5e4a', marginBottom:'14px'}}>
+            Enter a new password for this user.
+          </p>
+          <div style={{display:'flex', gap:'10px', alignItems:'flex-end'}}>
+            <div style={{flex:1}}>
+              <label style={labelStyle}>New Password</label>
+              <input style={inputStyle} type="password"
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+                placeholder="Min 6 characters" />
+            </div>
+            <button onClick={() => handleResetPassword(showPwForm.id)} style={{
+              background:'#c49a3c', color:'#1a1610', border:'none',
+              borderRadius:'6px', padding:'10px 20px', fontSize:'13px',
+              fontWeight:'700', cursor:'pointer', fontFamily:'inherit',
+              whiteSpace:'nowrap'
+            }}>
+              Reset Password
+            </button>
+            <button onClick={cancelForm} style={{
+              background:'transparent', color:'#6b5e4a',
+              border:'1px solid #d4c9b0', borderRadius:'6px',
+              padding:'10px 16px', fontSize:'13px',
+              cursor:'pointer', fontFamily:'inherit'
+            }}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Users Table */}
       <div style={{
         background:'#fffef9', border:'1px solid #d4c9b0',
         borderRadius:'8px', overflow:'hidden'
@@ -181,7 +305,7 @@ export default function UserManagement() {
         <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
           <thead>
             <tr style={{background:'#f0ece2'}}>
-              {['Full Name','Username','Role','LDC','Status','Last Login','Action'].map(h => (
+              {['Full Name','Username','Role','LDC','Status','Last Login','Actions'].map(h => (
                 <th key={h} style={{
                   padding:'10px 14px', textAlign:'left',
                   fontSize:'10.5px', fontWeight:'700',
@@ -193,7 +317,10 @@ export default function UserManagement() {
           </thead>
           <tbody>
             {users.map(u => (
-              <tr key={u.id} style={{borderBottom:'1px solid #e8e0d0'}}>
+              <tr key={u.id} style={{
+                borderBottom:'1px solid #e8e0d0',
+                opacity: u.is_active ? 1 : 0.6
+              }}>
                 <td style={{padding:'10px 14px', fontWeight:'600'}}>{u.full_name}</td>
                 <td style={{padding:'10px 14px', color:'#6b5e4a'}}>{u.username}</td>
                 <td style={{padding:'10px 14px'}}>
@@ -223,16 +350,34 @@ export default function UserManagement() {
                   {u.last_login ? new Date(u.last_login).toLocaleDateString() : 'Never'}
                 </td>
                 <td style={{padding:'10px 14px'}}>
-                  {u.role !== 'super_admin' && (
-                    <button onClick={() => toggleActive(u)} style={{
-                      background:'transparent', border:'1px solid #d4c9b0',
-                      borderRadius:'4px', padding:'4px 10px',
-                      fontSize:'11px', cursor:'pointer', fontFamily:'inherit',
-                      color: u.is_active ? '#9b2335' : '#2d6a4f'
-                    }}>
-                      {u.is_active ? 'Deactivate' : 'Activate'}
-                    </button>
-                  )}
+                  <div style={{display:'flex', gap:'6px', flexWrap:'wrap'}}>
+                    {/* Edit */}
+                    <button onClick={() => openEdit(u)} style={{
+                      background:'#dce9f5', color:'#1a4068', border:'none',
+                      borderRadius:'4px', padding:'4px 10px', fontSize:'11px',
+                      fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
+                    }}>Edit</button>
+                    {/* Reset Password */}
+                    {u.role !== 'super_admin' && (
+                      <button onClick={() => { setShowPwForm(u); setShowForm(false); }} style={{
+                        background:'#f5edd8', color:'#b85c00', border:'none',
+                        borderRadius:'4px', padding:'4px 10px', fontSize:'11px',
+                        fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
+                      }}>Reset PW</button>
+                    )}
+                    {/* Activate / Deactivate */}
+                    {u.role !== 'super_admin' && (
+                      <button onClick={() => toggleActive(u)} style={{
+                        background: u.is_active ? '#f5e0e3' : '#d8ede4',
+                        color: u.is_active ? '#9b2335' : '#2d6a4f',
+                        border:'none', borderRadius:'4px', padding:'4px 10px',
+                        fontSize:'11px', fontWeight:'600',
+                        cursor:'pointer', fontFamily:'inherit'
+                      }}>
+                        {u.is_active ? 'Deactivate' : 'Activate'}
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
