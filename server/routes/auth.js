@@ -110,6 +110,7 @@ router.get('/users', verifyToken, requireSuperAdmin, async (req, res) => {
     const result = await query(
       `SELECT u.id, u.username, u.full_name, u.role,
               u.is_active, u.last_login, u.created_at,
+              u.ldc_id,
               l.ldc_id as ldc_code, l.name as ldc_name
        FROM users u
        LEFT JOIN ldcs l ON u.ldc_id = l.id
