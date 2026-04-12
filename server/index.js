@@ -16,7 +16,8 @@ const developmentRoutes  = require('./routes/development');
 const tesRoutes          = require('./routes/tes');
 const ldcRoutes          = require('./routes/ldcs');
 const subjectRoutes      = require('./routes/subjects');
-const gradeRoutes = require('./routes/grades');
+const gradeRoutes        = require('./routes/grades');
+const certificationRoutes = require('./routes/certifications');
 
 // ── Initialize App ───────────────────────────────────────────────
 const app  = express();
@@ -66,6 +67,7 @@ app.use('/api/tes',          tesRoutes);
 app.use('/api/ldcs',         ldcRoutes);
 app.use('/api/subjects',     subjectRoutes);
 app.use('/api/grades',        gradeRoutes);
+app.use('/api/certifications', certificationRoutes);
 
 // ── 404 Handler ──────────────────────────────────────────────────
 // Catches any route that doesn't exist

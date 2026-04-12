@@ -8,6 +8,7 @@ import ParticipantSync  from '../components/admin/ParticipantSync';
 import ParticipantList  from '../components/admin/ParticipantList';
 import SubjectManagement from '../components/admin/SubjectManagement';
 import GradeManagement from '../components/admin/GradeManagement';
+import CertTypeManagement from '../components/admin/CertTypeManagement';
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -27,6 +28,7 @@ const tabs = [
   { id: 'sync',          label: 'Participant Sync'  },
   { id: 'subjects',      label: 'Subjects'          },
   { id: 'grades',        label: 'Grades'            },
+  { id: 'certtypes',     label: 'Cert Types'        },
 ];
 
   return (
@@ -86,6 +88,7 @@ const tabs = [
       {activeTab === 'sync'         && <ParticipantSync />}
       {activeTab === 'subjects'     && <SubjectManagement />}
       {activeTab === 'grades'       && <GradeManagement />}
+      {activeTab === 'certtypes' && <CertTypeManagement />}
     </main>
     </div>
   );
