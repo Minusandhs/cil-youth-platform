@@ -5,6 +5,7 @@ import PrivateRoute from './components/PrivateRoute';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 import LDCDashboard from './pages/LDCDashboard';
+import ParticipantProfile from './pages/ParticipantProfile';
 
 export default function App() {
   return (
@@ -33,11 +34,19 @@ export default function App() {
               <LDCDashboard />
             </PrivateRoute>
           }/>
+          <Route path="/participant/:id" element={
+            <PrivateRoute requiredRole="ldc_staff">
+              <ParticipantProfile />
+            </PrivateRoute>
+          }/>
           <Route path="*" element={
-            <div className="flex items-center justify-center h-screen">
-              <div className="text-center">
-                <div className="text-6xl mb-4">404</div>
-                <div className="text-xl text-gray-500">Page not found</div>
+            <div style={{
+              display:'flex', alignItems:'center',
+              justifyContent:'center', height:'100vh'
+            }}>
+              <div style={{textAlign:'center'}}>
+                <div style={{fontSize:'64px', marginBottom:'16px'}}>404</div>
+                <div style={{color:'#6b5e4a', fontSize:'16px'}}>Page not found</div>
               </div>
             </div>
           }/>

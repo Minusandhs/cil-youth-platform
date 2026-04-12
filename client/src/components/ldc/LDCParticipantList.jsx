@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import api from '../../lib/api';
 
 export default function LDCParticipantList() {
-  const { user } = useAuth();
+  const { user }   = useAuth();
+  const navigate   = useNavigate();
   const [participants, setParticipants] = useState([]);
   const [loading,      setLoading     ] = useState(true);
   const [search,       setSearch      ] = useState('');
@@ -152,11 +154,13 @@ export default function LDCParticipantList() {
                   {formatDate(p.planned_completion)}
                 </td>
                 <td style={{padding:'10px 14px'}}>
-                  <button style={{
-                    background:'#1a1610', color:'#c49a3c',
-                    border:'none', borderRadius:'4px',
-                    padding:'5px 12px', fontSize:'11px',
-                    fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+                  <button
+                    onClick={() => navigate(`/participant/${p.id}`)}
+                    style={{
+                      background:'#1a1610', color:'#c49a3c',
+                      border:'none', borderRadius:'4px',
+                      padding:'5px 12px', fontSize:'11px',
+                      fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
                   }}>
                     View Profile
                   </button>

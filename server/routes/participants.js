@@ -164,4 +164,171 @@ router.post('/sync', verifyToken, requireSuperAdmin, async (req, res) => {
   }
 });
 
+// ── GET /api/participants/:id/profile ────────────────────────────
+router.get('/:id/profile', verifyToken, async (req, res) => {
+  try {
+    const result = await query(
+      'SELECT * FROM participant_profiles WHERE participant_id = $1',
+      [req.params.id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'No profile found' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get profile' });
+  }
+});
+
+// ── POST /api/participants/:id/profile ───────────────────────────
+router.post('/:id/profile', verifyToken, async (req, res) => {
+  try {
+    const p = req.body;
+    const result = await query(
+      `INSERT INTO participant_profiles (
+        participant_id, marital_status, is_pregnant,
+        number_of_children, ol_status, ol_completion_year,
+        al_status, al_completion_year, current_status,
+        current_institution, current_course, current_year,
+        monthly_income, short_term_plan, long_term_plan,
+        career_goal, further_education, education_details,
+        family_income, no_of_dependants, other_assistance,
+        last_updated_by
+      ) VALUES (
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,
+        $13,$14,$15,$16,$17,$18,$19,$20,$21,$22
+      ) RETURNING *`,
+      [
+        req.params.id,
+        p.marital_status     || null,
+        p.is_pregnant        || false,
+        p.number_of_children || 0,
+        p.ol_status          || null,
+        p.ol_completion_year || null,
+        p.al_status          || null,
+        p.al_completion_year || null,
+        p.current_status     || null,
+        p.current_institution|| null,
+        p.current_course     || null,
+        p.current_year       || null,
+        p.monthly_income     || null,
+        p.short_term_plan    || null,
+        p.long_term_plan     || null,
+        p.career_goal        || null,
+        p.further_education  || false,
+        p.education_details  || null,
+        p.family_income      || null,
+        p.no_of_dependants   || null,
+        p.other_assistance   || null,
+        req.user.id
+      ]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to create profile' });
+  }
+});
+
+// ── PUT /api/participants/:id/profile ────────────────────────────
+router.put('/:id/profile', verifyToken, async (req, res) => {
+  try {
+    const p = req.body;
+    const result = await query(
+      `UPDATE participant_profiles SET
+        marital_status      = $1,
+        is_pregnant         = $2,
+        number_of_children  = $3,
+        ol_status           = $4,
+        ol_completion_year  = $5,
+        al_status           = $6,
+        al_completion_year  = $7,
+        current_status      = $8,
+        current_institution = $9,
+        current_course      = $10,
+        current_year        = $11,
+        monthly_income      = $12,
+        short_term_plan     = $13,
+        long_term_plan      = $14,
+        career_goal         = $15,
+        further_education   = $16,
+        education_details   = $17,
+        family_income       = $18,
+        no_of_dependants    = $19,
+        other_assistance    = $20,
+        last_updated_by     = $21,
+        updated_at          = NOW()
+       WHERE participant_id = $22
+       RETURNING *`,
+      [
+        p.marital_status     || null,
+        p.is_pregnant        || false,
+        p.number_of_children || 0,
+        p.ol_status          || null,
+        p.ol_completion_year || null,
+        p.al_status          || null,
+        p.al_completion_year || null,
+        p.current_status     || null,
+        p.current_institution|| null,
+        p.current_course     || null,
+        p.current_year       || null,
+        p.monthly_income     || null,
+        p.short_term_plan    || null,
+        p.long_term_plan     || null,
+        p.career_goal        || null,
+        p.further_education  || false,
+        p.education_details  || null,
+        p.family_income      || null,
+        p.no_of_dependants   || null,
+        p.other_assistance   || null,
+        req.user.id,
+        req.params.id
+      ]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// ── GET /api/participants/:id/status-history ─────────────────────
+router.get('/:id/status-history', verifyToken, async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT h.*, u.full_name as recorded_by_name
+       FROM participant_status_history h
+       LEFT JOIN users u ON h.recorded_by = u.id
+       WHERE h.participant_id = $1
+       ORDER BY h.recorded_at DESC`,
+      [req.params.id]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get status history' });
+  }
+});
+
+// ── POST /api/participants/:id/status-history ────────────────────
+router.post('/:id/status-history', verifyToken, async (req, res) => {
+  try {
+    const { status, institution, course, year_level, notes } = req.body;
+    const result = await query(
+      `INSERT INTO participant_status_history
+        (participant_id, status, institution, course, year_level, notes, recorded_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7)
+       RETURNING *`,
+      [
+        req.params.id, status,
+        institution || null, course || null,
+        year_level  || null, notes  || null,
+        req.user.id
+      ]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to save status history' });
+  }
+});
+
 module.exports = router;
