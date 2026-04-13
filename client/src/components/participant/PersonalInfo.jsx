@@ -190,6 +190,19 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
   function handleCancel() {
     setEditMode(false);
     setError(''); setSuccess('');
+    if (!profile) {
+      // No profile saved yet — reset to blank so next edit starts clean
+      setForm({
+        marital_status:'', living_outside_ldc:false, outside_purpose:'',
+        outside_location:'', is_pregnant:false, number_of_children:0,
+        ol_status:'', ol_completion_year:'', al_status:'', al_completion_year:'',
+        current_status:'', current_institution:'', current_course:'', current_year:'',
+        short_term_plan:'', long_term_plan:'', career_goal:'',
+        further_education:false, education_details:'',
+        family_income:'', no_of_dependants:'', other_assistance:'',
+      });
+      return;
+    }
     // Reset form to saved profile
     if (profile) {
       setForm({

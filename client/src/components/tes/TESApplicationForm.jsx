@@ -114,7 +114,7 @@ export default function TESApplicationForm({
   async function searchParticipants() {
     if (!search.trim()) return;
     try {
-      const res = await api.get('/api/participants', { params: { search } });
+      const res = await api.get('/api/participants', { params: { search, include_inactive: 'false' } });
       setParticipants(res.data);
     } catch {
       setError('Search failed');

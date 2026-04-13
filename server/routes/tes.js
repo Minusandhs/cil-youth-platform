@@ -323,16 +323,32 @@ router.put('/applications/:id', verifyToken, async (req, res) => {
       amount_approved, official_notes
     } = req.body;
 
-    // Check current status to determine new status
+    // Fetch application + batch status
     const current = await query(
-      'SELECT approval_status FROM tes_applications WHERE id = $1',
+      `SELECT a.approval_status, b.status as batch_status
+       FROM tes_applications a
+       JOIN tes_batches b ON a.batch_id = b.id
+       WHERE a.id = $1`,
       [req.params.id]
     );
+    if (current.rows.length === 0) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
 
-    const currentStatus = current.rows[0]?.approval_status;
-    const newStatus = currentStatus === 'rejected'
-      ? 'resubmitted'
-      : currentStatus;
+    const currentStatus = current.rows[0].approval_status;
+    const batchStatus   = current.rows[0].batch_status;
+
+    // LDC staff can only edit when batch is open, or when resubmitting a rejected app
+    if (req.user.role === 'ldc_staff') {
+      const canEdit = batchStatus === 'open' || currentStatus === 'rejected';
+      if (!canEdit) {
+        return res.status(403).json({
+          error: 'This application can no longer be edited — the batch is no longer open.'
+        });
+      }
+    }
+
+    const newStatus = currentStatus === 'rejected' ? 'resubmitted' : currentStatus;
 
     const result = await query(
       `UPDATE tes_applications SET
@@ -462,6 +478,7 @@ router.get('/batches/:id/export', verifyToken, async (req, res) => {
 
     const result = await query(
       `SELECT
+        p.id as internal_id,
         p.participant_id as pid, p.full_name,
         p.date_of_birth, p.gender,
         l.ldc_id as ldc_code, l.name as ldc_name,
@@ -495,70 +512,84 @@ router.get('/batches/:id/export', verifyToken, async (req, res) => {
     );
 
     const apps = result.rows;
-    for (const app of apps) {
-      // OL
-      const olRes = await query(
-        `SELECT r.exam_year, r.school_name,
-          string_agg(s.subject_name || ': ' || s.grade, ', '
-            ORDER BY s.is_core DESC) as subjects
+    if (apps.length === 0) return res.json([]);
+
+    const internalIds = apps.map(a => a.internal_id);
+
+    // Bulk fetch OL (most recent per participant)
+    const [olAll, alAll, certAll, devAll] = await Promise.all([
+      query(
+        `SELECT DISTINCT ON (r.participant_id)
+           r.participant_id, r.exam_year, r.school_name,
+           string_agg(s.subject_name || ': ' || s.grade, ', '
+             ORDER BY s.is_core DESC) as subjects
          FROM ol_results r
          LEFT JOIN ol_result_subjects s ON s.ol_result_id = r.id
-         WHERE r.participant_id = (
-           SELECT id FROM participants WHERE participant_id = $1
-         )
-         GROUP BY r.id ORDER BY r.exam_year DESC LIMIT 1`,
-        [app.pid]
-      );
-      app.ol_text = olRes.rows.length > 0
-        ? `OL ${olRes.rows[0].exam_year} (${olRes.rows[0].school_name || ''}): ${olRes.rows[0].subjects || ''}`
-        : '';
-
-      // AL
-      const alRes = await query(
-        `SELECT r.exam_year, r.stream, r.z_score,
-          string_agg(s.subject_name || ': ' || s.grade, ', '
-            ORDER BY s.subject_type) as subjects
+         WHERE r.participant_id = ANY($1)
+         GROUP BY r.participant_id, r.id
+         ORDER BY r.participant_id, r.exam_year DESC`,
+        [internalIds]
+      ),
+      query(
+        `SELECT DISTINCT ON (r.participant_id)
+           r.participant_id, r.exam_year, r.stream, r.z_score,
+           string_agg(s.subject_name || ': ' || s.grade, ', '
+             ORDER BY s.subject_type) as subjects
          FROM al_results r
          LEFT JOIN al_result_subjects s ON s.al_result_id = r.id
-         WHERE r.participant_id = (
-           SELECT id FROM participants WHERE participant_id = $1
-         )
-         GROUP BY r.id ORDER BY r.exam_year DESC LIMIT 1`,
-        [app.pid]
-      );
-      app.al_text = alRes.rows.length > 0
-        ? `AL ${alRes.rows[0].exam_year} (${alRes.rows[0].stream || ''}): ${alRes.rows[0].subjects || ''} | Z-Score: ${alRes.rows[0].z_score || 'N/A'}`
-        : '';
-
-      // Certs
-      const certRes = await query(
-        `SELECT c.cert_name, t.type_name, c.grade_result
+         WHERE r.participant_id = ANY($1)
+         GROUP BY r.participant_id, r.id
+         ORDER BY r.participant_id, r.exam_year DESC`,
+        [internalIds]
+      ),
+      query(
+        `SELECT c.participant_id, c.cert_name, t.type_name, c.grade_result
          FROM certifications c
          JOIN cert_types t ON c.cert_type_id = t.id
-         WHERE c.participant_id = (
-           SELECT id FROM participants WHERE participant_id = $1
-         )
-         ORDER BY c.issued_date DESC`,
-        [app.pid]
-      );
-      app.certs_text = certRes.rows
+         WHERE c.participant_id = ANY($1)
+         ORDER BY c.participant_id, c.issued_date DESC`,
+        [internalIds]
+      ),
+      query(
+        `SELECT DISTINCT ON (participant_id)
+           participant_id, spiritual_goal, academic_goal, social_goal,
+           vocational_goal, health_goal, progress_status, completion_rate
+         FROM development_plans
+         WHERE participant_id = ANY($1)
+         ORDER BY participant_id, plan_year DESC`,
+        [internalIds]
+      ),
+    ]);
+
+    // Build lookup maps
+    const olMap   = Object.fromEntries(olAll.rows.map(r  => [r.participant_id, r]));
+    const alMap   = Object.fromEntries(alAll.rows.map(r  => [r.participant_id, r]));
+    const devMap  = Object.fromEntries(devAll.rows.map(r => [r.participant_id, r]));
+    const certMap = {};
+    certAll.rows.forEach(r => {
+      if (!certMap[r.participant_id]) certMap[r.participant_id] = [];
+      certMap[r.participant_id].push(r);
+    });
+
+    // Attach to apps
+    apps.forEach(app => {
+      const ol = olMap[app.internal_id];
+      app.ol_text = ol
+        ? `OL ${ol.exam_year} (${ol.school_name || ''}): ${ol.subjects || ''}`
+        : '';
+
+      const al = alMap[app.internal_id];
+      app.al_text = al
+        ? `AL ${al.exam_year} (${al.stream || ''}): ${al.subjects || ''} | Z-Score: ${al.z_score || 'N/A'}`
+        : '';
+
+      const certs = certMap[app.internal_id] || [];
+      app.certs_text = certs
         .map(c => `${c.cert_name} (${c.type_name})${c.grade_result ? ': '+c.grade_result : ''}`)
         .join(' | ');
 
-      // Dev Plan
-      const devRes = await query(
-        `SELECT spiritual_goal, academic_goal, social_goal,
-                vocational_goal, health_goal,
-                progress_status, completion_rate
-         FROM development_plans
-         WHERE participant_id = (
-           SELECT id FROM participants WHERE participant_id = $1
-         )
-         ORDER BY plan_year DESC LIMIT 1`,
-        [app.pid]
-      );
-      if (devRes.rows.length > 0) {
-        const d = devRes.rows[0];
+      const d = devMap[app.internal_id];
+      if (d) {
         const goals = [
           d.spiritual_goal  ? `Spiritual: ${d.spiritual_goal}`   : null,
           d.academic_goal   ? `Academic: ${d.academic_goal}`     : null,
@@ -571,7 +602,7 @@ router.get('/batches/:id/export', verifyToken, async (req, res) => {
       } else {
         app.dev_plan_text = '';
       }
-    }
+    });
 
     res.json(apps);
   } catch (error) {

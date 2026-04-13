@@ -516,11 +516,11 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
           }}>
             <div style={secTitle}>
               Save Notes
-              {progressChanged ? (
+              {(progressChanged || !plan) ? (
                 <span style={{
                   color:'#9b2335', fontSize:'10px',
                   fontWeight:'600', textTransform:'none'
-                }}>Required when updating progress *</span>
+                }}>{progressChanged ? 'Required when updating progress *' : 'Required *'}</span>
               ) : (
                 <span style={{
                   color:'#a09080', fontSize:'10px',
@@ -540,11 +540,11 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                   ? progressChanged
                     ? 'Describe what was achieved (required for progress update)'
                     : 'Optional — describe what changed'
-                  : 'Optional — describe the starting situation'
+                  : 'Describe the starting situation (required)'
               }
               value={form.notes}
               onChange={e => setForm({...form, notes:e.target.value})}
-              required={progressChanged}
+              required={progressChanged || !plan}
             />
           </div>
 

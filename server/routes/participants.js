@@ -488,6 +488,12 @@ router.get('/:id/profile', verifyToken, async (req, res) => {
 // ── POST /api/participants/:id/profile ───────────────────────────
 router.post('/:id/profile', verifyToken, async (req, res) => {
   try {
+    if (req.user.role === 'ldc_staff') {
+      const check = await query('SELECT is_exited FROM participants WHERE id = $1', [req.params.id]);
+      if (check.rows[0]?.is_exited) {
+        return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
+      }
+    }
     const p = req.body;
     const result = await query(
       `INSERT INTO participant_profiles (
