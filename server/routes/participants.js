@@ -56,6 +56,255 @@ router.get('/', verifyToken, async (req, res) => {
   }
 });
 
+// ── GET /api/participants/overview ──────────────────────────────
+// Admin only — aggregated stats, optionally filtered by ldc_id (UUID)
+router.get('/overview', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const { ldc_id } = req.query;
+    const params = ldc_id ? [ldc_id] : [];
+    const ldcWhere = ldc_id ? 'AND p.ldc_id = $1' : '';
+    const ldcWhereOnly = ldc_id ? 'WHERE ldc_id = $1' : '';
+
+    const [statusRows, tesTypeRows, profileCounts, totalCount, tesAmount] = await Promise.all([
+      // Status breakdown
+      query(
+        `SELECT COALESCE(pp.current_status, 'no_profile') AS status, COUNT(*) AS count
+         FROM participants p
+         LEFT JOIN participant_profiles pp ON pp.participant_id = p.id
+         WHERE p.is_active = true ${ldcWhere}
+         GROUP BY COALESCE(pp.current_status, 'no_profile')
+         ORDER BY count DESC`,
+        params
+      ),
+      // TES institution type breakdown (from history, non-reverted)
+      query(
+        `SELECT COALESCE(h.institution_type, 'other') AS type, COUNT(DISTINCT p.id) AS count
+         FROM participants p
+         JOIN participant_tes_history h ON h.participant_id = p.id
+         WHERE h.status != 'reverted' ${ldcWhere}
+         GROUP BY COALESCE(h.institution_type, 'other')`,
+        params
+      ),
+      // Married / children / pregnant / outside LDC
+      query(
+        `SELECT
+           COUNT(*) FILTER (WHERE pp.marital_status = 'married')   AS married,
+           COUNT(*) FILTER (WHERE pp.number_of_children > 0)       AS has_children,
+           COUNT(*) FILTER (WHERE pp.is_pregnant = true)           AS pregnant,
+           COUNT(*) FILTER (WHERE pp.living_outside_ldc = true)    AS outside_ldc
+         FROM participants p
+         JOIN participant_profiles pp ON pp.participant_id = p.id
+         WHERE p.is_active = true ${ldcWhere}`,
+        params
+      ),
+      // Total active participants for this filter
+      query(
+        `SELECT COUNT(*) FROM participants WHERE is_active = true ${ldcWhereOnly}`,
+        params
+      ),
+      // TES amount for filter
+      query(
+        `SELECT COALESCE(SUM(h.amount_received), 0) AS total
+         FROM participant_tes_history h
+         JOIN participants p ON h.participant_id = p.id
+         WHERE h.status != 'reverted' ${ldcWhere}`,
+        params
+      ),
+    ]);
+
+    const pc = profileCounts.rows[0];
+    res.json({
+      total_participants : parseInt(totalCount.rows[0].count),
+      status_breakdown   : statusRows.rows.map(r => ({ status: r.status, count: parseInt(r.count) })),
+      tes_type_breakdown : tesTypeRows.rows.map(r => ({ type: r.type, count: parseInt(r.count) })),
+      married            : parseInt(pc.married),
+      has_children       : parseInt(pc.has_children),
+      pregnant           : parseInt(pc.pregnant),
+      outside_ldc        : parseInt(pc.outside_ldc),
+      tes_amount         : parseFloat(tesAmount.rows[0].total),
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to get overview' });
+  }
+});
+
+// ── GET /api/participants/export/participants ────────────────────
+router.get('/export/participants', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const { ldc_id } = req.query;
+    const params = ldc_id ? [ldc_id] : [];
+    const ldcWhere = ldc_id ? 'AND p.ldc_id = $1' : '';
+
+    const result = await query(
+      `SELECT
+         p.participant_id, p.full_name,
+         l.ldc_id AS ldc_code, l.name AS ldc_name,
+         p.date_of_birth, p.gender, p.planned_completion,
+         p.is_exited,
+         pp.current_status, pp.marital_status,
+         pp.number_of_children, pp.is_pregnant,
+         pp.living_outside_ldc, pp.outside_purpose, pp.outside_location,
+         pp.family_income, pp.no_of_dependants, pp.other_assistance,
+         pp.ol_status, pp.al_status,
+         pp.short_term_plan, pp.long_term_plan, pp.career_goal,
+         (SELECT string_agg(
+            'OL ' || r.exam_year || ': ' ||
+            COALESCE((SELECT string_agg(s.subject_name || '-' || s.grade, ', ' ORDER BY s.is_core DESC)
+                      FROM ol_result_subjects s WHERE s.ol_result_id = r.id), ''),
+            ' | ' ORDER BY r.exam_year DESC)
+          FROM ol_results r WHERE r.participant_id = p.id) AS ol_results,
+         (SELECT string_agg(
+            'AL ' || r.exam_year || ' (' || COALESCE(r.stream,'') || '): ' ||
+            COALESCE((SELECT string_agg(s.subject_name || '-' || s.grade, ', ')
+                      FROM al_result_subjects s WHERE s.al_result_id = r.id), '') ||
+            CASE WHEN r.z_score IS NOT NULL THEN ' Z:' || r.z_score::text ELSE '' END,
+            ' | ' ORDER BY r.exam_year DESC)
+          FROM al_results r WHERE r.participant_id = p.id) AS al_results,
+         (SELECT string_agg(
+            c.cert_name || ' (' || ct.type_name || ')' ||
+            CASE WHEN c.grade_result IS NOT NULL THEN ': ' || c.grade_result ELSE '' END,
+            ' | ')
+          FROM certifications c
+          JOIN cert_types ct ON c.cert_type_id = ct.id
+          WHERE c.participant_id = p.id) AS certifications
+       FROM participants p
+       LEFT JOIN ldcs l ON p.ldc_id = l.id
+       LEFT JOIN participant_profiles pp ON pp.participant_id = p.id
+       WHERE p.is_active = true ${ldcWhere}
+       ORDER BY l.ldc_id, p.full_name`,
+      params
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Export failed' });
+  }
+});
+
+// ── GET /api/participants/export/academic ────────────────────────
+router.get('/export/academic', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const { ldc_id } = req.query;
+    const params = ldc_id ? [ldc_id] : [];
+    const ldcWhere = ldc_id ? 'AND p.ldc_id = $1' : '';
+
+    const [olRows, alRows] = await Promise.all([
+      query(
+        `SELECT p.participant_id, p.full_name, l.ldc_id AS ldc_code,
+                'OL' AS level, r.exam_year, r.school_name, r.no_of_passes,
+                r.results_verified, s.subject_name, s.grade,
+                CASE WHEN s.is_core THEN 'Core' ELSE 'Optional' END AS subject_type
+         FROM participants p
+         JOIN ldcs l ON p.ldc_id = l.id
+         JOIN ol_results r ON r.participant_id = p.id
+         LEFT JOIN ol_result_subjects s ON s.ol_result_id = r.id
+         WHERE p.is_active = true ${ldcWhere}
+         ORDER BY l.ldc_id, p.full_name, r.exam_year, s.is_core DESC`,
+        params
+      ),
+      query(
+        `SELECT p.participant_id, p.full_name, l.ldc_id AS ldc_code,
+                'AL' AS level, r.exam_year, r.school_name, r.stream, r.medium,
+                r.z_score, r.district_rank, r.island_rank,
+                r.university_selected, r.university_name, r.course_selected,
+                r.results_verified, s.subject_name, s.grade, s.subject_type
+         FROM participants p
+         JOIN ldcs l ON p.ldc_id = l.id
+         JOIN al_results r ON r.participant_id = p.id
+         LEFT JOIN al_result_subjects s ON s.al_result_id = r.id
+         WHERE p.is_active = true ${ldcWhere}
+         ORDER BY l.ldc_id, p.full_name, r.exam_year`,
+        params
+      ),
+    ]);
+    res.json({ ol: olRows.rows, al: alRows.rows });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Export failed' });
+  }
+});
+
+// ── GET /api/participants/export/certifications ──────────────────
+router.get('/export/certifications', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const { ldc_id } = req.query;
+    const params = ldc_id ? [ldc_id] : [];
+    const ldcWhere = ldc_id ? 'AND p.ldc_id = $1' : '';
+
+    const result = await query(
+      `SELECT p.participant_id, p.full_name, l.ldc_id AS ldc_code,
+              ct.type_name AS cert_type, c.cert_name, c.issuing_body,
+              c.issued_date, c.expiry_date, c.grade_result, c.nvq_level,
+              c.results_verified, c.notes
+       FROM certifications c
+       JOIN participants p ON c.participant_id = p.id
+       JOIN ldcs l ON p.ldc_id = l.id
+       JOIN cert_types ct ON c.cert_type_id = ct.id
+       WHERE p.is_active = true ${ldcWhere}
+       ORDER BY l.ldc_id, p.full_name`,
+      params
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Export failed' });
+  }
+});
+
+// ── GET /api/participants/export/development ─────────────────────
+router.get('/export/development', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const { ldc_id } = req.query;
+    const params = ldc_id ? [ldc_id] : [];
+    const ldcWhere = ldc_id ? 'AND p.ldc_id = $1' : '';
+
+    const result = await query(
+      `SELECT p.participant_id, p.full_name, l.ldc_id AS ldc_code,
+              d.plan_year, d.spiritual_goal, d.academic_goal, d.social_goal,
+              d.vocational_goal, d.health_goal, d.actions, d.resources_needed,
+              d.timeline, d.progress_status, d.completion_rate,
+              d.primary_mentor, d.mentor_contact, d.last_reviewed, d.next_review
+       FROM development_plans d
+       JOIN participants p ON d.participant_id = p.id
+       JOIN ldcs l ON p.ldc_id = l.id
+       WHERE p.is_active = true ${ldcWhere}
+       ORDER BY l.ldc_id, p.full_name, d.plan_year DESC`,
+      params
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Export failed' });
+  }
+});
+
+// ── GET /api/participants/export/tes-history ─────────────────────
+router.get('/export/tes-history', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const { ldc_id } = req.query;
+    const params = ldc_id ? [ldc_id] : [];
+    const ldcWhere = ldc_id ? 'AND p.ldc_id = $1' : '';
+
+    const result = await query(
+      `SELECT p.participant_id, p.full_name, l.ldc_id AS ldc_code,
+              h.batch_name, h.institution_name, h.institution_type,
+              h.course_name, h.course_duration, h.course_year,
+              h.amount_received, h.status, h.recorded_at
+       FROM participant_tes_history h
+       JOIN participants p ON h.participant_id = p.id
+       JOIN ldcs l ON p.ldc_id = l.id
+       WHERE p.is_active = true ${ldcWhere}
+       ORDER BY l.ldc_id, p.full_name, h.recorded_at DESC`,
+      params
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Export failed' });
+  }
+});
+
 // ── GET /api/participants/:id ────────────────────────────────────
 router.get('/:id', verifyToken, async (req, res) => {
   try {

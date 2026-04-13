@@ -80,6 +80,23 @@ TES History
 - Auto-recorded when batch marked Funded or Completed
 - Reverted entries marked clearly
 
+### Admin Dashboard Overview (rebuilt)
+- Section 1 — Summary: Users, LDC Centres, Active Participants (global)
+- Section 2 — TES Stats: Approved/Completed, Pending, Rejected counts + Total Disbursed (global)
+- Section 3 — Participant Information (filterable by LDC dropdown):
+  - Status breakdown with bar chart (Studying/Employed/etc.)
+  - TES by Institution Type (University/College/Vocational/Other) from tes_history
+  - Personal stats: Married, Has Children, Pregnant, Living Outside LDC
+  - Total TES amount for selected LDC
+- Section 4 — Data Export (5 separate buttons, respect LDC filter):
+  - Participants (personal info + condensed OL/AL/Certs)
+  - Academic Records (full OL + AL subject detail)
+  - Certifications (all certifications)
+  - Development Plans (goals, progress, mentors)
+  - TES History (amounts per batch)
+- Quick Actions removed
+- Backend: /api/auth/stats expanded; 6 new endpoints on /api/participants/
+
 ### Participant Exit Locking
 - `is_exited` + `exited_at` columns added to participants table (migration 009)
 - Sync route auto-marks participants absent from CSV (but in synced LDCs) as exited
@@ -176,7 +193,6 @@ Manual - Fix tes_batches status constraint (add reviewing, completed)
 ---
 
 ## Remaining Work
-- Dashboard Overview improvements (pending discussion)
 - Final testing across all modules
 - Pre-deployment data cleanup
 - Production deployment

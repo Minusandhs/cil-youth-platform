@@ -212,17 +212,26 @@ router.put('/users/:id/password', verifyToken, requireSuperAdmin, async (req, re
 // ── GET /api/auth/stats ──────────────────────────────────────────
 router.get('/stats', verifyToken, requireSuperAdmin, async (req, res) => {
   try {
-    const [users, ldcs, participants, tes] = await Promise.all([
+    const [users, ldcs, participants, tesApproved, tesPending, tesRejected, tesAmount] = await Promise.all([
       query('SELECT COUNT(*) FROM users WHERE is_active = true'),
       query('SELECT COUNT(*) FROM ldcs WHERE is_active = true'),
       query('SELECT COUNT(*) FROM participants WHERE is_active = true'),
-      query('SELECT COUNT(*) FROM tes_applications'),
+      query(`SELECT COUNT(*) FROM tes_applications
+             WHERE approval_status IN ('approved')
+                OR batch_id IN (SELECT id FROM tes_batches WHERE status IN ('funded','completed'))`),
+      query(`SELECT COUNT(*) FROM tes_applications WHERE approval_status = 'pending'`),
+      query(`SELECT COUNT(*) FROM tes_applications WHERE approval_status = 'rejected'`),
+      query(`SELECT COALESCE(SUM(amount_received), 0) as total
+             FROM participant_tes_history WHERE status != 'reverted'`),
     ]);
     res.json({
-      users        : parseInt(users.rows[0].count),
-      ldcs         : parseInt(ldcs.rows[0].count),
-      participants : parseInt(participants.rows[0].count),
-      tes          : parseInt(tes.rows[0].count),
+      users          : parseInt(users.rows[0].count),
+      ldcs           : parseInt(ldcs.rows[0].count),
+      participants   : parseInt(participants.rows[0].count),
+      tes_approved   : parseInt(tesApproved.rows[0].count),
+      tes_pending    : parseInt(tesPending.rows[0].count),
+      tes_rejected   : parseInt(tesRejected.rows[0].count),
+      tes_amount     : parseFloat(tesAmount.rows[0].total),
     });
   } catch (error) {
     res.status(500).json({ error: 'Failed to get stats' });
