@@ -85,10 +85,13 @@ export default function ParticipantProfile() {
         <div style={{fontSize:'48px', marginBottom:'16px'}}>⚠️</div>
         <div style={{color:'#9b2335', fontSize:'16px'}}>{error}</div>
           <button onClick={() => fromAdmin ? navigate('/admin') : navigate(-1)} style={{
-            marginTop:'16px', background:'#1a1610',
-            color:'#c49a3c', border:'none', borderRadius:'6px',
-            padding:'10px 20px', cursor:'pointer', fontFamily:'inherit'
-          }}>Go Back</button>
+            background:'#c49a3c', color:'#1a1610',
+            border:'none', borderRadius:'20px',
+            padding:'6px 16px', cursor:'pointer',
+            fontFamily:'inherit', fontWeight:'700',
+            fontSize:'12px', letterSpacing:'0.5px',
+            display:'flex', alignItems:'center', gap:'6px'
+          }}>← Back</button>
       </div>
     </div>
   );
@@ -108,15 +111,18 @@ export default function ParticipantProfile() {
           alignItems:'center', gap:'14px'
         }}>
           <button onClick={() => fromAdmin ? navigate('/admin') : navigate(-1)} style={{
-            marginTop:'16px', background:'#1a1610',
-            color:'#c49a3c', border:'none', borderRadius:'6px',
-            padding:'10px 20px', cursor:'pointer', fontFamily:'inherit'
-          }}>Go Back</button>
+            background:'#c49a3c', color:'#1a1610',
+            border:'none', borderRadius:'20px',
+            padding:'6px 16px', cursor:'pointer',
+            fontFamily:'inherit', fontWeight:'700',
+            fontSize:'12px', letterSpacing:'0.5px',
+            display:'flex', alignItems:'center', gap:'6px'
+          }}>← Back</button>
           <div style={{
             background:'#c49a3c', color:'#1a1610',
             fontWeight:'700', fontSize:'10px',
             letterSpacing:'2px', padding:'4px 10px', borderRadius:'2px'
-          }}>CIL · TES</div>
+          }}>CIL</div>
           <div style={{flex:1}}>
             <div style={{fontSize:'15px', fontWeight:'700', color:'#e8d4a0'}}>
               Participant Profile
@@ -153,21 +159,20 @@ export default function ParticipantProfile() {
 
         {/* Tabs */}
         <div style={{borderTop:'1px solid #3a3428'}}>
-          <div style={{
-            maxWidth:'1200px', margin:'0 auto',
-            display:'flex', background:'#211e18'
-          }}>
-            {tabs.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
-                fontSize:'12px', fontWeight:'600',
-                color: activeTab === tab.id ? '#c49a3c' : '#a09080',
-                background:'transparent', border:'none',
-                borderBottom: activeTab === tab.id
-                  ? '2px solid #c49a3c' : '2px solid transparent',
-                padding:'10px 20px', cursor:'pointer',
-                fontFamily:'inherit', transition:'all 0.2s'
-              }}>{tab.label}</button>
-            ))}
+          <div style={{maxWidth:'1200px', margin:'0 auto'}}>
+            <div className="rsp-tabs">
+              {tabs.map(tab => (
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+                  fontSize:'12px', fontWeight:'600',
+                  color: activeTab === tab.id ? '#c49a3c' : '#a09080',
+                  background:'transparent', border:'none',
+                  borderBottom: activeTab === tab.id
+                    ? '2px solid #c49a3c' : '2px solid transparent',
+                  padding:'10px 20px', cursor:'pointer',
+                  fontFamily:'inherit', transition:'all 0.2s'
+                }}>{tab.label}</button>
+              ))}
+            </div>
           </div>
         </div>
       </header>
@@ -229,17 +234,6 @@ export default function ParticipantProfile() {
           }}>
             {participant?.gender}
           </span>
-          {/* Exited Badge */}
-          {participant?.is_exited && (
-            <span style={{
-              background:'#f5e0c8', color:'#7a4f1a',
-              padding:'4px 12px', borderRadius:'12px',
-              fontSize:'11px', fontWeight:'700',
-              border:'1px solid #d4956a'
-            }}>
-              EXITED
-            </span>
-          )}
         </div>
       </div>
 
@@ -260,8 +254,8 @@ export default function ParticipantProfile() {
         </div>
       )}
 
-      {/* Locked Banner — shown to LDC staff when participant is exited */}
-      {participant?.is_exited && isLDCStaff && (
+      {/* Locked Banner — shown to LDC staff when participant is inactive */}
+      {participant && !participant.is_active && isLDCStaff && (
         <div style={{
           background:'#fef3e2', borderBottom:'2px solid #d4956a',
           padding:'10px 24px'
@@ -272,38 +266,38 @@ export default function ParticipantProfile() {
             fontSize:'13px', color:'#7a4f1a', fontWeight:'600'
           }}>
             <span style={{fontSize:'16px'}}>🔒</span>
-            This participant has exited the program. Their profile is view-only — editing is disabled.
+            This participant is inactive. Their profile is view-only — editing is disabled.
           </div>
         </div>
       )}
 
       {/* Tab Content */}
-      <main style={{maxWidth:'1200px', margin:'0 auto', padding:'24px'}}>
+      <main className="rsp-main" style={{maxWidth:'1200px', margin:'0 auto', padding:'24px'}}>
         {activeTab === 'personal'    && (
           <PersonalInfo
             participant={participant}
             onUpdate={loadParticipant}
-            readOnly={isLDCStaff && !!participant?.is_exited}
+            readOnly={isLDCStaff && !participant?.is_active}
           />
         )}
         {activeTab === 'academic'    && (
           <AcademicRecords
             participantId={id}
             participant={participant}
-            readOnly={isLDCStaff && !!participant?.is_exited}
+            readOnly={isLDCStaff && !participant?.is_active}
           />
         )}
         {activeTab === 'certs'       && (
           <Certifications
             participantId={id}
-            readOnly={isLDCStaff && !!participant?.is_exited}
+            readOnly={isLDCStaff && !participant?.is_active}
           />
         )}
         {activeTab === 'development' && (
           <DevelopmentPlan
             participantId={id}
             participant={participant}
-            readOnly={isLDCStaff && !!participant?.is_exited}
+            readOnly={isLDCStaff && !participant?.is_active}
           />
         )}
           {activeTab === 'tes' && participant && (

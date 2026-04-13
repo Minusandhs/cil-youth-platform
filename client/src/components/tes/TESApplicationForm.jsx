@@ -475,7 +475,8 @@ export default function TESApplicationForm({
           {/* Language Proficiency */}
           <div style={sectionStyle}>
             <div style={secTitle}>Language Proficiency</div>
-            <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
+            <div style={{overflowX:'auto', WebkitOverflowScrolling:'touch'}}>
+            <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'380px'}}>
               <thead>
                 <tr style={{background:'#f0ece2'}}>
                   <th style={{
@@ -520,6 +521,7 @@ export default function TESApplicationForm({
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
 
           {/* Institution & Course */}

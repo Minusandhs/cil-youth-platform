@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: 6 }, (_, i) => CURRENT_YEAR - 2 + i);
@@ -49,6 +50,8 @@ function ProgressBar({ value, onChange, readonly }) {
 }
 
 export default function DevelopmentPlan({ participantId, participant, readOnly = false }) {
+  const { user } = useAuth();
+  const isLDCStaff = user?.role === 'ldc_staff';
   const [plans,       setPlans      ] = useState([]);
   const [plan,        setPlan       ] = useState(null);
   const [history,     setHistory    ] = useState([]);
@@ -307,7 +310,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
               display:'flex', alignItems:'center', gap:'8px'
             }}>
               {selYear}
-              {!editMode && (
+              {!editMode && !isLDCStaff && (
                 <button
                   onClick={() => {
                     setYearLocked(false);

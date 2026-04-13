@@ -405,7 +405,8 @@ router.post('/sync', verifyToken, requireSuperAdmin, async (req, res) => {
               imported_by        = $7,
               updated_at         = NOW(),
               is_exited          = FALSE,
-              exited_at          = NULL
+              exited_at          = NULL,
+              is_active          = TRUE
              WHERE participant_id = $8`,
             [
               p.full_name, ldc_uuid, p.date_of_birth || null,
@@ -443,7 +444,7 @@ router.post('/sync', verifyToken, requireSuperAdmin, async (req, res) => {
     if (ldcUuids.length > 0 && csvParticipantIds.length > 0) {
       const exitResult = await query(
         `UPDATE participants
-         SET is_exited = TRUE, exited_at = NOW()
+         SET is_exited = TRUE, exited_at = NOW(), is_active = FALSE
          WHERE ldc_id = ANY($1)
            AND participant_id != ALL($2)
            AND is_exited = FALSE

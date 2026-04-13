@@ -116,7 +116,8 @@ export default function LDCParticipantList() {
         background:'#fffef9', border:'1px solid #d4c9b0',
         borderRadius:'8px', overflow:'hidden'
       }}>
-        <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
+        <div style={{overflowX:'auto', WebkitOverflowScrolling:'touch'}}>
+        <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'520px'}}>
           <thead>
             <tr style={{background:'#f0ece2'}}>
               {['Participant ID','Name','Age','Gender','Planned Completion','Action'].map(h => (
@@ -140,15 +141,6 @@ export default function LDCParticipantList() {
                 </td>
                 <td style={{padding:'10px 14px', fontWeight:'600'}}>
                   {p.full_name}
-                  {p.is_exited && (
-                    <span style={{
-                      marginLeft:'8px', background:'#f5e0c8',
-                      color:'#7a4f1a', padding:'1px 6px',
-                      borderRadius:'3px', fontSize:'9px',
-                      fontWeight:'700', letterSpacing:'0.5px',
-                      verticalAlign:'middle'
-                    }}>EXITED</span>
-                  )}
                 </td>
                 <td style={{padding:'10px 14px', color:'#6b5e4a'}}>
                   {calcAge(p.date_of_birth)}
@@ -180,6 +172,7 @@ export default function LDCParticipantList() {
             ))}
           </tbody>
         </table>
+        </div>
         {participants.length === 0 && (
           <div style={{padding:'32px', textAlign:'center', color:'#6b5e4a'}}>
             No participants found for your LDC.

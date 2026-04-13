@@ -123,7 +123,7 @@ export default function LDCOverview() {
         'Date of Birth'       : fmtDate(p.date_of_birth),
         'Gender'              : p.gender || '',
         'Planned Completion'  : fmtDate(p.planned_completion),
-        'Exited'              : p.is_exited ? 'Yes' : 'No',
+        'Active'              : p.is_active ? 'Yes' : 'No',
         'Current Status'      : STATUS_LABELS[p.current_status] || p.current_status || '',
         'Marital Status'      : p.marital_status || '',
         'No of Children'      : p.number_of_children ?? '',
@@ -235,7 +235,7 @@ export default function LDCOverview() {
       {/* ── SECTION 1: Summary ──────────────────────────────────── */}
       <div style={{ marginBottom: '32px' }}>
         <div style={sectionTitle}>Summary</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px' }}>
+        <div className="rsp-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px' }}>
           <div style={statCard('#1a4068')}>
             <div style={{ fontSize: '28px', fontWeight: '700', color: '#1a4068', lineHeight: 1 }}>
               {loading ? '…' : fmt(stats?.participants)}
@@ -251,7 +251,7 @@ export default function LDCOverview() {
       {/* ── SECTION 2: TES Stats ────────────────────────────────── */}
       <div style={{ marginBottom: '32px' }}>
         <div style={sectionTitle}>Tertiary Education Support</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px' }}>
+        <div className="rsp-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px' }}>
           {[
             { label: 'Approved / Completed', value: stats?.tes_approved, color: '#2d6a4f' },
             { label: 'Pending',              value: stats?.tes_pending,  color: '#c49a3c' },
@@ -292,7 +292,7 @@ export default function LDCOverview() {
           </div>
         ) : overview ? (
           <div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+            <div className="rsp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
 
               {/* Status breakdown */}
               <div style={card}>

@@ -32,3 +32,50 @@ body {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #f0ece2; }
 ::-webkit-scrollbar-thumb { background: #c49a3c; border-radius: 3px; }
+
+/* ── Responsive Utilities ──────────────────────────── */
+
+/* Tab bar — horizontal scroll, hide scrollbar visually */
+.rsp-tabs {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  display: flex;
+  background: #211e18;
+}
+.rsp-tabs::-webkit-scrollbar { display: none; }
+.rsp-tabs > button { flex-shrink: 0; }
+
+@media (max-width: 768px) {
+  /* Main content padding */
+  .rsp-main { padding: 12px !important; }
+
+  /* Header inner padding */
+  .rsp-header-pad { padding: 10px 14px !important; flex-wrap: wrap !important; }
+
+  /* Hide username in header to save space */
+  .rsp-hide-mobile { display: none !important; }
+
+  /* Section header row — stack on mobile */
+  .rsp-section-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  /* Responsive grids */
+  .rsp-grid-2 { grid-template-columns: 1fr !important; }
+  .rsp-grid-3 { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+  .rsp-grid-4 { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+
+  /* Export buttons — 2-column grid on mobile */
+  .rsp-export-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+  .rsp-export-row > div { width: 100% !important; }
+  .rsp-export-row button { width: 100% !important; min-width: unset !important; }
+}
+
+@media (max-width: 480px) {
+  /* Collapse to single column on very small screens */
+  .rsp-grid-3 { grid-template-columns: 1fr !important; }
+  .rsp-grid-4 { grid-template-columns: 1fr !important; }
+}

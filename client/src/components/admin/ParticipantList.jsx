@@ -188,7 +188,8 @@ export default function ParticipantList() {
         background:'#fffef9', border:'1px solid #d4c9b0',
         borderRadius:'8px', overflow:'hidden'
       }}>
-        <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
+        <div style={{overflowX:'auto', WebkitOverflowScrolling:'touch'}}>
+        <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'700px'}}>
           <thead>
             <tr style={{background:'#f0ece2'}}>
               {['Participant ID','Name','LDC','Age','Gender','Planned Completion','Sync Batch','Status','Action'].map(h => (
@@ -243,12 +244,6 @@ export default function ParticipantList() {
       padding:'2px 8px', borderRadius:'10px',
       fontSize:'10px', fontWeight:'700'
     }}>INACTIVE</span>
-  ) : p.is_exited ? (
-    <span style={{
-      background:'#f5e0c8', color:'#7a4f1a',
-      padding:'2px 8px', borderRadius:'10px',
-      fontSize:'10px', fontWeight:'700'
-    }}>EXITED</span>
   ) : (
     <span style={{
       background:'#d8ede4', color:'#2d6a4f',
@@ -289,6 +284,7 @@ export default function ParticipantList() {
             ))}
           </tbody>
         </table>
+        </div>
         {participants.length === 0 && (
           <div style={{padding:'32px', textAlign:'center', color:'#6b5e4a'}}>
             No participants found.

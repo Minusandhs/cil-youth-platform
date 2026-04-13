@@ -308,7 +308,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           {/* Personal & Family */}
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>Personal & Family Status</div>
-            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'16px'}}>
+            <div className="rsp-grid-3" style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'16px'}}>
               <ViewField label="Marital Status"     value={form.marital_status} />
               {form.living_outside_ldc && (
                   <>
@@ -325,7 +325,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           {/* School Level */}
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>School Level Status</div>
-            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:'16px'}}>
+            <div className="rsp-grid-4" style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:'16px'}}>
               <ViewField label="O/L Status" value={form.ol_status} />
               <ViewField label="O/L Year"   value={form.ol_completion_year} />
               <ViewField label="A/L Status" value={form.al_status} />
@@ -385,7 +385,8 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                 No status history recorded yet.
               </div>
             ) : (
-              <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
+              <div style={{overflowX:'auto', WebkitOverflowScrolling:'touch'}}>
+              <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'480px'}}>
                 <thead>
                   <tr style={{background:'#f0ece2'}}>
                     {['Date','Status','Institution','Course/Role','Year/Duration'].map(h => (
@@ -423,6 +424,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         </div>
@@ -435,7 +437,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           {/* Personal & Family */}
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>Personal & Family Status</div>
-            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'14px'}}>
+            <div className="rsp-grid-3" style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'14px'}}>
               <div>
                 <label style={labelStyle}>Marital Status</label>
                 <select style={inputStyle(false)} value={form.marital_status}
@@ -523,7 +525,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           {/* School Level */}
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>School Level Status</div>
-            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:'14px'}}>
+            <div className="rsp-grid-4" style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:'14px'}}>
               <div>
                 <label style={labelStyle}>O/L Status</label>
                 <select style={inputStyle(false)} value={form.ol_status}

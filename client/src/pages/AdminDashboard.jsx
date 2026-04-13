@@ -42,7 +42,7 @@ const tabs = [
         zIndex:100,
         boxShadow:'0 4px 24px rgba(26,22,16,0.18)'
       }}>
-        <div style={{
+        <div className="rsp-header-pad" style={{
           maxWidth:'1200px', margin:'0 auto',
           padding:'12px 24px', display:'flex',
           alignItems:'center', gap:'14px'
@@ -58,7 +58,7 @@ const tabs = [
             </div>
             <div style={{fontSize:'11px', color:'#a09080'}}>Super Admin Console</div>
           </div>
-          <div style={{fontSize:'12px', color:'#a09080', marginRight:'12px'}}>
+          <div className="rsp-hide-mobile" style={{fontSize:'12px', color:'#a09080', marginRight:'12px'}}>
             {user?.full_name}
           </div>
           <button onClick={handleLogout} style={{
@@ -68,21 +68,23 @@ const tabs = [
           }}>Sign Out</button>
         </div>
         <div style={{borderTop:'1px solid #3a3428'}}>
-          <div style={{maxWidth:'1200px', margin:'0 auto', display:'flex', background:'#211e18'}}>
-            {tabs.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
-                fontSize:'12px', fontWeight:'600',
-                color: activeTab === tab.id ? '#c49a3c' : '#a09080',
-                background:'transparent', border:'none',
-                borderBottom: activeTab === tab.id ? '2px solid #c49a3c' : '2px solid transparent',
-                padding:'10px 20px', cursor:'pointer',
-                fontFamily:'inherit', transition:'all 0.2s'
-              }}>{tab.label}</button>
-            ))}
+          <div style={{maxWidth:'1200px', margin:'0 auto'}}>
+            <div className="rsp-tabs">
+              {tabs.map(tab => (
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+                  fontSize:'12px', fontWeight:'600',
+                  color: activeTab === tab.id ? '#c49a3c' : '#a09080',
+                  background:'transparent', border:'none',
+                  borderBottom: activeTab === tab.id ? '2px solid #c49a3c' : '2px solid transparent',
+                  padding:'10px 20px', cursor:'pointer',
+                  fontFamily:'inherit', transition:'all 0.2s'
+                }}>{tab.label}</button>
+              ))}
+            </div>
           </div>
         </div>
       </header>
-    <main style={{maxWidth:'1200px', margin:'0 auto', padding:'24px'}}>
+    <main className="rsp-main" style={{maxWidth:'1200px', margin:'0 auto', padding:'24px'}}>
       {activeTab === 'overview'     && <AdminOverview />}
       {activeTab === 'participants' && <ParticipantList />}
       {activeTab === 'users'        && <UserManagement />}

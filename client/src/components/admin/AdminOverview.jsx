@@ -152,7 +152,7 @@ export default function AdminOverview() {
         'Date of Birth'        : fmtDate(p.date_of_birth),
         'Gender'               : p.gender || '',
         'Planned Completion'   : fmtDate(p.planned_completion),
-        'Exited'               : p.is_exited ? 'Yes' : 'No',
+        'Active'               : p.is_active ? 'Yes' : 'No',
         'Current Status'       : STATUS_LABELS[p.current_status] || p.current_status || '',
         'Marital Status'       : p.marital_status || '',
         'No of Children'       : p.number_of_children ?? '',
@@ -321,7 +321,7 @@ export default function AdminOverview() {
       {/* ── SECTION 1: Summary ───────────────────────────────────── */}
       <div style={{ marginBottom:'32px' }}>
         <div style={sectionTitle}>Summary</div>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'16px' }}>
+        <div className="rsp-grid-3" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'16px' }}>
           <StatCard label="Total Users"      value={stats?.users}        color="#c49a3c" />
           <StatCard label="LDC Centres"      value={stats?.ldcs}         color="#2d6a4f" />
           <StatCard label="Active Participants" value={stats?.participants} color="#1a4068" />
@@ -331,7 +331,7 @@ export default function AdminOverview() {
       {/* ── SECTION 2: TES Stats (global) ────────────────────────── */}
       <div style={{ marginBottom:'32px' }}>
         <div style={sectionTitle}>Tertiary Education Support</div>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'16px', marginBottom:'16px' }}>
+        <div className="rsp-grid-4" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'16px', marginBottom:'16px' }}>
           <StatCard label="Approved / Completed" value={stats?.tes_approved} color="#2d6a4f" />
           <StatCard label="Pending"               value={stats?.tes_pending}  color="#c49a3c" />
           <StatCard label="Rejected"              value={stats?.tes_rejected} color="#9b2335" />
@@ -353,7 +353,7 @@ export default function AdminOverview() {
       {/* ── SECTION 3: Participant Info (filterable) ──────────────── */}
       <div style={{ marginBottom:'32px' }}>
         {/* Header + LDC Filter */}
-        <div style={{ display:'flex', justifyContent:'space-between',
+        <div className="rsp-section-header" style={{ display:'flex', justifyContent:'space-between',
           alignItems:'center', marginBottom:'16px',
           paddingBottom:'10px', borderBottom:'1px solid #e8e0d0' }}>
           <div style={{ fontSize:'15px', fontWeight:'700', color:'#1a1610' }}>
@@ -397,7 +397,7 @@ export default function AdminOverview() {
         ) : overview ? (
           <div>
             {/* Top row: Status breakdown + TES type breakdown */}
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px', marginBottom:'16px' }}>
+            <div className="rsp-grid-2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px', marginBottom:'16px' }}>
 
               {/* Status Breakdown */}
               <div style={card}>
@@ -545,7 +545,7 @@ export default function AdminOverview() {
             </div>
           )}
 
-          <div style={{ display:'flex', gap:'10px', flexWrap:'wrap' }}>
+          <div className="rsp-export-row" style={{ display:'flex', gap:'10px', flexWrap:'wrap' }}>
             {[
               { key:'participants',   label:'Participants',     fn: exportParticipants, color:'#1a1610', text:'#c49a3c',
                 note:'Personal info + OL/AL/Certs condensed' },
