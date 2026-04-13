@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../lib/api';
 
 export default function ParticipantList() {
+  const navigate = useNavigate();
   const [participants, setParticipants] = useState([]);
   const [ldcs,         setLdcs        ] = useState([]);
   const [loading,      setLoading     ] = useState(true);
@@ -155,7 +157,7 @@ export default function ParticipantList() {
         <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
           <thead>
             <tr style={{background:'#f0ece2'}}>
-              {['Participant ID','Name','LDC','Age','Gender','Planned Completion','Sync Batch'].map(h => (
+              {['Participant ID','Name','LDC','Age','Gender','Planned Completion','Sync Batch','Action'].map(h => (
                 <th key={h} style={{
                   padding:'10px 14px', textAlign:'left',
                   fontSize:'10.5px', fontWeight:'700',
@@ -195,9 +197,21 @@ export default function ParticipantList() {
                 <td style={{padding:'10px 14px', color:'#6b5e4a'}}>
                   {formatDate(p.planned_completion)}
                 </td>
-                <td style={{padding:'10px 14px', color:'#a09080', fontSize:'12px'}}>
-                  {p.sync_batch || '—'}
-                </td>
+<td style={{padding:'10px 14px', color:'#a09080', fontSize:'12px'}}>
+  {p.sync_batch || '—'}
+</td>
+<td style={{padding:'10px 14px'}}>
+  <button
+    onClick={() => navigate(`/participant/${p.id}?from=admin`)}
+    style={{
+      background:'#1a1610', color:'#c49a3c', border:'none',
+      borderRadius:'4px', padding:'5px 12px', fontSize:'11px',
+      fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+    }}
+  >
+    View Profile
+  </button>
+</td>
               </tr>
             ))}
           </tbody>

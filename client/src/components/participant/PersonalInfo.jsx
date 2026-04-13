@@ -82,6 +82,9 @@ export default function PersonalInfo({ participant, onUpdate }) {
   const [error,     setError    ] = useState('');
   const [form, setForm] = useState({
     marital_status     : '',
+    living_outside_ldc : false,
+    outside_purpose    : '',
+    outside_location   : '',
     is_pregnant        : false,
     number_of_children : 0,
     ol_status          : '',
@@ -115,6 +118,9 @@ export default function PersonalInfo({ participant, onUpdate }) {
         setProfile(profileRes.data);
         setForm({
           marital_status     : profileRes.data.marital_status      || '',
+          living_outside_ldc : profileRes.data.living_outside_ldc  || false,
+          outside_purpose    : profileRes.data.outside_purpose     || '',
+          outside_location   : profileRes.data.outside_location    || '',
           is_pregnant        : profileRes.data.is_pregnant         || false,
           number_of_children : profileRes.data.number_of_children  || 0,
           ol_status          : profileRes.data.ol_status           || '',
@@ -188,6 +194,9 @@ export default function PersonalInfo({ participant, onUpdate }) {
     if (profile) {
       setForm({
         marital_status     : profile.marital_status      || '',
+        living_outside_ldc : profile.living_outside_ldc  || false,
+        outside_purpose    : profile.outside_purpose     || '',
+        outside_location   : profile.outside_location    || '',
         is_pregnant        : profile.is_pregnant         || false,
         number_of_children : profile.number_of_children  || 0,
         ol_status          : profile.ol_status           || '',
@@ -299,6 +308,13 @@ export default function PersonalInfo({ participant, onUpdate }) {
             <div style={sectionTitleStyle}>Personal & Family Status</div>
             <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'16px'}}>
               <ViewField label="Marital Status"     value={form.marital_status} />
+              {form.living_outside_ldc && (
+                  <>
+                    <ViewField label="Living Outside LDC" value="Yes" />
+                    <ViewField label="Purpose"            value={form.outside_purpose} />
+                    <ViewField label="Location"           value={form.outside_location} />
+                  </>
+                )}
               <ViewField label="Number of Children" value={form.number_of_children} />
               <ViewField label="Pregnant"           value={form.is_pregnant ? 'Yes' : 'No'} />
             </div>
@@ -429,6 +445,55 @@ export default function PersonalInfo({ participant, onUpdate }) {
                   <option value="widowed">Widowed</option>
                   <option value="separated">Separated</option>
                 </select>
+              </div>
+              {/* Living Outside LDC */}
+              <div style={{gridColumn:'1 / -1'}}>
+                <div style={{
+                  display:'flex', alignItems:'center', gap:'10px',
+                  padding:'12px 14px',
+                  background: form.living_outside_ldc ? '#fdecd8' : '#faf8f3',
+                  border:`1px solid ${form.living_outside_ldc ? '#c49a3c' : '#d4c9b0'}`,
+                  borderRadius:'6px', marginBottom: form.living_outside_ldc ? '12px' : '0'
+                }}>
+                  <input type="checkbox" id="living_outside"
+                    checked={form.living_outside_ldc}
+                    onChange={e => setForm({
+                      ...form,
+                      living_outside_ldc: e.target.checked,
+                      outside_purpose   : '',
+                      outside_location  : ''
+                    })}
+                    style={{width:'16px', height:'16px', accentColor:'#c49a3c'}} />
+                  <label htmlFor="living_outside" style={{
+                    fontSize:'13px', fontWeight:'600', cursor:'pointer'
+                  }}>
+                    Participant is currently living outside the LDC area
+                  </label>
+                </div>
+
+                {form.living_outside_ldc && (
+                  <div style={{
+                    display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'
+                  }}>
+                    <div>
+                      <label style={labelStyle}>Purpose *</label>
+                      <select style={inputStyle(false)} value={form.outside_purpose}
+                        onChange={e => setForm({...form, outside_purpose:e.target.value})}>
+                        <option value="">— Select Purpose —</option>
+                        <option value="Study">Study</option>
+                        <option value="Work / Business">Work / Business</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Where *</label>
+                      <input style={inputStyle(false)}
+                        placeholder="e.g. Colombo, Kandy..."
+                        value={form.outside_location}
+                        onChange={e => setForm({...form, outside_location:e.target.value})} />
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <label style={labelStyle}>Number of Children</label>

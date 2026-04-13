@@ -34,8 +34,8 @@ export default function App() {
               <LDCDashboard />
             </PrivateRoute>
           }/>
-          <Route path="/participant/:id" element={
-            <PrivateRoute requiredRole="ldc_staff">
+            <Route path="/participant/:id" element={
+              <PrivateRoute requiredRole="any">
               <ParticipantProfile />
             </PrivateRoute>
           }/>

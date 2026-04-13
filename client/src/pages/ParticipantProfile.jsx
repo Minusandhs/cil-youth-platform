@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../lib/api';
 import PersonalInfo     from '../components/participant/PersonalInfo';
@@ -11,6 +11,8 @@ import TESHistory from '../components/participant/TESHistory';
 export default function ParticipantProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromAdmin = new URLSearchParams(location.search).get('from') === 'admin';
   const { user } = useAuth();
   const [participant, setParticipant] = useState(null);
   const [loading,     setLoading    ] = useState(true);
@@ -67,11 +69,11 @@ export default function ParticipantProfile() {
       <div style={{textAlign:'center'}}>
         <div style={{fontSize:'48px', marginBottom:'16px'}}>⚠️</div>
         <div style={{color:'#9b2335', fontSize:'16px'}}>{error}</div>
-        <button onClick={() => navigate(-1)} style={{
-          marginTop:'16px', background:'#1a1610',
-          color:'#c49a3c', border:'none', borderRadius:'6px',
-          padding:'10px 20px', cursor:'pointer', fontFamily:'inherit'
-        }}>Go Back</button>
+          <button onClick={() => fromAdmin ? navigate('/admin') : navigate(-1)} style={{
+            marginTop:'16px', background:'#1a1610',
+            color:'#c49a3c', border:'none', borderRadius:'6px',
+            padding:'10px 20px', cursor:'pointer', fontFamily:'inherit'
+          }}>Go Back</button>
       </div>
     </div>
   );
@@ -90,13 +92,11 @@ export default function ParticipantProfile() {
           padding:'12px 24px', display:'flex',
           alignItems:'center', gap:'14px'
         }}>
-          <button onClick={() => navigate(-1)} style={{
-            background:'transparent', border:'1px solid #4a4234',
-            color:'#a09080', padding:'6px 12px', borderRadius:'5px',
-            fontSize:'12px', cursor:'pointer', fontFamily:'inherit'
-          }}>
-            ← Back
-          </button>
+          <button onClick={() => fromAdmin ? navigate('/admin') : navigate(-1)} style={{
+            marginTop:'16px', background:'#1a1610',
+            color:'#c49a3c', border:'none', borderRadius:'6px',
+            padding:'10px 20px', cursor:'pointer', fontFamily:'inherit'
+          }}>Go Back</button>
           <div style={{
             background:'#c49a3c', color:'#1a1610',
             fontWeight:'700', fontSize:'10px',

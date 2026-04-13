@@ -193,11 +193,12 @@ router.post('/:id/profile', verifyToken, async (req, res) => {
         monthly_income, short_term_plan, long_term_plan,
         career_goal, further_education, education_details,
         family_income, no_of_dependants, other_assistance,
+        living_outside_ldc, outside_purpose, outside_location,
         last_updated_by
-      ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,
-        $13,$14,$15,$16,$17,$18,$19,$20,$21,$22
-      ) RETURNING *`,
+        ) VALUES (
+          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,
+          $13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25
+        ) RETURNING *`,
       [
         req.params.id,
         p.marital_status     || null,
@@ -220,6 +221,9 @@ router.post('/:id/profile', verifyToken, async (req, res) => {
         p.family_income      || null,
         p.no_of_dependants   || null,
         p.other_assistance   || null,
+        p.living_outside_ldc || false,
+        p.outside_purpose    || null,
+        p.outside_location   || null,
         req.user.id
       ]
     );
@@ -256,9 +260,12 @@ router.put('/:id/profile', verifyToken, async (req, res) => {
         family_income       = $18,
         no_of_dependants    = $19,
         other_assistance    = $20,
-        last_updated_by     = $21,
+        living_outside_ldc  = $21,
+        outside_purpose     = $22,
+        outside_location    = $23,
+        last_updated_by     = $24,
         updated_at          = NOW()
-       WHERE participant_id = $22
+        WHERE participant_id = $25
        RETURNING *`,
       [
         p.marital_status     || null,
@@ -281,6 +288,9 @@ router.put('/:id/profile', verifyToken, async (req, res) => {
         p.family_income      || null,
         p.no_of_dependants   || null,
         p.other_assistance   || null,
+        p.living_outside_ldc || false,
+        p.outside_purpose    || null,
+        p.outside_location   || null,
         req.user.id,
         req.params.id
       ]
