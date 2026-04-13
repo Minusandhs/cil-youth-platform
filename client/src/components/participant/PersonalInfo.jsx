@@ -72,7 +72,7 @@ const STATUS_FIELDS = {
   },
 };
 
-export default function PersonalInfo({ participant, onUpdate }) {
+export default function PersonalInfo({ participant, onUpdate, readOnly = false }) {
   const [profile,   setProfile  ] = useState(null);
   const [history,   setHistory  ] = useState([]);
   const [loading,   setLoading  ] = useState(true);
@@ -293,15 +293,17 @@ export default function PersonalInfo({ participant, onUpdate }) {
       {!editMode && profile && (
         <div>
           {/* Edit Button */}
-          <div style={{display:'flex', justifyContent:'flex-end', marginBottom:'16px'}}>
-            <button onClick={() => setEditMode(true)} style={{
-              background:'#1a1610', color:'#c49a3c', border:'none',
-              borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
-              fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
-            }}>
-              Edit Profile
-            </button>
-          </div>
+          {!readOnly && (
+            <div style={{display:'flex', justifyContent:'flex-end', marginBottom:'16px'}}>
+              <button onClick={() => setEditMode(true)} style={{
+                background:'#1a1610', color:'#c49a3c', border:'none',
+                borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
+                fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+              }}>
+                Edit Profile
+              </button>
+            </div>
+          )}
 
           {/* Personal & Family */}
           <div style={sectionStyle}>
@@ -711,15 +713,19 @@ export default function PersonalInfo({ participant, onUpdate }) {
             No Profile Yet
           </div>
           <div style={{color:'#6b5e4a', fontSize:'13px', marginBottom:'20px'}}>
-            Start by creating a profile for this participant.
+            {readOnly
+              ? 'No profile was recorded for this participant.'
+              : 'Start by creating a profile for this participant.'}
           </div>
-          <button onClick={() => setEditMode(true)} style={{
-            background:'#1a1610', color:'#c49a3c', border:'none',
-            borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
-            fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
-          }}>
-            Create Profile
-          </button>
+          {!readOnly && (
+            <button onClick={() => setEditMode(true)} style={{
+              background:'#1a1610', color:'#c49a3c', border:'none',
+              borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
+              fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+            }}>
+              Create Profile
+            </button>
+          )}
         </div>
       )}
     </div>

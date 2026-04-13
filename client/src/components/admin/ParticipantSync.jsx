@@ -151,6 +151,7 @@ export default function ParticipantSync() {
               { label:'Total Processed', value: result.total,    color:'#1a4068' },
               { label:'New Added',       value: result.inserted, color:'#2d6a4f' },
               { label:'Updated',         value: result.updated,  color:'#c49a3c' },
+              { label:'Exited (Locked)', value: result.exited,   color:'#7a4f1a' },
               { label:'Errors',          value: result.errors,   color:'#9b2335' },
             ].map(s => (
               <div key={s.label} style={{

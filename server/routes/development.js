@@ -79,6 +79,13 @@ router.post('/', verifyToken, async (req, res) => {
       });
     }
 
+    if (req.user.role === 'ldc_staff') {
+      const check = await query('SELECT is_exited FROM participants WHERE id = $1', [participant_id]);
+      if (check.rows[0]?.is_exited) {
+        return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
+      }
+    }
+
     if (!notes || !notes.trim()) {
       return res.status(400).json({
         error: 'Notes are required when saving a plan'
@@ -166,6 +173,17 @@ router.put('/:id', verifyToken, async (req, res) => {
       last_reviewed, next_review,
       notes, goals_changed, progress_changed
     } = req.body;
+
+    if (req.user.role === 'ldc_staff') {
+      const check = await query(
+        `SELECT p.is_exited FROM participants p
+         JOIN development_plans d ON d.participant_id = p.id
+         WHERE d.id = $1`, [req.params.id]
+      );
+      if (check.rows[0]?.is_exited) {
+        return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
+      }
+    }
 
     if (!notes || !notes.trim()) {
       return res.status(400).json({

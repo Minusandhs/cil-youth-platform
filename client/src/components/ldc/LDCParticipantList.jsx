@@ -138,7 +138,18 @@ export default function LDCParticipantList() {
                 <td style={{padding:'10px 14px', color:'#c49a3c', fontWeight:'700'}}>
                   {p.participant_id}
                 </td>
-                <td style={{padding:'10px 14px', fontWeight:'600'}}>{p.full_name}</td>
+                <td style={{padding:'10px 14px', fontWeight:'600'}}>
+                  {p.full_name}
+                  {p.is_exited && (
+                    <span style={{
+                      marginLeft:'8px', background:'#f5e0c8',
+                      color:'#7a4f1a', padding:'1px 6px',
+                      borderRadius:'3px', fontSize:'9px',
+                      fontWeight:'700', letterSpacing:'0.5px',
+                      verticalAlign:'middle'
+                    }}>EXITED</span>
+                  )}
+                </td>
                 <td style={{padding:'10px 14px', color:'#6b5e4a'}}>
                   {calcAge(p.date_of_birth)}
                 </td>

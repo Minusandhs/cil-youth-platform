@@ -111,6 +111,13 @@ router.post('/', verifyToken, async (req, res) => {
       grade_result, nvq_level, results_verified, notes
     } = req.body;
 
+    if (req.user.role === 'ldc_staff') {
+      const check = await query('SELECT is_exited FROM participants WHERE id = $1', [participant_id]);
+      if (check.rows[0]?.is_exited) {
+        return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
+      }
+    }
+
     if (!participant_id || !cert_type_id || !cert_name) {
       return res.status(400).json({
         error: 'Participant, type and certificate name are required'
@@ -152,6 +159,17 @@ router.put('/:id', verifyToken, async (req, res) => {
       nvq_level, results_verified, notes
     } = req.body;
 
+    if (req.user.role === 'ldc_staff') {
+      const check = await query(
+        `SELECT p.is_exited FROM participants p
+         JOIN certifications c ON c.participant_id = p.id
+         WHERE c.id = $1`, [req.params.id]
+      );
+      if (check.rows[0]?.is_exited) {
+        return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
+      }
+    }
+
     const result = await query(
       `UPDATE certifications SET
         cert_type_id     = $1,
@@ -186,6 +204,16 @@ router.put('/:id', verifyToken, async (req, res) => {
 // ── DELETE /api/certifications/:id ───────────────────────────────
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
+    if (req.user.role === 'ldc_staff') {
+      const check = await query(
+        `SELECT p.is_exited FROM participants p
+         JOIN certifications c ON c.participant_id = p.id
+         WHERE c.id = $1`, [req.params.id]
+      );
+      if (check.rows[0]?.is_exited) {
+        return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
+      }
+    }
     await query(
       'DELETE FROM certifications WHERE id = $1',
       [req.params.id]

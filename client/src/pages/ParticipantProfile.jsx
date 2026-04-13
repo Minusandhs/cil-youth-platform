@@ -13,11 +13,12 @@ export default function ParticipantProfile() {
   const navigate = useNavigate();
   const location = useLocation();
   const fromAdmin = new URLSearchParams(location.search).get('from') === 'admin';
-  const { user } = useAuth();
-  const [participant, setParticipant] = useState(null);
-  const [loading,     setLoading    ] = useState(true);
-  const [activeTab,   setActiveTab  ] = useState('personal');
-  const [error,       setError      ] = useState('');
+  const { user, isLDCStaff, isSuperAdmin } = useAuth();
+  const [participant,  setParticipant ] = useState(null);
+  const [loading,      setLoading     ] = useState(true);
+  const [activeTab,    setActiveTab   ] = useState('personal');
+  const [error,        setError       ] = useState('');
+  const [toggling,     setToggling    ] = useState(false);
 
   useEffect(() => { loadParticipant(); }, [id]);
 
@@ -29,6 +30,20 @@ export default function ParticipantProfile() {
       setError('Failed to load participant');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function toggleActive() {
+    const action = participant.is_active ? 'deactivate' : 'reactivate';
+    if (!window.confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} ${participant.full_name}?`)) return;
+    setToggling(true);
+    try {
+      await api.patch(`/api/participants/${id}/active`, { is_active: !participant.is_active });
+      await loadParticipant();
+    } catch {
+      setError(`Failed to ${action} participant`);
+    } finally {
+      setToggling(false);
     }
   }
 
@@ -105,11 +120,35 @@ export default function ParticipantProfile() {
           <div style={{flex:1}}>
             <div style={{fontSize:'15px', fontWeight:'700', color:'#e8d4a0'}}>
               Participant Profile
+              {participant && !participant.is_active && (
+                <span style={{
+                  marginLeft:'10px', background:'#6b5e4a',
+                  color:'#e8d4a0', padding:'2px 8px',
+                  borderRadius:'3px', fontSize:'10px',
+                  fontWeight:'700', letterSpacing:'0.5px'
+                }}>INACTIVE</span>
+              )}
             </div>
             <div style={{fontSize:'11px', color:'#a09080'}}>
               {participant?.ldc_code} — {participant?.ldc_name}
             </div>
           </div>
+          {/* Admin — Deactivate / Reactivate */}
+          {isSuperAdmin && participant && (
+            <button
+              onClick={toggleActive}
+              disabled={toggling}
+              style={{
+                background: participant.is_active ? '#9b2335' : '#2d6a4f',
+                color:'#fff', border:'none', borderRadius:'6px',
+                padding:'8px 16px', fontSize:'12px', fontWeight:'700',
+                cursor: toggling ? 'not-allowed' : 'pointer',
+                fontFamily:'inherit', opacity: toggling ? 0.7 : 1
+              }}
+            >
+              {toggling ? '...' : participant.is_active ? 'Deactivate' : 'Reactivate'}
+            </button>
+          )}
         </div>
 
         {/* Tabs */}
@@ -190,8 +229,53 @@ export default function ParticipantProfile() {
           }}>
             {participant?.gender}
           </span>
+          {/* Exited Badge */}
+          {participant?.is_exited && (
+            <span style={{
+              background:'#f5e0c8', color:'#7a4f1a',
+              padding:'4px 12px', borderRadius:'12px',
+              fontSize:'11px', fontWeight:'700',
+              border:'1px solid #d4956a'
+            }}>
+              EXITED
+            </span>
+          )}
         </div>
       </div>
+
+      {/* Inactive Banner — shown to admin when participant is deactivated */}
+      {participant && !participant.is_active && isSuperAdmin && (
+        <div style={{
+          background:'#f0ece2', borderBottom:'2px solid #6b5e4a',
+          padding:'10px 24px'
+        }}>
+          <div style={{
+            maxWidth:'1200px', margin:'0 auto',
+            display:'flex', alignItems:'center', gap:'10px',
+            fontSize:'13px', color:'#3d3528', fontWeight:'600'
+          }}>
+            <span style={{fontSize:'16px'}}>⚠️</span>
+            This participant is inactive. They are hidden from LDC staff. Use the Reactivate button to restore access.
+          </div>
+        </div>
+      )}
+
+      {/* Locked Banner — shown to LDC staff when participant is exited */}
+      {participant?.is_exited && isLDCStaff && (
+        <div style={{
+          background:'#fef3e2', borderBottom:'2px solid #d4956a',
+          padding:'10px 24px'
+        }}>
+          <div style={{
+            maxWidth:'1200px', margin:'0 auto',
+            display:'flex', alignItems:'center', gap:'10px',
+            fontSize:'13px', color:'#7a4f1a', fontWeight:'600'
+          }}>
+            <span style={{fontSize:'16px'}}>🔒</span>
+            This participant has exited the program. Their profile is view-only — editing is disabled.
+          </div>
+        </div>
+      )}
 
       {/* Tab Content */}
       <main style={{maxWidth:'1200px', margin:'0 auto', padding:'24px'}}>
@@ -199,23 +283,27 @@ export default function ParticipantProfile() {
           <PersonalInfo
             participant={participant}
             onUpdate={loadParticipant}
+            readOnly={isLDCStaff && !!participant?.is_exited}
           />
         )}
         {activeTab === 'academic'    && (
           <AcademicRecords
             participantId={id}
             participant={participant}
+            readOnly={isLDCStaff && !!participant?.is_exited}
           />
         )}
         {activeTab === 'certs'       && (
           <Certifications
             participantId={id}
+            readOnly={isLDCStaff && !!participant?.is_exited}
           />
         )}
         {activeTab === 'development' && (
           <DevelopmentPlan
             participantId={id}
             participant={participant}
+            readOnly={isLDCStaff && !!participant?.is_exited}
           />
         )}
           {activeTab === 'tes' && participant && (

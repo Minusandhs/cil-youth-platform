@@ -11,10 +11,10 @@ const router = express.Router();
 // ── GET /api/participants ────────────────────────────────────────
 router.get('/', verifyToken, async (req, res) => {
   try {
-    const { ldc_id, search, page = 1, limit = 50 } = req.query;
+    const { ldc_id, search, page = 1, limit = 50, include_inactive } = req.query;
     const offset = (page - 1) * limit;
 
-    // LDC staff can only see their own LDC
+    // LDC staff can only see their own LDC and only active participants
     let ldcFilter = '';
     let params = [];
 
@@ -33,14 +33,18 @@ router.get('/', verifyToken, async (req, res) => {
                      OR p.participant_id ILIKE $${params.length})`;
     }
 
+    // LDC staff always see active only; admins can opt in to see inactive too
+    const showAll = req.user.role !== 'ldc_staff' && include_inactive === 'true';
+    const activeFilter = showAll ? '' : 'AND p.is_active = true';
+
     params.push(limit, offset);
 
     const result = await query(
       `SELECT p.*, l.ldc_id as ldc_code, l.name as ldc_name
        FROM participants p
        LEFT JOIN ldcs l ON p.ldc_id = l.id
-       WHERE p.is_active = true ${ldcFilter} ${searchFilter}
-       ORDER BY p.full_name
+       WHERE 1=1 ${activeFilter} ${ldcFilter} ${searchFilter}
+       ORDER BY p.is_active DESC, p.full_name
        LIMIT $${params.length - 1} OFFSET $${params.length}`,
       params
     );
@@ -71,6 +75,31 @@ router.get('/:id', verifyToken, async (req, res) => {
   }
 });
 
+// ── PATCH /api/participants/:id/active ──────────────────────────
+// Admin only — deactivate or reactivate a participant
+router.patch('/:id/active', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const { is_active } = req.body;
+    if (typeof is_active !== 'boolean') {
+      return res.status(400).json({ error: 'is_active must be true or false' });
+    }
+    const result = await query(
+      `UPDATE participants
+       SET is_active = $1, updated_at = NOW()
+       WHERE id = $2
+       RETURNING id, participant_id, full_name, is_active`,
+      [is_active, req.params.id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Participant not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update participant status' });
+  }
+});
+
 // ── POST /api/participants/sync ──────────────────────────────────
 // Upload and sync participants from Salesforce export
 router.post('/sync', verifyToken, requireSuperAdmin, async (req, res) => {
@@ -84,6 +113,9 @@ router.post('/sync', verifyToken, requireSuperAdmin, async (req, res) => {
     let inserted = 0;
     let updated  = 0;
     let errors   = 0;
+
+    const csvParticipantIds = [];
+    const ldcUuidSet = new Set();
 
     for (const p of participants) {
       try {
@@ -99,6 +131,8 @@ router.post('/sync', verifyToken, requireSuperAdmin, async (req, res) => {
         }
 
         const ldc_uuid = ldcResult.rows[0].id;
+        ldcUuidSet.add(ldc_uuid);
+        csvParticipantIds.push(p.participant_id);
 
         // Upsert participant
         const existing = await query(
@@ -107,7 +141,7 @@ router.post('/sync', verifyToken, requireSuperAdmin, async (req, res) => {
         );
 
         if (existing.rows.length > 0) {
-          // Update existing
+          // Update existing — also re-activate if they were previously exited
           await query(
             `UPDATE participants SET
               full_name          = $1,
@@ -118,7 +152,9 @@ router.post('/sync', verifyToken, requireSuperAdmin, async (req, res) => {
               last_synced_at     = NOW(),
               sync_batch         = $6,
               imported_by        = $7,
-              updated_at         = NOW()
+              updated_at         = NOW(),
+              is_exited          = FALSE,
+              exited_at          = NULL
              WHERE participant_id = $8`,
             [
               p.full_name, ldc_uuid, p.date_of_birth || null,
@@ -150,10 +186,27 @@ router.post('/sync', verifyToken, requireSuperAdmin, async (req, res) => {
       }
     }
 
+    // Mark participants from synced LDCs who are absent from this CSV as exited
+    let exited = 0;
+    const ldcUuids = [...ldcUuidSet];
+    if (ldcUuids.length > 0 && csvParticipantIds.length > 0) {
+      const exitResult = await query(
+        `UPDATE participants
+         SET is_exited = TRUE, exited_at = NOW()
+         WHERE ldc_id = ANY($1)
+           AND participant_id != ALL($2)
+           AND is_exited = FALSE
+           AND is_active = TRUE`,
+        [ldcUuids, csvParticipantIds]
+      );
+      exited = exitResult.rowCount;
+    }
+
     res.json({
       message  : 'Sync completed',
       inserted,
       updated,
+      exited,
       errors,
       total    : participants.length
     });
@@ -237,6 +290,12 @@ router.post('/:id/profile', verifyToken, async (req, res) => {
 // ── PUT /api/participants/:id/profile ────────────────────────────
 router.put('/:id/profile', verifyToken, async (req, res) => {
   try {
+    if (req.user.role === 'ldc_staff') {
+      const check = await query('SELECT is_exited FROM participants WHERE id = $1', [req.params.id]);
+      if (check.rows[0]?.is_exited) {
+        return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
+      }
+    }
     const p = req.body;
     const result = await query(
       `UPDATE participant_profiles SET
@@ -322,6 +381,12 @@ router.get('/:id/status-history', verifyToken, async (req, res) => {
 // ── POST /api/participants/:id/status-history ────────────────────
 router.post('/:id/status-history', verifyToken, async (req, res) => {
   try {
+    if (req.user.role === 'ldc_staff') {
+      const check = await query('SELECT is_exited FROM participants WHERE id = $1', [req.params.id]);
+      if (check.rows[0]?.is_exited) {
+        return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
+      }
+    }
     const { status, institution, course, year_level, notes } = req.body;
     const result = await query(
       `INSERT INTO participant_status_history

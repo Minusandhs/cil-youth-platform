@@ -43,6 +43,13 @@ router.post('/ol', verifyToken, async (req, res) => {
       notes, subjects
     } = req.body;
 
+    if (req.user.role === 'ldc_staff') {
+      const check = await query('SELECT is_exited FROM participants WHERE id = $1', [participant_id]);
+      if (check.rows[0]?.is_exited) {
+        return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
+      }
+    }
+
     await transaction(async (client) => {
       const resultRow = await client.query(
         `INSERT INTO ol_results
@@ -96,6 +103,17 @@ router.put('/ol/:id', verifyToken, async (req, res) => {
       exam_year, index_number, school_name,
       no_of_passes, results_verified, notes, subjects
     } = req.body;
+
+    if (req.user.role === 'ldc_staff') {
+      const check = await query(
+        `SELECT p.is_exited FROM participants p
+         JOIN ol_results r ON r.participant_id = p.id
+         WHERE r.id = $1`, [req.params.id]
+      );
+      if (check.rows[0]?.is_exited) {
+        return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
+      }
+    }
 
     await transaction(async (client) => {
       await client.query(
@@ -182,6 +200,13 @@ router.post('/al', verifyToken, async (req, res) => {
       results_verified, notes, subjects
     } = req.body;
 
+    if (req.user.role === 'ldc_staff') {
+      const check = await query('SELECT is_exited FROM participants WHERE id = $1', [participant_id]);
+      if (check.rows[0]?.is_exited) {
+        return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
+      }
+    }
+
     await transaction(async (client) => {
       const resultRow = await client.query(
         `INSERT INTO al_results
@@ -243,6 +268,17 @@ router.put('/al/:id', verifyToken, async (req, res) => {
       island_rank, university_selected, university_name,
       course_selected, results_verified, notes, subjects
     } = req.body;
+
+    if (req.user.role === 'ldc_staff') {
+      const check = await query(
+        `SELECT p.is_exited FROM participants p
+         JOIN al_results r ON r.participant_id = p.id
+         WHERE r.id = $1`, [req.params.id]
+      );
+      if (check.rows[0]?.is_exited) {
+        return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
+      }
+    }
 
     await transaction(async (client) => {
       await client.query(

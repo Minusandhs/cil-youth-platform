@@ -8,7 +8,7 @@ const AL_STREAMS = [
 ];
 const AL_MEDIUMS = ['Sinhala', 'Tamil', 'English'];
 
-export default function AcademicRecords({ participantId }) {
+export default function AcademicRecords({ participantId, readOnly = false }) {
   const [activeTab,  setActiveTab ] = useState('ol');
   const [olResults,  setOlResults ] = useState([]);
   const [alResults,  setAlResults ] = useState([]);
@@ -299,7 +299,7 @@ export default function AcademicRecords({ participantId }) {
             <h3 style={{fontSize:'16px', fontWeight:'700'}}>
               O/Level Results
             </h3>
-            {!showOLForm && (
+            {!showOLForm && !readOnly && (
               <button onClick={() => {
                 setEditOL(null);
                 setOlForm({
@@ -508,11 +508,13 @@ export default function AcademicRecords({ participantId }) {
                       )}
                     </div>
                   </div>
-                  <button onClick={() => openEditOL(result)} style={{
-                    background:'#dce9f5', color:'#1a4068', border:'none',
-                    borderRadius:'4px', padding:'6px 14px', fontSize:'12px',
-                    fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                  }}>Edit</button>
+                  {!readOnly && (
+                    <button onClick={() => openEditOL(result)} style={{
+                      background:'#dce9f5', color:'#1a4068', border:'none',
+                      borderRadius:'4px', padding:'6px 14px', fontSize:'12px',
+                      fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
+                    }}>Edit</button>
+                  )}
                 </div>
                 <div style={{
                   display:'grid',
@@ -558,7 +560,7 @@ export default function AcademicRecords({ participantId }) {
             <h3 style={{fontSize:'16px', fontWeight:'700'}}>
               A/Level Results
             </h3>
-            {!showALForm && (
+            {!showALForm && !readOnly && (
               <button onClick={() => {
                 setEditAL(null);
                 setAlForm({
@@ -882,11 +884,13 @@ export default function AcademicRecords({ participantId }) {
                       </div>
                     )}
                   </div>
-                  <button onClick={() => openEditAL(result)} style={{
-                    background:'#dce9f5', color:'#1a4068', border:'none',
-                    borderRadius:'4px', padding:'6px 14px', fontSize:'12px',
-                    fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                  }}>Edit</button>
+                  {!readOnly && (
+                    <button onClick={() => openEditAL(result)} style={{
+                      background:'#dce9f5', color:'#1a4068', border:'none',
+                      borderRadius:'4px', padding:'6px 14px', fontSize:'12px',
+                      fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
+                    }}>Edit</button>
+                  )}
                 </div>
                 <div style={{
                   display:'grid',

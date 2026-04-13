@@ -4,19 +4,22 @@ import api from '../../lib/api';
 
 export default function ParticipantList() {
   const navigate = useNavigate();
-  const [participants, setParticipants] = useState([]);
-  const [ldcs,         setLdcs        ] = useState([]);
-  const [loading,      setLoading     ] = useState(true);
-  const [search,       setSearch      ] = useState('');
-  const [filterLDC,    setFilterLDC   ] = useState('');
-  const [error,        setError       ] = useState('');
+  const [participants,     setParticipants    ] = useState([]);
+  const [ldcs,             setLdcs            ] = useState([]);
+  const [loading,          setLoading         ] = useState(true);
+  const [search,           setSearch          ] = useState('');
+  const [filterLDC,        setFilterLDC       ] = useState('');
+  const [showInactive,     setShowInactive    ] = useState(false);
+  const [error,            setError           ] = useState('');
+  const [togglingId,       setTogglingId      ] = useState(null);
 
   useEffect(() => { loadData(); }, []);
 
-  async function loadData() {
+  async function loadData(inactive = showInactive) {
     try {
+      const params = { include_inactive: inactive ? 'true' : 'false' };
       const [partRes, ldcRes] = await Promise.all([
-        api.get('/api/participants'),
+        api.get('/api/participants', { params }),
         api.get('/api/ldcs')
       ]);
       setParticipants(partRes.data);
@@ -31,7 +34,7 @@ export default function ParticipantList() {
   async function handleSearch() {
     setLoading(true);
     try {
-      const params = {};
+      const params = { include_inactive: showInactive ? 'true' : 'false' };
       if (search)    params.search = search;
       if (filterLDC) params.ldc_id = filterLDC;
       const res = await api.get('/api/participants', { params });
@@ -41,6 +44,26 @@ export default function ParticipantList() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function toggleActive(p) {
+    const action = p.is_active ? 'deactivate' : 'reactivate';
+    if (!window.confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} ${p.full_name}?`)) return;
+    setTogglingId(p.id);
+    try {
+      await api.patch(`/api/participants/${p.id}/active`, { is_active: !p.is_active });
+      await loadData(showInactive);
+    } catch {
+      setError(`Failed to ${action} participant`);
+    } finally {
+      setTogglingId(null);
+    }
+  }
+
+  function handleToggleInactive(val) {
+    setShowInactive(val);
+    setLoading(true);
+    loadData(val);
   }
 
   function formatDate(d) {
@@ -70,6 +93,17 @@ export default function ParticipantList() {
             {participants.length} participants loaded
           </p>
         </div>
+        <label style={{
+          display:'flex', alignItems:'center', gap:'8px',
+          fontSize:'13px', color:'#6b5e4a', cursor:'pointer'
+        }}>
+          <input
+            type="checkbox"
+            checked={showInactive}
+            onChange={e => handleToggleInactive(e.target.checked)}
+          />
+          Show Inactive
+        </label>
       </div>
 
       {error && (
@@ -157,7 +191,7 @@ export default function ParticipantList() {
         <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
           <thead>
             <tr style={{background:'#f0ece2'}}>
-              {['Participant ID','Name','LDC','Age','Gender','Planned Completion','Sync Batch','Action'].map(h => (
+              {['Participant ID','Name','LDC','Age','Gender','Planned Completion','Sync Batch','Status','Action'].map(h => (
                 <th key={h} style={{
                   padding:'10px 14px', textAlign:'left',
                   fontSize:'10.5px', fontWeight:'700',
@@ -179,7 +213,9 @@ export default function ParticipantList() {
                 <td style={{padding:'10px 14px', color:'#c49a3c', fontWeight:'700'}}>
                   {p.participant_id}
                 </td>
-                <td style={{padding:'10px 14px', fontWeight:'600'}}>{p.full_name}</td>
+                <td style={{padding:'10px 14px', fontWeight:'600', color: !p.is_active ? '#a09080' : 'inherit'}}>
+                  {p.full_name}
+                </td>
                 <td style={{padding:'10px 14px', color:'#6b5e4a'}}>{p.ldc_code}</td>
                 <td style={{padding:'10px 14px', color:'#6b5e4a'}}>
                   {calcAge(p.date_of_birth)}
@@ -201,16 +237,53 @@ export default function ParticipantList() {
   {p.sync_batch || '—'}
 </td>
 <td style={{padding:'10px 14px'}}>
-  <button
-    onClick={() => navigate(`/participant/${p.id}?from=admin`)}
-    style={{
-      background:'#1a1610', color:'#c49a3c', border:'none',
-      borderRadius:'4px', padding:'5px 12px', fontSize:'11px',
-      fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
-    }}
-  >
-    View Profile
-  </button>
+  {!p.is_active ? (
+    <span style={{
+      background:'#e8e0d0', color:'#6b5e4a',
+      padding:'2px 8px', borderRadius:'10px',
+      fontSize:'10px', fontWeight:'700'
+    }}>INACTIVE</span>
+  ) : p.is_exited ? (
+    <span style={{
+      background:'#f5e0c8', color:'#7a4f1a',
+      padding:'2px 8px', borderRadius:'10px',
+      fontSize:'10px', fontWeight:'700'
+    }}>EXITED</span>
+  ) : (
+    <span style={{
+      background:'#d8ede4', color:'#2d6a4f',
+      padding:'2px 8px', borderRadius:'10px',
+      fontSize:'10px', fontWeight:'700'
+    }}>ACTIVE</span>
+  )}
+</td>
+<td style={{padding:'10px 14px'}}>
+  <div style={{display:'flex', gap:'6px'}}>
+    <button
+      onClick={() => navigate(`/participant/${p.id}?from=admin`)}
+      style={{
+        background:'#1a1610', color:'#c49a3c', border:'none',
+        borderRadius:'4px', padding:'5px 12px', fontSize:'11px',
+        fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+      }}
+    >
+      View Profile
+    </button>
+    <button
+      onClick={() => toggleActive(p)}
+      disabled={togglingId === p.id}
+      style={{
+        background: p.is_active ? '#f5e0e3' : '#d8ede4',
+        color: p.is_active ? '#9b2335' : '#2d6a4f',
+        border:'none', borderRadius:'4px',
+        padding:'5px 12px', fontSize:'11px',
+        fontWeight:'700', cursor:'pointer', fontFamily:'inherit',
+        opacity: togglingId === p.id ? 0.6 : 1
+      }}
+    >
+      {p.is_active ? 'Deactivate' : 'Reactivate'}
+    </button>
+  </div>
 </td>
               </tr>
             ))}

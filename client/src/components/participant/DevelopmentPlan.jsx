@@ -48,7 +48,7 @@ function ProgressBar({ value, onChange, readonly }) {
   );
 }
 
-export default function DevelopmentPlan({ participantId, participant }) {
+export default function DevelopmentPlan({ participantId, participant, readOnly = false }) {
   const [plans,       setPlans      ] = useState([]);
   const [plan,        setPlan       ] = useState(null);
   const [history,     setHistory    ] = useState([]);
@@ -344,7 +344,7 @@ export default function DevelopmentPlan({ participantId, participant }) {
           )}
         </div>
 
-        {!editMode && !loading && (
+        {!editMode && !loading && !readOnly && (
           <button onClick={() => {
             setEditMode(true);
             setYearLocked(true);
@@ -804,16 +804,18 @@ export default function DevelopmentPlan({ participantId, participant }) {
             Create a development plan for{' '}
             {participant?.full_name?.split(' ')[0]} for {selYear}.
           </div>
-          <button onClick={() => {
-            setEditMode(true);
-            setYearLocked(true);
-          }} style={{
-            background:'#1a1610', color:'#c49a3c', border:'none',
-            borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
-            fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
-          }}>
-            + Create {selYear} Plan
-          </button>
+          {!readOnly && (
+            <button onClick={() => {
+              setEditMode(true);
+              setYearLocked(true);
+            }} style={{
+              background:'#1a1610', color:'#c49a3c', border:'none',
+              borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
+              fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+            }}>
+              + Create {selYear} Plan
+            </button>
+          )}
         </div>
       )}
     </div>

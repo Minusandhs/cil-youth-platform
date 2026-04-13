@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 
-export default function Certifications({ participantId }) {
+export default function Certifications({ participantId, readOnly = false }) {
   const [certs,    setCerts   ] = useState([]);
   const [types,    setTypes   ] = useState([]);
   const [loading,  setLoading ] = useState(true);
@@ -174,7 +174,7 @@ export default function Certifications({ participantId }) {
             {certs.length} certification{certs.length !== 1 ? 's' : ''} recorded
           </p>
         </div>
-        {!showForm && (
+        {!showForm && !readOnly && (
           <button onClick={openCreate} style={{
             background:'#1a1610', color:'#c49a3c', border:'none',
             borderRadius:'6px', padding:'9px 18px', fontSize:'13px',
@@ -425,18 +425,20 @@ export default function Certifications({ participantId }) {
               )}
 
               {/* Actions */}
-              <div style={{display:'flex', gap:'8px'}}>
-                <button onClick={() => openEdit(cert)} style={{
-                  background:'#dce9f5', color:'#1a4068', border:'none',
-                  borderRadius:'4px', padding:'5px 12px', fontSize:'11px',
-                  fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                }}>Edit</button>
-                <button onClick={() => handleDelete(cert)} style={{
-                  background:'#f5e0e3', color:'#9b2335', border:'none',
-                  borderRadius:'4px', padding:'5px 12px', fontSize:'11px',
-                  fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                }}>Delete</button>
-              </div>
+              {!readOnly && (
+                <div style={{display:'flex', gap:'8px'}}>
+                  <button onClick={() => openEdit(cert)} style={{
+                    background:'#dce9f5', color:'#1a4068', border:'none',
+                    borderRadius:'4px', padding:'5px 12px', fontSize:'11px',
+                    fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
+                  }}>Edit</button>
+                  <button onClick={() => handleDelete(cert)} style={{
+                    background:'#f5e0e3', color:'#9b2335', border:'none',
+                    borderRadius:'4px', padding:'5px 12px', fontSize:'11px',
+                    fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
+                  }}>Delete</button>
+                </div>
+              )}
             </div>
           ))}
         </div>
