@@ -4,8 +4,10 @@
 // ================================================================
 
 require('dotenv').config();
-const express    = require('express');
-const cors       = require('cors');
+const express         = require('express');
+const cors            = require('cors');
+const helmet          = require('helmet');
+const rateLimit       = require('express-rate-limit');
 const { testConnection } = require('./config/database');
 
 // ── Import Routes ────────────────────────────────────────────────
@@ -23,17 +25,34 @@ const certificationRoutes = require('./routes/certifications');
 const app  = express();
 const PORT = process.env.PORT || 5000;
 
-// ── Middleware ───────────────────────────────────────────────────
+// ── Security Middleware ──────────────────────────────────────────
+app.use(helmet());
 
-// Allow React frontend to communicate with backend
-app.use(cors({
-  origin: [
-    'http://localhost:3000',    // React dev server
-    'http://localhost:5173',    // Vite dev server
-  ],
-  credentials: true
-}));
+// ── CORS ─────────────────────────────────────────────────────────
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+  : ['http://localhost:3000', 'http://localhost:5173'];
 
+app.use(cors({ origin: allowedOrigins, credentials: true }));
+
+// ── Rate Limiters ─────────────────────────────────────────────────
+const loginLimiter = rateLimit({
+  windowMs : 15 * 60 * 1000, // 15 minutes
+  max      : 20,              // max 20 login attempts per window
+  message  : { error: 'Too many login attempts. Please try again in 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders  : false,
+});
+
+const syncLimiter = rateLimit({
+  windowMs : 60 * 60 * 1000, // 1 hour
+  max      : 10,              // max 10 sync uploads per hour
+  message  : { error: 'Too many sync requests. Please wait before uploading again.' },
+  standardHeaders: true,
+  legacyHeaders  : false,
+});
+
+// ── Body Parsers ──────────────────────────────────────────────────
 // Parse incoming JSON requests
 app.use(express.json());
 
@@ -59,8 +78,10 @@ app.get('/health', (req, res) => {
 });
 
 // ── API Routes ───────────────────────────────────────────────────
-app.use('/api/auth',         authRoutes);
-app.use('/api/participants', participantRoutes);
+app.use('/api/auth/login',            loginLimiter);
+app.use('/api/participants/sync',     syncLimiter);
+app.use('/api/auth',                  authRoutes);
+app.use('/api/participants',          participantRoutes);
 app.use('/api/academic',     academicRoutes);
 app.use('/api/development',  developmentRoutes);
 app.use('/api/tes',          tesRoutes);

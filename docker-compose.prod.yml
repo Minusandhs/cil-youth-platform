@@ -1,0 +1,56 @@
+services:
+
+  # ─── DATABASE ───────────────────────────────────────
+  db:
+    image: postgres:16
+    container_name: cil_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ${POSTGRES_DB}
+      POSTGRES_USER:     ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./server/models/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    # DB port NOT exposed in production — only accessible internally
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── BACKEND ────────────────────────────────────────
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.prod
+    container_name: cil_server
+    restart: unless-stopped
+    environment:
+      NODE_ENV:     production
+      PORT:         ${PORT}
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET:   ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      CORS_ORIGIN:  ${CORS_ORIGIN}
+    # Port NOT exposed externally — nginx proxies to it internally
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ─── FRONTEND + NGINX ───────────────────────────────
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.prod
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    container_name: cil_client
+    restart: unless-stopped
+    ports:
+      - "80:80"       # HTTP — point your domain here
+    depends_on:
+      - server
+
+volumes:
+  postgres_data:
