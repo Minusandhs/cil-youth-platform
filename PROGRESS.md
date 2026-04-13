@@ -80,6 +80,16 @@ TES History
 - Auto-recorded when batch marked Funded or Completed
 - Reverted entries marked clearly
 
+### LDC Staff Dashboard Overview (new first tab)
+- Overview tab added as first tab in LDC Dashboard (pushing Participants and TES Batches to 2nd/3rd)
+- Summary: Active Participants for their LDC only
+- TES section: Approved/Completed, Pending, Rejected, Total Disbursed — filtered to their LDC
+- Participant Information: same layout as admin (status breakdown, TES type, personal stats, TES amount) — no filter needed, always their LDC
+- Data Export: same 5 buttons as admin, exports their LDC data only
+- Backend: /api/auth/stats and all /api/participants/overview + export endpoints now support ldc_staff (auto-filter by req.user.ldc_id, no requireSuperAdmin)
+- Bug fixed: double-WHERE SQL error in stats/overview endpoints (AND vs WHERE)
+- Bug fixed: STATUS_LABELS corrected — unemployed_seeking + unemployed_not (was wrong key 'unemployed')
+
 ### Admin Dashboard Overview (rebuilt)
 - Section 1 — Summary: Users, LDC Centres, Active Participants (global)
 - Section 2 — TES Stats: Approved/Completed, Pending, Rejected counts + Total Disbursed (global)
