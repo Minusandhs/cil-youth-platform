@@ -80,6 +80,34 @@ TES History
 - Auto-recorded when batch marked Funded or Completed
 - Reverted entries marked clearly
 
+### Bug Fixes & UI Polish (session 2026-04-13)
+- Sync exit logic: participants absent from CSV now set `is_active = FALSE` (show as INACTIVE, not still active)
+- Sync reactivation: participants reappearing in CSV auto-reactivate (`is_active = TRUE`)
+- Removed separate EXITED badge — exited and deactivated are treated identically, both show INACTIVE
+- Profile lock for LDC staff now triggers on `!is_active` (covers both exit and manual deactivation)
+- Dev plan year "Change" button hidden for LDC staff — year is locked after plan creation
+- Favicon replaced with CIL-branded SVG (gold "CIL" on dark background)
+- Page title changed from "client" → "CIL Youth Platform"
+- Top bar badge changed from "CIL · TES" → "CIL"
+- Go Back button restyled as gold pill badge (← Back)
+- Sync result stat renamed from "Exited (Locked)" → "Deactivated"
+- Export column renamed from "Exited" → "Active" (Yes/No)
+
+### Mobile Responsiveness (session 2026-04-13)
+- Tab bars (Admin, LDC, Profile) scroll horizontally on mobile — scrollbar hidden
+- Stat grids collapse: 3-col → 2-col at 768px → 1-col at 480px
+- TES grids collapse: 4-col → 2-col at 768px → 1-col at 480px
+- Participant Info grid: 2-col → 1-col at 768px
+- School Level Status grid: 4-col → 2-col → 1-col
+- Personal & Family grid: 3-col → 2-col → 1-col
+- Status History table: horizontal scroll wrapper
+- Language Proficiency table (TES form): horizontal scroll wrapper
+- Participant list tables: horizontal scroll wrapper with minWidth set
+- Data Export section: 2-column grid on mobile
+- Main content padding: 24px → 12px on mobile
+- Username hidden in header on mobile to save space
+- CSS utility classes added to index.css (rsp-tabs, rsp-grid-2/3/4, rsp-main, rsp-hide-mobile, rsp-export-row, rsp-section-header)
+
 ### LDC Staff Dashboard Overview (new first tab)
 - Overview tab added as first tab in LDC Dashboard (pushing Participants and TES Batches to 2nd/3rd)
 - Summary: Active Participants for their LDC only
