@@ -57,13 +57,15 @@ router.get('/', verifyToken, async (req, res) => {
 });
 
 // ── GET /api/participants/overview ──────────────────────────────
-// Admin only — aggregated stats, optionally filtered by ldc_id (UUID)
-router.get('/overview', verifyToken, requireSuperAdmin, async (req, res) => {
+// Admin: optional ?ldc_id= filter. LDC staff: auto-filtered to their LDC.
+router.get('/overview', verifyToken, async (req, res) => {
   try {
-    const { ldc_id } = req.query;
+    const ldc_id = req.user.role === 'ldc_staff'
+      ? req.user.ldc_id
+      : req.query.ldc_id || null;
     const params = ldc_id ? [ldc_id] : [];
     const ldcWhere = ldc_id ? 'AND p.ldc_id = $1' : '';
-    const ldcWhereOnly = ldc_id ? 'WHERE ldc_id = $1' : '';
+    const ldcWhereOnly = ldc_id ? 'AND ldc_id = $1' : '';
 
     const [statusRows, tesTypeRows, profileCounts, totalCount, tesAmount] = await Promise.all([
       // Status breakdown
@@ -130,9 +132,9 @@ router.get('/overview', verifyToken, requireSuperAdmin, async (req, res) => {
 });
 
 // ── GET /api/participants/export/participants ────────────────────
-router.get('/export/participants', verifyToken, requireSuperAdmin, async (req, res) => {
+router.get('/export/participants', verifyToken, async (req, res) => {
   try {
-    const { ldc_id } = req.query;
+    const ldc_id = req.user.role === 'ldc_staff' ? req.user.ldc_id : req.query.ldc_id || null;
     const params = ldc_id ? [ldc_id] : [];
     const ldcWhere = ldc_id ? 'AND p.ldc_id = $1' : '';
 
@@ -183,9 +185,9 @@ router.get('/export/participants', verifyToken, requireSuperAdmin, async (req, r
 });
 
 // ── GET /api/participants/export/academic ────────────────────────
-router.get('/export/academic', verifyToken, requireSuperAdmin, async (req, res) => {
+router.get('/export/academic', verifyToken, async (req, res) => {
   try {
-    const { ldc_id } = req.query;
+    const ldc_id = req.user.role === 'ldc_staff' ? req.user.ldc_id : req.query.ldc_id || null;
     const params = ldc_id ? [ldc_id] : [];
     const ldcWhere = ldc_id ? 'AND p.ldc_id = $1' : '';
 
@@ -226,9 +228,9 @@ router.get('/export/academic', verifyToken, requireSuperAdmin, async (req, res) 
 });
 
 // ── GET /api/participants/export/certifications ──────────────────
-router.get('/export/certifications', verifyToken, requireSuperAdmin, async (req, res) => {
+router.get('/export/certifications', verifyToken, async (req, res) => {
   try {
-    const { ldc_id } = req.query;
+    const ldc_id = req.user.role === 'ldc_staff' ? req.user.ldc_id : req.query.ldc_id || null;
     const params = ldc_id ? [ldc_id] : [];
     const ldcWhere = ldc_id ? 'AND p.ldc_id = $1' : '';
 
@@ -253,9 +255,9 @@ router.get('/export/certifications', verifyToken, requireSuperAdmin, async (req,
 });
 
 // ── GET /api/participants/export/development ─────────────────────
-router.get('/export/development', verifyToken, requireSuperAdmin, async (req, res) => {
+router.get('/export/development', verifyToken, async (req, res) => {
   try {
-    const { ldc_id } = req.query;
+    const ldc_id = req.user.role === 'ldc_staff' ? req.user.ldc_id : req.query.ldc_id || null;
     const params = ldc_id ? [ldc_id] : [];
     const ldcWhere = ldc_id ? 'AND p.ldc_id = $1' : '';
 
@@ -280,9 +282,9 @@ router.get('/export/development', verifyToken, requireSuperAdmin, async (req, re
 });
 
 // ── GET /api/participants/export/tes-history ─────────────────────
-router.get('/export/tes-history', verifyToken, requireSuperAdmin, async (req, res) => {
+router.get('/export/tes-history', verifyToken, async (req, res) => {
   try {
-    const { ldc_id } = req.query;
+    const ldc_id = req.user.role === 'ldc_staff' ? req.user.ldc_id : req.query.ldc_id || null;
     const params = ldc_id ? [ldc_id] : [];
     const ldcWhere = ldc_id ? 'AND p.ldc_id = $1' : '';
 

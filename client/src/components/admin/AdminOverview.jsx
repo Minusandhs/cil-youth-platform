@@ -9,7 +9,8 @@ const STATUS_LABELS = {
   employed_full      : 'Employed — Full Time',
   employed_part      : 'Employed — Part Time',
   self_employed      : 'Self Employed',
-  unemployed         : 'Unemployed',
+  unemployed_seeking : 'Unemployed — Seeking',
+  unemployed_not     : 'Unemployed — Not Seeking',
   other              : 'Other',
   no_profile         : 'No Profile Recorded',
 };
@@ -21,7 +22,8 @@ const STATUS_COLORS = {
   employed_full      : '#c49a3c',
   employed_part      : '#9b6e2a',
   self_employed      : '#6b5e4a',
-  unemployed         : '#9b2335',
+  unemployed_seeking : '#9b2335',
+  unemployed_not     : '#7a1a2a',
   other              : '#a09080',
   no_profile         : '#d4c9b0',
 };

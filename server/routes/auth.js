@@ -210,30 +210,65 @@ router.put('/users/:id/password', verifyToken, requireSuperAdmin, async (req, re
 });
 
 // ── GET /api/auth/stats ──────────────────────────────────────────
-router.get('/stats', verifyToken, requireSuperAdmin, async (req, res) => {
+// Super admin: global stats. LDC staff: their LDC's stats only.
+router.get('/stats', verifyToken, async (req, res) => {
   try {
-    const [users, ldcs, participants, tesApproved, tesPending, tesRejected, tesAmount] = await Promise.all([
-      query('SELECT COUNT(*) FROM users WHERE is_active = true'),
-      query('SELECT COUNT(*) FROM ldcs WHERE is_active = true'),
-      query('SELECT COUNT(*) FROM participants WHERE is_active = true'),
-      query(`SELECT COUNT(*) FROM tes_applications
-             WHERE approval_status IN ('approved')
-                OR batch_id IN (SELECT id FROM tes_batches WHERE status IN ('funded','completed'))`),
-      query(`SELECT COUNT(*) FROM tes_applications WHERE approval_status = 'pending'`),
-      query(`SELECT COUNT(*) FROM tes_applications WHERE approval_status = 'rejected'`),
-      query(`SELECT COALESCE(SUM(amount_received), 0) as total
-             FROM participant_tes_history WHERE status != 'reverted'`),
-    ]);
-    res.json({
-      users          : parseInt(users.rows[0].count),
-      ldcs           : parseInt(ldcs.rows[0].count),
-      participants   : parseInt(participants.rows[0].count),
-      tes_approved   : parseInt(tesApproved.rows[0].count),
-      tes_pending    : parseInt(tesPending.rows[0].count),
-      tes_rejected   : parseInt(tesRejected.rows[0].count),
-      tes_amount     : parseFloat(tesAmount.rows[0].total),
-    });
+    const isLDC = req.user.role === 'ldc_staff';
+    const ldcId = isLDC ? req.user.ldc_id : null;
+    const ldcWhere      = ldcId ? 'AND p.ldc_id = $1'  : '';
+    const ldcWhereOnly  = ldcId ? 'AND ldc_id = $1'    : '';
+    const ldcWhereApp   = ldcId ? 'AND a.ldc_id = $1'  : '';
+    const ldcWhereHist  = ldcId ? 'AND p.ldc_id = $1'  : '';
+    const p = ldcId ? [ldcId] : [];
+
+    const queries = [
+      // participants
+      query(`SELECT COUNT(*) FROM participants WHERE is_active = true ${ldcWhereOnly}`, p),
+      // TES approved/completed
+      query(`SELECT COUNT(*) FROM tes_applications a
+             WHERE (a.approval_status = 'approved'
+                OR a.batch_id IN (SELECT id FROM tes_batches WHERE status IN ('funded','completed')))
+             ${ldcWhereApp}`, p),
+      // TES pending
+      query(`SELECT COUNT(*) FROM tes_applications a
+             WHERE a.approval_status = 'pending' ${ldcWhereApp}`, p),
+      // TES rejected
+      query(`SELECT COUNT(*) FROM tes_applications a
+             WHERE a.approval_status = 'rejected' ${ldcWhereApp}`, p),
+      // TES amount
+      query(`SELECT COALESCE(SUM(h.amount_received), 0) as total
+             FROM participant_tes_history h
+             JOIN participants p ON h.participant_id = p.id
+             WHERE h.status != 'reverted' ${ldcWhereHist}`, p),
+    ];
+
+    // Admin-only extras
+    if (!isLDC) {
+      queries.push(
+        query('SELECT COUNT(*) FROM users WHERE is_active = true'),
+        query('SELECT COUNT(*) FROM ldcs WHERE is_active = true'),
+      );
+    }
+
+    const results = await Promise.all(queries);
+    const [participants, tesApproved, tesPending, tesRejected, tesAmount] = results;
+
+    const out = {
+      participants : parseInt(participants.rows[0].count),
+      tes_approved : parseInt(tesApproved.rows[0].count),
+      tes_pending  : parseInt(tesPending.rows[0].count),
+      tes_rejected : parseInt(tesRejected.rows[0].count),
+      tes_amount   : parseFloat(tesAmount.rows[0].total),
+    };
+
+    if (!isLDC) {
+      out.users = parseInt(results[5].rows[0].count);
+      out.ldcs  = parseInt(results[6].rows[0].count);
+    }
+
+    res.json(out);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: 'Failed to get stats' });
   }
 });
