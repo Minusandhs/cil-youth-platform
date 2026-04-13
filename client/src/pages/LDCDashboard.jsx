@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import LDCOverview from '../components/ldc/LDCOverview';
 import LDCParticipantList from '../components/ldc/LDCParticipantList';
 import LDCTESBatches from '../components/ldc/LDCTESBatches';
+import ChangePasswordModal from '../components/common/ChangePasswordModal';
 
 export default function LDCDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const [showChangePw, setShowChangePw] = useState(false);
 
   function handleLogout() {
     logout();
@@ -51,6 +53,11 @@ export default function LDCDashboard() {
           <div className="rsp-hide-mobile" style={{fontSize:'12px', color:'#a09080', marginRight:'12px'}}>
             {user?.full_name}
           </div>
+          <button onClick={() => setShowChangePw(true)} style={{
+            background:'transparent', border:'1px solid #4a4234',
+            color:'#a09080', padding:'6px 14px', borderRadius:'5px',
+            fontSize:'12px', cursor:'pointer', fontFamily:'inherit', marginRight:'6px'
+          }}>Change Password</button>
           <button onClick={handleLogout} style={{
             background:'transparent', border:'1px solid #4a4234',
             color:'#a09080', padding:'6px 14px', borderRadius:'5px',
@@ -84,7 +91,7 @@ export default function LDCDashboard() {
         {activeTab === 'participants' && <LDCParticipantList />}
         {activeTab === 'tes'          && <LDCTESBatches />}
       </main>
-
+      {showChangePw && <ChangePasswordModal onClose={() => setShowChangePw(false)} />}
     </div>
   );
 }

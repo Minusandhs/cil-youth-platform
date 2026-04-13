@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import ChangePasswordModal from '../components/common/ChangePasswordModal';
 import AdminOverview    from '../components/admin/AdminOverview';
 import UserManagement   from '../components/admin/UserManagement';
 import LDCManagement    from '../components/admin/LDCManagement';
@@ -15,6 +16,7 @@ export default function AdminDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
+  const [showChangePw, setShowChangePw] = useState(false);
 
   function handleLogout() {
     logout();
@@ -61,6 +63,11 @@ const tabs = [
           <div className="rsp-hide-mobile" style={{fontSize:'12px', color:'#a09080', marginRight:'12px'}}>
             {user?.full_name}
           </div>
+          <button onClick={() => setShowChangePw(true)} style={{
+            background:'transparent', border:'1px solid #4a4234',
+            color:'#a09080', padding:'6px 14px', borderRadius:'5px',
+            fontSize:'12px', cursor:'pointer', fontFamily:'inherit', marginRight:'6px'
+          }}>Change Password</button>
           <button onClick={handleLogout} style={{
             background:'transparent', border:'1px solid #4a4234',
             color:'#a09080', padding:'6px 14px', borderRadius:'5px',
@@ -95,6 +102,7 @@ const tabs = [
       {activeTab === 'certtypes' && <CertTypeManagement />}
       {activeTab === 'tes'          && <TESManagement />}
     </main>
+    {showChangePw && <ChangePasswordModal onClose={() => setShowChangePw(false)} />}
     </div>
   );
 }
