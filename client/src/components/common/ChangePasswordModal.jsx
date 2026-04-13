@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import api from '../../services/api';
+import api from '../../lib/api';
 
 export default function ChangePasswordModal({ onClose }) {
   const [form, setForm] = useState({ current_password: '', new_password: '', confirm_password: '' });
