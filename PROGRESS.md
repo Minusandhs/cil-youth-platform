@@ -230,10 +230,31 @@ Manual - Fix tes_batches status constraint (add reviewing, completed)
 
 ---
 
+## Bug Fixes (session 2026-04-13 cont.)
+- POST /profile now blocks LDC staff edits on exited participants (was missing check)
+- TES PUT /applications/:id checks batch status — LDC staff blocked if batch not open
+- TES export refactored from N+1 queries → 4 bulk queries (fixes timeout on large batches)
+- TES participant search excludes inactive participants
+- PersonalInfo: cancel on failed new profile creation resets form to blank
+- DevelopmentPlan: notes required on new plan creation (matches backend validation)
+
+## Security Hardening (session 2026-04-13)
+- helmet added for HTTP security headers
+- express-rate-limit: 20 req/15min on login, 10 req/hr on sync
+- CORS origin driven by CORS_ORIGIN env var
+- .env.example created with all required vars
+- Migration 010: GIN index on participants.full_name + index on participant_id
+
+## Production Deployment Files
+- docker-compose.prod.yml — secrets from .env, DB port hidden, nginx on port 80
+- server/Dockerfile.prod — no devDependencies, runs npm start
+- client/Dockerfile.prod — Vite build → nginx static serve
+- client/nginx.conf — serves frontend, proxies /api/* to backend
+- Target server: Contabo VPS (Ubuntu + Docker)
+
 ## Remaining Work
-- Final testing across all modules
-- Pre-deployment data cleanup
-- Production deployment
+- Pre-deployment data cleanup (delete test participants, users, TES data)
+- Production deployment on Contabo VPS
 
 ## Session Notes
 - Claude Code (not Claude chat) is being used to continue development from this point forward
