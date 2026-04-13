@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import LDCParticipantList from '../components/ldc/LDCParticipantList';
+import LDCTESBatches from '../components/ldc/LDCTESBatches';
 
 export default function LDCDashboard() {
   const { user, logout } = useAuth();
@@ -15,6 +16,7 @@ export default function LDCDashboard() {
 
   const tabs = [
     { id: 'participants', label: 'Participants' },
+    { id: 'tes',          label: 'TES Batches'  },
   ];
 
   return (
@@ -78,6 +80,7 @@ export default function LDCDashboard() {
       {/* Content */}
       <main style={{maxWidth:'1200px', margin:'0 auto', padding:'24px'}}>
         {activeTab === 'participants' && <LDCParticipantList />}
+        {activeTab === 'tes'          && <LDCTESBatches />}
       </main>
 
     </div>

@@ -6,6 +6,7 @@ import PersonalInfo     from '../components/participant/PersonalInfo';
 import AcademicRecords  from '../components/participant/AcademicRecords';
 import Certifications   from '../components/participant/Certifications';
 import DevelopmentPlan  from '../components/participant/DevelopmentPlan';
+import TESHistory from '../components/participant/TESHistory';
 
 export default function ParticipantProfile() {
   const { id } = useParams();
@@ -45,6 +46,7 @@ export default function ParticipantProfile() {
     { id: 'academic',     label: 'Academic Records'  },
     { id: 'certs',        label: 'Certifications'    },
     { id: 'development',  label: 'Development Plan'  },
+    { id:'tes',           label:'TES History'        },
   ];
 
   if (loading) return (
@@ -216,6 +218,9 @@ export default function ParticipantProfile() {
             participant={participant}
           />
         )}
+          {activeTab === 'tes' && participant && (
+            <TESHistory participantId={participant.id} />
+          )}
       </main>
     </div>
   );

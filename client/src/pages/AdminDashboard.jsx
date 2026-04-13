@@ -9,6 +9,7 @@ import ParticipantList  from '../components/admin/ParticipantList';
 import SubjectManagement from '../components/admin/SubjectManagement';
 import GradeManagement from '../components/admin/GradeManagement';
 import CertTypeManagement from '../components/admin/CertTypeManagement';
+import TESManagement from '../components/admin/TESManagement';
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -29,6 +30,7 @@ const tabs = [
   { id: 'subjects',      label: 'Subjects'          },
   { id: 'grades',        label: 'Grades'            },
   { id: 'certtypes',     label: 'Cert Types'        },
+  { id: 'tes',           label: 'TES Batches'       },
 ];
 
   return (
@@ -89,6 +91,7 @@ const tabs = [
       {activeTab === 'subjects'     && <SubjectManagement />}
       {activeTab === 'grades'       && <GradeManagement />}
       {activeTab === 'certtypes' && <CertTypeManagement />}
+      {activeTab === 'tes'          && <TESManagement />}
     </main>
     </div>
   );

@@ -1,4 +1,609 @@
+// ================================================================
+// CIL Youth Development Platform — TES Routes
+// ================================================================
 const express = require('express');
-const router  = express.Router();
-// TODO: Implement TES routes
+const { query, transaction } = require('../config/database');
+const { verifyToken } = require('../middleware/auth');
+const { requireSuperAdmin } = require('../middleware/roleCheck');
+
+const router = express.Router();
+
+// ════════════════════════════════════════════════════════════════
+// BATCH ROUTES
+// ════════════════════════════════════════════════════════════════
+
+router.get('/batches', verifyToken, async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT b.*, u.full_name as created_by_name,
+        COUNT(a.id) as application_count
+       FROM tes_batches b
+       LEFT JOIN users u ON b.created_by = u.id
+       LEFT JOIN tes_applications a ON a.batch_id = b.id
+       GROUP BY b.id, u.full_name
+       ORDER BY b.created_at DESC`
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to get batches' });
+  }
+});
+
+router.get('/batches/:id', verifyToken, async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT b.*, u.full_name as created_by_name
+       FROM tes_batches b
+       LEFT JOIN users u ON b.created_by = u.id
+       WHERE b.id = $1`,
+      [req.params.id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Batch not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get batch' });
+  }
+});
+
+router.post('/batches', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const { batch_name, application_end_date, update_notes } = req.body;
+    if (!batch_name || !application_end_date) {
+      return res.status(400).json({
+        error: 'Batch name and application end date are required'
+      });
+    }
+    const result = await query(
+      `INSERT INTO tes_batches
+        (batch_name, application_end_date, update_notes, created_by)
+       VALUES ($1,$2,$3,$4) RETURNING *`,
+      [batch_name, application_end_date, update_notes || null, req.user.id]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create batch' });
+  }
+});
+
+router.put('/batches/:id', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const {
+      batch_name, status, application_end_date,
+      funded_date, update_notes
+    } = req.body;
+
+    // Get current batch status before update
+    const currentBatch = await query(
+      'SELECT status FROM tes_batches WHERE id = $1',
+      [req.params.id]
+    );
+    const oldStatus = currentBatch.rows[0]?.status;
+
+    // Update batch
+    const result = await query(
+      `UPDATE tes_batches SET
+        batch_name           = $1,
+        status               = $2,
+        application_end_date = $3,
+        funded_date          = $4,
+        update_notes         = $5,
+        updated_at           = NOW()
+       WHERE id = $6 RETURNING *`,
+      [
+        batch_name, status, application_end_date,
+        funded_date || null, update_notes || null,
+        req.params.id
+      ]
+    );
+
+    const batch = result.rows[0];
+
+    // ── Auto-record TES history when batch → funded or completed ─
+    if (
+      ['funded', 'completed'].includes(status) &&
+      !['funded', 'completed'].includes(oldStatus)
+    ) {
+      // Get all approved applications in this batch
+      const apps = await query(
+        `SELECT a.*, p.id as p_id
+         FROM tes_applications a
+         JOIN participants p ON a.participant_id = p.id
+         WHERE a.batch_id = $1
+         AND a.approval_status = 'approved'`,
+        [req.params.id]
+      );
+
+      for (const app of apps.rows) {
+        // Insert history record (ignore if already exists)
+        await query(
+          `INSERT INTO participant_tes_history (
+            participant_id, batch_id, application_id,
+            batch_name, institution_name, course_name,
+            institution_type, course_duration, course_year,
+            amount_received, status, recorded_by
+          ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+          ON CONFLICT (application_id, batch_id) DO UPDATE SET
+            status      = $11,
+            recorded_by = $12,
+            recorded_at = NOW()`,
+          [
+            app.p_id, req.params.id, app.id,
+            batch.batch_name,
+            app.institution_name || null,
+            app.course_name      || null,
+            app.institution_type || null,
+            app.course_duration  || null,
+            app.course_year      || null,
+            app.amount_approved  || null,
+            status,
+            req.user.id
+          ]
+        );
+      }
+    }
+
+    // ── Mark as reverted when batch goes back from funded ────────
+    if (
+      oldStatus === 'funded' &&
+      status === 'approved'
+    ) {
+      await query(
+        `UPDATE participant_tes_history
+         SET status = 'reverted', recorded_at = NOW()
+         WHERE batch_id = $1`,
+        [req.params.id]
+      );
+    }
+
+    res.json(batch);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update batch' });
+  }
+});
+
+// ════════════════════════════════════════════════════════════════
+// APPLICATION ROUTES
+// ════════════════════════════════════════════════════════════════
+
+router.get('/batches/:id/applications', verifyToken, async (req, res) => {
+  try {
+    let whereClause = 'WHERE a.batch_id = $1';
+    let params = [req.params.id];
+
+    if (req.user.role === 'ldc_staff') {
+      whereClause += ' AND a.ldc_id = $2';
+      params.push(req.user.ldc_id);
+    }
+
+    const result = await query(
+      `SELECT a.*,
+        p.full_name, p.participant_id as pid,
+        p.date_of_birth, p.gender,
+        l.ldc_id as ldc_code, l.name as ldc_name,
+        u.full_name as submitted_by_name
+       FROM tes_applications a
+       JOIN participants p ON a.participant_id = p.id
+       JOIN ldcs l ON a.ldc_id = l.id
+       LEFT JOIN users u ON a.submitted_by = u.id
+       ${whereClause}
+       ORDER BY a.created_at DESC`,
+      params
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to get applications' });
+  }
+});
+
+router.get('/applications/:id', verifyToken, async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT a.*,
+        p.full_name, p.participant_id as pid,
+        p.date_of_birth, p.gender,
+        l.ldc_id as ldc_code, l.name as ldc_name
+       FROM tes_applications a
+       JOIN participants p ON a.participant_id = p.id
+       JOIN ldcs l ON a.ldc_id = l.id
+       WHERE a.id = $1`,
+      [req.params.id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get application' });
+  }
+});
+
+router.post('/applications', verifyToken, async (req, res) => {
+  try {
+    const {
+      batch_id, participant_id,
+      contact_number, email, nic_number, guardian_name,
+      lang_english, lang_sinhala, lang_tamil,
+      institution_name, institution_type, course_name,
+      course_duration, course_year, course_start_date,
+      course_end_date, registration_number,
+      financial_justification, community_contribution,
+      fee_tuition, fee_materials, family_contribution, requested_amount,
+      doc_application_form, doc_certificates,
+      doc_admission_letter, doc_income_proof,
+      doc_nic, doc_recommendation, commitment_confirmed,
+      amount_approved, official_notes
+    } = req.body;
+
+    if (!batch_id || !participant_id) {
+      return res.status(400).json({
+        error: 'Batch and participant are required'
+      });
+    }
+
+    const partResult = await query(
+      'SELECT ldc_id FROM participants WHERE id = $1',
+      [participant_id]
+    );
+    if (partResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Participant not found' });
+    }
+
+    const ldc_id = req.user.role === 'ldc_staff'
+      ? req.user.ldc_id
+      : partResult.rows[0].ldc_id;
+
+    const result = await query(
+      `INSERT INTO tes_applications (
+        batch_id, participant_id, ldc_id, submitted_by,
+        contact_number, email, nic_number, guardian_name,
+        lang_english, lang_sinhala, lang_tamil,
+        institution_name, institution_type, course_name,
+        course_duration, course_year, course_start_date,
+        course_end_date, registration_number,
+        financial_justification, community_contribution,
+        fee_tuition, fee_materials, family_contribution, requested_amount,
+        doc_application_form, doc_certificates,
+        doc_admission_letter, doc_income_proof,
+        doc_nic, doc_recommendation, commitment_confirmed,
+        amount_approved, official_notes
+      ) VALUES (
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,
+        $15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,
+        $26,$27,$28,$29,$30,$31,$32,$33,$34
+      ) RETURNING *`,
+      [
+        batch_id, participant_id, ldc_id, req.user.id,
+        contact_number || null, email || null,
+        nic_number || null, guardian_name || null,
+        lang_english || null, lang_sinhala || null, lang_tamil || null,
+        institution_name || null, institution_type || null,
+        course_name || null, course_duration || null,
+        course_year || null, course_start_date || null,
+        course_end_date || null, registration_number || null,
+        financial_justification || null, community_contribution || null,
+        fee_tuition || null, fee_materials || null,
+        family_contribution || null, requested_amount || null,
+        doc_application_form || false, doc_certificates || false,
+        doc_admission_letter || false, doc_income_proof || false,
+        doc_nic || false, doc_recommendation || false,
+        commitment_confirmed || false,
+        amount_approved || null, official_notes || null
+      ]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    if (error.code === '23505') {
+      return res.status(400).json({
+        error: 'This participant has already applied to this batch'
+      });
+    }
+    res.status(500).json({ error: 'Failed to create application' });
+  }
+});
+
+router.put('/applications/:id', verifyToken, async (req, res) => {
+  try {
+    const {
+      contact_number, email, nic_number, guardian_name,
+      lang_english, lang_sinhala, lang_tamil,
+      institution_name, institution_type, course_name,
+      course_duration, course_year, course_start_date,
+      course_end_date, registration_number,
+      financial_justification, community_contribution,
+      fee_tuition, fee_materials, family_contribution, requested_amount,
+      doc_application_form, doc_certificates,
+      doc_admission_letter, doc_income_proof,
+      doc_nic, doc_recommendation, commitment_confirmed,
+      amount_approved, official_notes
+    } = req.body;
+
+    // Check current status to determine new status
+    const current = await query(
+      'SELECT approval_status FROM tes_applications WHERE id = $1',
+      [req.params.id]
+    );
+
+    const currentStatus = current.rows[0]?.approval_status;
+    const newStatus = currentStatus === 'rejected'
+      ? 'resubmitted'
+      : currentStatus;
+
+    const result = await query(
+      `UPDATE tes_applications SET
+        contact_number          = $1,  email                   = $2,
+        nic_number              = $3,  guardian_name           = $4,
+        lang_english            = $5,  lang_sinhala            = $6,
+        lang_tamil              = $7,  institution_name        = $8,
+        institution_type        = $9,  course_name             = $10,
+        course_duration         = $11, course_year             = $12,
+        course_start_date       = $13, course_end_date         = $14,
+        registration_number     = $15, financial_justification = $16,
+        community_contribution  = $17,
+        fee_tuition             = $18, fee_materials           = $19,
+        family_contribution     = $20, requested_amount        = $21,
+        doc_application_form    = $22, doc_certificates        = $23,
+        doc_admission_letter    = $24, doc_income_proof        = $25,
+        doc_nic                 = $26, doc_recommendation      = $27,
+        commitment_confirmed    = $28,
+        amount_approved         = $29, official_notes          = $30,
+        approval_status         = $31,
+        updated_at              = NOW()
+       WHERE id = $32 RETURNING *`,
+      [
+        contact_number || null, email || null,
+        nic_number || null, guardian_name || null,
+        lang_english || null, lang_sinhala || null, lang_tamil || null,
+        institution_name || null, institution_type || null,
+        course_name || null, course_duration || null,
+        course_year || null, course_start_date || null,
+        course_end_date || null, registration_number || null,
+        financial_justification || null, community_contribution || null,
+        fee_tuition || null, fee_materials || null,
+        family_contribution || null, requested_amount || null,
+        doc_application_form || false, doc_certificates || false,
+        doc_admission_letter || false, doc_income_proof || false,
+        doc_nic || false, doc_recommendation || false,
+        commitment_confirmed || false,
+        amount_approved || null, official_notes || null,
+        newStatus,
+        req.params.id
+      ]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update application' });
+  }
+});
+
+// ── Admin only — update approval status ─────────────────────────
+router.put('/applications/:id/official', verifyToken, requireSuperAdmin,
+  async (req, res) => {
+  try {
+    const { approval_status, official_notes } = req.body;
+    const result = await query(
+      `UPDATE tes_applications SET
+        approval_status = $1,
+        official_notes  = $2,
+        reviewed_by     = $3,
+        reviewed_at     = NOW(),
+        updated_at      = NOW()
+       WHERE id = $4 RETURNING *`,
+      [
+        approval_status || 'pending',
+        official_notes  || null,
+        req.user.id,
+        req.params.id
+      ]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update official decision' });
+  }
+});
+
+// ── DELETE /api/tes/applications/:id ────────────────────────────
+router.delete('/applications/:id', verifyToken, async (req, res) => {
+  try {
+    // Only allow delete if batch is open and application is pending
+    const appResult = await query(
+      `SELECT a.*, b.status as batch_status
+       FROM tes_applications a
+       JOIN tes_batches b ON a.batch_id = b.id
+       WHERE a.id = $1`,
+      [req.params.id]
+    );
+
+    if (appResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
+
+    const app = appResult.rows[0];
+
+    if (app.batch_status !== 'open') {
+      return res.status(400).json({
+        error: 'Cannot remove application from a closed batch'
+      });
+    }
+
+    if (app.approval_status !== 'pending') {
+      return res.status(400).json({
+        error: 'Cannot remove an approved or rejected application'
+      });
+    }
+
+    // LDC staff can only delete their own LDC applications
+    if (req.user.role === 'ldc_staff' && app.ldc_id !== req.user.ldc_id) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    await query('DELETE FROM tes_applications WHERE id = $1', [req.params.id]);
+    res.json({ message: 'Application removed successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to remove application' });
+  }
+});
+
+// ── Export ───────────────────────────────────────────────────────
+router.get('/batches/:id/export', verifyToken, async (req, res) => {
+  try {
+    let whereClause = 'WHERE a.batch_id = $1';
+    let params = [req.params.id];
+
+    if (req.user.role === 'ldc_staff') {
+      whereClause += ' AND a.ldc_id = $2';
+      params.push(req.user.ldc_id);
+    }
+
+    const result = await query(
+      `SELECT
+        p.participant_id as pid, p.full_name,
+        p.date_of_birth, p.gender,
+        l.ldc_id as ldc_code, l.name as ldc_name,
+        pp.marital_status, pp.number_of_children,
+        pp.current_status, pp.current_institution,
+        pp.current_course, pp.family_income,
+        pp.no_of_dependants, pp.other_assistance,
+        pp.short_term_plan, pp.long_term_plan, pp.career_goal,
+        a.contact_number, a.email, a.nic_number, a.guardian_name,
+        a.lang_english, a.lang_sinhala, a.lang_tamil,
+        a.institution_name, a.institution_type, a.course_name,
+        a.course_duration, a.course_year,
+        a.course_start_date, a.course_end_date,
+        a.registration_number,
+        a.financial_justification, a.community_contribution,
+        a.fee_tuition, a.fee_materials,
+        a.family_contribution, a.requested_amount,
+        a.doc_application_form, a.doc_certificates,
+        a.doc_admission_letter, a.doc_income_proof,
+        a.doc_nic, a.doc_recommendation,
+        a.commitment_confirmed,
+        a.amount_approved, a.approval_status,
+        a.official_notes
+       FROM tes_applications a
+       JOIN participants p ON a.participant_id = p.id
+       JOIN ldcs l ON a.ldc_id = l.id
+       LEFT JOIN participant_profiles pp ON pp.participant_id = p.id
+       ${whereClause}
+       ORDER BY l.ldc_id, p.full_name`,
+      params
+    );
+
+    const apps = result.rows;
+    for (const app of apps) {
+      // OL
+      const olRes = await query(
+        `SELECT r.exam_year, r.school_name,
+          string_agg(s.subject_name || ': ' || s.grade, ', '
+            ORDER BY s.is_core DESC) as subjects
+         FROM ol_results r
+         LEFT JOIN ol_result_subjects s ON s.ol_result_id = r.id
+         WHERE r.participant_id = (
+           SELECT id FROM participants WHERE participant_id = $1
+         )
+         GROUP BY r.id ORDER BY r.exam_year DESC LIMIT 1`,
+        [app.pid]
+      );
+      app.ol_text = olRes.rows.length > 0
+        ? `OL ${olRes.rows[0].exam_year} (${olRes.rows[0].school_name || ''}): ${olRes.rows[0].subjects || ''}`
+        : '';
+
+      // AL
+      const alRes = await query(
+        `SELECT r.exam_year, r.stream, r.z_score,
+          string_agg(s.subject_name || ': ' || s.grade, ', '
+            ORDER BY s.subject_type) as subjects
+         FROM al_results r
+         LEFT JOIN al_result_subjects s ON s.al_result_id = r.id
+         WHERE r.participant_id = (
+           SELECT id FROM participants WHERE participant_id = $1
+         )
+         GROUP BY r.id ORDER BY r.exam_year DESC LIMIT 1`,
+        [app.pid]
+      );
+      app.al_text = alRes.rows.length > 0
+        ? `AL ${alRes.rows[0].exam_year} (${alRes.rows[0].stream || ''}): ${alRes.rows[0].subjects || ''} | Z-Score: ${alRes.rows[0].z_score || 'N/A'}`
+        : '';
+
+      // Certs
+      const certRes = await query(
+        `SELECT c.cert_name, t.type_name, c.grade_result
+         FROM certifications c
+         JOIN cert_types t ON c.cert_type_id = t.id
+         WHERE c.participant_id = (
+           SELECT id FROM participants WHERE participant_id = $1
+         )
+         ORDER BY c.issued_date DESC`,
+        [app.pid]
+      );
+      app.certs_text = certRes.rows
+        .map(c => `${c.cert_name} (${c.type_name})${c.grade_result ? ': '+c.grade_result : ''}`)
+        .join(' | ');
+
+      // Dev Plan
+      const devRes = await query(
+        `SELECT spiritual_goal, academic_goal, social_goal,
+                vocational_goal, health_goal,
+                progress_status, completion_rate
+         FROM development_plans
+         WHERE participant_id = (
+           SELECT id FROM participants WHERE participant_id = $1
+         )
+         ORDER BY plan_year DESC LIMIT 1`,
+        [app.pid]
+      );
+      if (devRes.rows.length > 0) {
+        const d = devRes.rows[0];
+        const goals = [
+          d.spiritual_goal  ? `Spiritual: ${d.spiritual_goal}`   : null,
+          d.academic_goal   ? `Academic: ${d.academic_goal}`     : null,
+          d.social_goal     ? `Social: ${d.social_goal}`         : null,
+          d.vocational_goal ? `Vocational: ${d.vocational_goal}` : null,
+          d.health_goal     ? `Health: ${d.health_goal}`         : null,
+        ].filter(Boolean);
+        app.dev_plan_text = goals.join(' | ') +
+          ` | Status: ${d.progress_status} (${d.completion_rate}%)`;
+      } else {
+        app.dev_plan_text = '';
+      }
+    }
+
+    res.json(apps);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to export' });
+  }
+});
+
+// ── GET /api/tes/history/:participantId ──────────────────────────
+router.get('/history/:participantId', verifyToken, async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT h.*,
+        b.status as batch_status,
+        b.funded_date
+       FROM participant_tes_history h
+       JOIN tes_batches b ON h.batch_id = b.id
+       WHERE h.participant_id = $1
+       ORDER BY h.recorded_at DESC`,
+      [req.params.participantId]
+    );
+
+    // Calculate total received (exclude reverted)
+    const total = result.rows
+      .filter(h => h.status !== 'reverted')
+      .reduce((sum, h) => sum + (parseFloat(h.amount_received) || 0), 0);
+
+    res.json({ history: result.rows, total_received: total });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to get TES history' });
+  }
+});
+
 module.exports = router;
