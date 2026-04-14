@@ -3,7 +3,6 @@ import api from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 
 const CURRENT_YEAR = new Date().getFullYear();
-const YEARS = Array.from({ length: 6 }, (_, i) => CURRENT_YEAR - 2 + i);
 
 const STATUS_OPTIONS = [
   { value: 'not_started', label: 'Not Started', color: '#a09080', bg: '#f0ece2' },
@@ -53,6 +52,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
   const { user } = useAuth();
   const isLDCStaff = user?.role === 'ldc_staff';
   const [plans,       setPlans      ] = useState([]);
+  const [years,       setYears      ] = useState([CURRENT_YEAR]);
   const [plan,        setPlan       ] = useState(null);
   const [history,     setHistory    ] = useState([]);
   const [selYear,     setSelYear    ] = useState(CURRENT_YEAR);
@@ -85,6 +85,10 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
     try {
       const res = await api.get(`/api/development/${participantId}`);
       setPlans(res.data);
+      // Build year list: all years with a plan + current year, sorted descending
+      const existingYears = res.data.map(p => p.plan_year);
+      const merged = [...new Set([...existingYears, CURRENT_YEAR])].sort((a, b) => b - a);
+      setYears(merged);
     } catch {
       setError('Failed to load plans');
     }
@@ -338,7 +342,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                 fontFamily:'inherit', fontWeight:'700', color:'#c49a3c'
               }}
             >
-              {YEARS.map(y => (
+              {years.map(y => (
                 <option key={y} value={y}>
                   {y} {planYears.includes(y) ? '✓' : ''}
                 </option>
@@ -376,7 +380,6 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                 <div key={g.key}>
                   <label style={labelStyle}>{g.label}</label>
                   <textarea style={{...inputStyle, minHeight:'70px'}}
-                    placeholder={g.placeholder}
                     value={form[g.key]}
                     onChange={e => setForm({...form, [g.key]:e.target.value})} />
                 </div>
@@ -391,7 +394,6 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
               <div>
                 <label style={labelStyle}>Planned Actions</label>
                 <textarea style={{...inputStyle, minHeight:'80px'}}
-                  placeholder="Specific steps to achieve the goals"
                   value={form.actions}
                   onChange={e => setForm({...form, actions:e.target.value})} />
               </div>
@@ -401,14 +403,12 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                 <div>
                   <label style={labelStyle}>Resources Needed</label>
                   <textarea style={{...inputStyle, minHeight:'60px'}}
-                    placeholder="Support or resources required"
                     value={form.resources_needed}
                     onChange={e => setForm({...form, resources_needed:e.target.value})} />
                 </div>
                 <div>
                   <label style={labelStyle}>Timeline</label>
                   <input style={inputStyle}
-                    placeholder="e.g. Jan–Dec 2025"
                     value={form.timeline}
                     onChange={e => setForm({...form, timeline:e.target.value})} />
                 </div>
@@ -426,14 +426,12 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
               <div>
                 <label style={labelStyle}>Primary Mentor</label>
                 <input style={inputStyle}
-                  placeholder="Mentor full name"
                   value={form.primary_mentor}
                   onChange={e => setForm({...form, primary_mentor:e.target.value})} />
               </div>
               <div>
                 <label style={labelStyle}>Mentor Contact</label>
                 <input style={inputStyle}
-                  placeholder="Phone or email"
                   value={form.mentor_contact}
                   onChange={e => setForm({...form, mentor_contact:e.target.value})} />
               </div>
@@ -535,13 +533,6 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                 border: progressChanged
                   ? '1px solid #9b2335' : '1px solid #d4c9b0'
               }}
-              placeholder={
-                plan
-                  ? progressChanged
-                    ? 'Describe what was achieved (required for progress update)'
-                    : 'Optional — describe what changed'
-                  : 'Describe the starting situation (required)'
-              }
               value={form.notes}
               onChange={e => setForm({...form, notes:e.target.value})}
               required={progressChanged || !plan}

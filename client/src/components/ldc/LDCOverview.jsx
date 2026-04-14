@@ -426,7 +426,7 @@ export default function LDCOverview() {
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <div className="rsp-export-row" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             {[
               { key: 'participants',    label: 'Participants',      fn: exportParticipants, color: '#1a1610', text: '#c49a3c', note: 'Personal info + OL/AL/Certs condensed' },
               { key: 'academic',        label: 'Academic Records',  fn: exportAcademic,     color: '#1a4068', text: '#fff',    note: 'Full OL & AL subject detail' },

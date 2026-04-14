@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import api from '../../lib/api';
 
-export default function ParticipantSync() {
+export default function ParticipantSync({ readOnly = false }) {
   const [file,      setFile     ] = useState(null);
   const [preview,   setPreview  ] = useState([]);
   const [stats,     setStats    ] = useState(null);
@@ -117,6 +117,23 @@ export default function ParticipantSync() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (readOnly) {
+    return (
+      <div>
+        <h2 style={{fontSize:'20px', fontWeight:'700', marginBottom:'6px'}}>
+          Participant Sync
+        </h2>
+        <div style={{
+          background:'#f0ece2', border:'1px solid #d4c9b0',
+          borderRadius:'8px', padding:'24px', color:'#6b5e4a', fontSize:'13px'
+        }}>
+          Participant sync is not available for National Admin accounts.
+          Contact a Super Admin to perform a sync.
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -284,9 +301,9 @@ export default function ParticipantSync() {
           {/* Preview Table */}
           <div style={{
             border:'1px solid #d4c9b0', borderRadius:'6px',
-            overflow:'hidden', marginBottom:'16px'
+            overflow:'hidden', overflowX:'auto', marginBottom:'16px'
           }}>
-            <table style={{width:'100%', borderCollapse:'collapse', fontSize:'12px'}}>
+            <table className="rsp-card-table" style={{width:'100%', borderCollapse:'collapse', fontSize:'12px'}}>
               <thead>
                 <tr style={{background:'#f0ece2'}}>
                   {['LDC ID','Participant ID','Name','DOB','Gender'].map(h => (
@@ -302,11 +319,11 @@ export default function ParticipantSync() {
               <tbody>
                 {preview.map((p, i) => (
                   <tr key={i} style={{borderBottom:'1px solid #e8e0d0'}}>
-                    <td style={{padding:'6px 10px', color:'#c49a3c', fontWeight:'700'}}>{p.ldc_id}</td>
-                    <td style={{padding:'6px 10px', color:'#6b5e4a'}}>{p.participant_id}</td>
-                    <td style={{padding:'6px 10px', fontWeight:'600'}}>{p.full_name}</td>
-                    <td style={{padding:'6px 10px', color:'#6b5e4a'}}>{p.date_of_birth || '—'}</td>
-                    <td style={{padding:'6px 10px', color:'#6b5e4a'}}>{p.gender}</td>
+                    <td data-label="LDC" style={{padding:'6px 10px', color:'#c49a3c', fontWeight:'700'}}>{p.ldc_id}</td>
+                    <td data-label="P.ID" style={{padding:'6px 10px', color:'#6b5e4a'}}>{p.participant_id}</td>
+                    <td data-label="Name" style={{padding:'6px 10px', fontWeight:'600'}}>{p.full_name}</td>
+                    <td data-label="DOB" style={{padding:'6px 10px', color:'#6b5e4a'}}>{p.date_of_birth || '—'}</td>
+                    <td data-label="Gender" style={{padding:'6px 10px', color:'#6b5e4a'}}>{p.gender}</td>
                   </tr>
                 ))}
               </tbody>
@@ -332,7 +349,6 @@ export default function ParticipantSync() {
                 fontSize:'13px', color:'#1a1610',
                 background:'#faf8f3', outline:'none', fontFamily:'inherit'
               }}
-              placeholder="e.g. Jan 2025 Upload"
             />
           </div>
 

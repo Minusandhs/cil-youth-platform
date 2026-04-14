@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 
-export default function CertTypeManagement() {
+export default function CertTypeManagement({ readOnly = false }) {
   const [types,    setTypes   ] = useState([]);
   const [loading,  setLoading ] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -71,7 +71,7 @@ export default function CertTypeManagement() {
 
   return (
     <div>
-      <div style={{
+      <div className="rsp-section-header" style={{
         display:'flex', justifyContent:'space-between',
         alignItems:'center', marginBottom:'20px'
       }}>
@@ -83,13 +83,15 @@ export default function CertTypeManagement() {
             Manage certification category master list
           </p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} style={{
-          background:'#1a1610', color:'#c49a3c', border:'none',
-          borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
-          fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
-        }}>
-          {showForm ? '✕ Cancel' : '+ Add Type'}
-        </button>
+        {!readOnly && (
+          <button onClick={() => setShowForm(!showForm)} style={{
+            background:'#1a1610', color:'#c49a3c', border:'none',
+            borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
+            fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+          }}>
+            {showForm ? '✕ Cancel' : '+ Add Type'}
+          </button>
+        )}
       </div>
 
       {error && (
@@ -117,7 +119,7 @@ export default function CertTypeManagement() {
             Add New Certificate Type
           </h3>
           <form onSubmit={handleCreate}>
-            <div style={{
+            <div className="rsp-grid-3" style={{
               display:'grid', gridTemplateColumns:'1fr 1fr 1fr',
               gap:'14px', marginBottom:'14px'
             }}>
@@ -125,7 +127,7 @@ export default function CertTypeManagement() {
                 <label style={labelStyle}>Type Name</label>
                 <input style={inputStyle} value={form.type_name}
                   onChange={e => setForm({...form, type_name:e.target.value})}
-                  placeholder="e.g. Sports Achievement" required />
+                  required />
               </div>
               <div>
                 <label style={labelStyle}>Display Order</label>
@@ -160,11 +162,8 @@ export default function CertTypeManagement() {
       )}
 
       {/* Types Table */}
-      <div style={{
-        background:'#fffef9', border:'1px solid #d4c9b0',
-        borderRadius:'8px', overflow:'hidden'
-      }}>
-        <table style={{
+      <div className="rsp-card-wrap">
+        <table className="rsp-card-table" style={{
           width:'100%', borderCollapse:'collapse', fontSize:'13px'
         }}>
           <thead>
@@ -185,10 +184,10 @@ export default function CertTypeManagement() {
                 borderBottom:'1px solid #e8e0d0',
                 opacity: t.is_active ? 1 : 0.5
               }}>
-                <td style={{padding:'10px 14px', fontWeight:'600'}}>
+                <td data-label="Type" style={{padding:'10px 14px', fontWeight:'600'}}>
                   {t.type_name}
                 </td>
-                <td style={{padding:'10px 14px'}}>
+                <td data-label="NVQ Level" style={{padding:'10px 14px'}}>
                   {t.has_nvq_level ? (
                     <span style={{
                       background:'#f5edd8', color:'#b85c00',
@@ -197,10 +196,10 @@ export default function CertTypeManagement() {
                     }}>Yes</span>
                   ) : '—'}
                 </td>
-                <td style={{padding:'10px 14px', color:'#6b5e4a'}}>
+                <td data-label="Order" style={{padding:'10px 14px', color:'#6b5e4a'}}>
                   {t.display_order}
                 </td>
-                <td style={{padding:'10px 14px'}}>
+                <td data-label="Status" style={{padding:'10px 14px'}}>
                   <span style={{
                     background: t.is_active ? '#d8ede4' : '#f5e0e3',
                     color: t.is_active ? '#2d6a4f' : '#9b2335',
@@ -210,7 +209,7 @@ export default function CertTypeManagement() {
                     {t.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
-                <td style={{padding:'10px 14px'}}>
+                <td data-label="Action" style={{padding:'10px 14px'}}>
                   <button onClick={() => toggleActive(t)} style={{
                     background: t.is_active ? '#f5e0e3' : '#d8ede4',
                     color: t.is_active ? '#9b2335' : '#2d6a4f',

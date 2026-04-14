@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 
-export default function LDCManagement() {
+export default function LDCManagement({ readOnly = false }) {
   const [ldcs,     setLdcs    ] = useState([]);
   const [loading,  setLoading ] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -129,7 +129,7 @@ export default function LDCManagement() {
 
   return (
     <div>
-      <div style={{
+      <div className="rsp-section-header" style={{
         display:'flex', justifyContent:'space-between',
         alignItems:'center', marginBottom:'20px'
       }}>
@@ -139,13 +139,15 @@ export default function LDCManagement() {
             Manage Local Development Centres
           </p>
         </div>
-        <button onClick={openCreate} style={{
-          background:'#1a1610', color:'#c49a3c', border:'none',
-          borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
-          fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
-        }}>
-          + New LDC
-        </button>
+        {!readOnly && (
+          <button onClick={openCreate} style={{
+            background:'#1a1610', color:'#c49a3c', border:'none',
+            borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
+            fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+          }}>
+            + New LDC
+          </button>
+        )}
       </div>
 
       {error && (
@@ -185,7 +187,6 @@ export default function LDCManagement() {
                 }}
                 value={form.ldc_id}
                 onChange={e => setForm({...form, ldc_id:e.target.value})}
-                placeholder="e.g. LK0401"
                 readOnly={!!editLDC}
                 required />
                 {editLDC && (
@@ -198,25 +199,25 @@ export default function LDCManagement() {
                 <label style={labelStyle}>LDC Name</label>
                 <input style={inputStyle} value={form.name}
                   onChange={e => setForm({...form, name:e.target.value})}
-                  placeholder="Full name of LDC" required />
+                  required />
               </div>
               <div>
                 <label style={labelStyle}>Region</label>
                 <input style={inputStyle} value={form.region}
                   onChange={e => setForm({...form, region:e.target.value})}
-                  placeholder="e.g. Western Province" />
+                  />
               </div>
               <div>
                 <label style={labelStyle}>Church Partner</label>
                 <input style={inputStyle} value={form.church_partner}
                   onChange={e => setForm({...form, church_partner:e.target.value})}
-                  placeholder="Partner church name" />
+                  />
               </div>
               <div style={{gridColumn:'1/-1'}}>
                 <label style={labelStyle}>Address</label>
                 <input style={inputStyle} value={form.address}
                   onChange={e => setForm({...form, address:e.target.value})}
-                  placeholder="Physical address" />
+                  />
               </div>
             </div>
             <div style={{display:'flex', gap:'10px', marginTop:'16px'}}>
@@ -241,11 +242,8 @@ export default function LDCManagement() {
       )}
 
       {/* LDCs Table */}
-      <div style={{
-        background:'#fffef9', border:'1px solid #d4c9b0',
-        borderRadius:'8px', overflow:'hidden'
-      }}>
-        <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
+      <div className="rsp-card-wrap">
+        <table className="rsp-card-table" style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
           <thead>
             <tr style={{background:'#f0ece2'}}>
               {['LDC ID','Name','Region','Church Partner','Status','Actions'].map(h => (
@@ -264,13 +262,13 @@ export default function LDCManagement() {
                 borderBottom:'1px solid #e8e0d0',
                 opacity: l.is_active ? 1 : 0.6
               }}>
-                <td style={{padding:'10px 14px', fontWeight:'700', color:'#c49a3c'}}>
+                <td data-label="LDC ID" style={{padding:'10px 14px', fontWeight:'700', color:'#c49a3c'}}>
                   {l.ldc_id}
                 </td>
-                <td style={{padding:'10px 14px', fontWeight:'600'}}>{l.name}</td>
-                <td style={{padding:'10px 14px', color:'#6b5e4a'}}>{l.region || '—'}</td>
-                <td style={{padding:'10px 14px', color:'#6b5e4a'}}>{l.church_partner || '—'}</td>
-                <td style={{padding:'10px 14px'}}>
+                <td data-label="Name" style={{padding:'10px 14px', fontWeight:'600'}}>{l.name}</td>
+                <td data-label="Region" style={{padding:'10px 14px', color:'#6b5e4a'}}>{l.region || '—'}</td>
+                <td data-label="Church" style={{padding:'10px 14px', color:'#6b5e4a'}}>{l.church_partner || '—'}</td>
+                <td data-label="Status" style={{padding:'10px 14px'}}>
                   <span style={{
                     background: l.is_active ? '#d8ede4' : '#f5e0e3',
                     color: l.is_active ? '#2d6a4f' : '#9b2335',
@@ -280,38 +278,34 @@ export default function LDCManagement() {
                     {l.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
-                <td style={{padding:'10px 14px'}}>
-                  <div style={{display:'flex', gap:'6px'}}>
-                    {/* Edit Button */}
-                    <button onClick={() => openEdit(l)} style={{
-                      background:'#dce9f5', color:'#1a4068',
-                      border:'none', borderRadius:'4px',
-                      padding:'4px 10px', fontSize:'11px',
-                      fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                    }}>
-                      Edit
-                    </button>
-                    {/* Deactivate / Reactivate Button */}
-                    {l.is_active ? (
-                      <button onClick={() => handleDelete(l)} style={{
-                        background:'#f5e0e3', color:'#9b2335',
+                <td data-label="Actions" style={{padding:'10px 14px'}}>
+                  {readOnly ? (
+                    <span style={{color:'#a09080', fontSize:'11px'}}>View only</span>
+                  ) : (
+                    <div style={{display:'flex', gap:'6px'}}>
+                      <button onClick={() => openEdit(l)} style={{
+                        background:'#dce9f5', color:'#1a4068',
                         border:'none', borderRadius:'4px',
                         padding:'4px 10px', fontSize:'11px',
                         fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                      }}>
-                        Deactivate
-                      </button>
-                    ) : (
-                      <button onClick={() => handleReactivate(l)} style={{
-                        background:'#d8ede4', color:'#2d6a4f',
-                        border:'none', borderRadius:'4px',
-                        padding:'4px 10px', fontSize:'11px',
-                        fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                      }}>
-                        Reactivate
-                      </button>
-                    )}
-                  </div>
+                      }}>Edit</button>
+                      {l.is_active ? (
+                        <button onClick={() => handleDelete(l)} style={{
+                          background:'#f5e0e3', color:'#9b2335',
+                          border:'none', borderRadius:'4px',
+                          padding:'4px 10px', fontSize:'11px',
+                          fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
+                        }}>Deactivate</button>
+                      ) : (
+                        <button onClick={() => handleReactivate(l)} style={{
+                          background:'#d8ede4', color:'#2d6a4f',
+                          border:'none', borderRadius:'4px',
+                          padding:'4px 10px', fontSize:'11px',
+                          fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
+                        }}>Reactivate</button>
+                      )}
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}

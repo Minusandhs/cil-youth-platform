@@ -15,7 +15,6 @@ export default function Certifications({ participantId, readOnly = false }) {
     cert_name       : '',
     issuing_body    : '',
     issued_date     : '',
-    expiry_date     : '',
     grade_result    : '',
     nvq_level       : '',
     results_verified: false,
@@ -43,7 +42,7 @@ export default function Certifications({ participantId, readOnly = false }) {
     setEditCert(null);
     setForm({
       cert_type_id:'', cert_name:'', issuing_body:'',
-      issued_date:'', expiry_date:'', grade_result:'',
+      issued_date:'', grade_result:'',
       nvq_level:'', results_verified:false, notes:''
     });
     setShowForm(true);
@@ -58,8 +57,6 @@ export default function Certifications({ participantId, readOnly = false }) {
       issuing_body    : cert.issuing_body       || '',
       issued_date     : cert.issued_date
                         ? cert.issued_date.split('T')[0] : '',
-      expiry_date     : cert.expiry_date
-                        ? cert.expiry_date.split('T')[0] : '',
       grade_result    : cert.grade_result       || '',
       nvq_level       : cert.nvq_level          || '',
       results_verified: cert.results_verified   || false,
@@ -215,7 +212,6 @@ export default function Certifications({ participantId, readOnly = false }) {
                 <label style={labelStyle}>Certificate / Course Name *</label>
                 <input style={inputStyle} value={form.cert_name}
                   onChange={e => setForm({...form, cert_name:e.target.value})}
-                  placeholder="e.g. NVQ Level 3 Electrical"
                   required />
               </div>
             </div>
@@ -229,7 +225,7 @@ export default function Certifications({ participantId, readOnly = false }) {
                 <label style={labelStyle}>Issuing Body / Institution</label>
                 <input style={inputStyle} value={form.issuing_body}
                   onChange={e => setForm({...form, issuing_body:e.target.value})}
-                  placeholder="e.g. NAITA, TVEC, ESOFT" />
+                  />
               </div>
               {hasNvq && (
                 <div>
@@ -245,9 +241,9 @@ export default function Certifications({ participantId, readOnly = false }) {
               )}
             </div>
 
-            {/* Dates */}
+            {/* Dates & Grade */}
             <div style={{
-              display:'grid', gridTemplateColumns:'1fr 1fr 1fr',
+              display:'grid', gridTemplateColumns:'1fr 1fr',
               gap:'14px', marginBottom:'14px'
             }}>
               <div>
@@ -257,21 +253,10 @@ export default function Certifications({ participantId, readOnly = false }) {
                   onChange={e => setForm({...form, issued_date:e.target.value})} />
               </div>
               <div>
-                <label style={labelStyle}>Expiry Date
-                  <span style={{
-                    fontWeight:'400', textTransform:'none',
-                    fontSize:'10px', color:'#a09080'
-                  }}> (optional)</span>
-                </label>
-                <input style={inputStyle} type="date"
-                  value={form.expiry_date}
-                  onChange={e => setForm({...form, expiry_date:e.target.value})} />
-              </div>
-              <div>
                 <label style={labelStyle}>Grade / Result</label>
                 <input style={inputStyle} value={form.grade_result}
                   onChange={e => setForm({...form, grade_result:e.target.value})}
-                  placeholder="e.g. Pass, Distinction" />
+                  />
               </div>
             </div>
 
@@ -292,7 +277,6 @@ export default function Certifications({ participantId, readOnly = false }) {
             <div style={{marginBottom:'16px'}}>
               <label style={labelStyle}>Notes</label>
               <textarea style={{...inputStyle, minHeight:'60px'}}
-                placeholder="Any additional notes"
                 value={form.notes}
                 onChange={e => setForm({...form, notes:e.target.value})} />
             </div>

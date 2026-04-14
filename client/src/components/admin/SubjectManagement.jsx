@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 
-export default function SubjectManagement() {
+export default function SubjectManagement({ readOnly = false }) {
   const [subjects,  setSubjects ] = useState([]);
   const [loading,   setLoading  ] = useState(true);
   const [showForm,  setShowForm ] = useState(false);
@@ -75,7 +75,7 @@ export default function SubjectManagement() {
 
   return (
     <div>
-      <div style={{
+      <div className="rsp-section-header" style={{
         display:'flex', justifyContent:'space-between',
         alignItems:'center', marginBottom:'20px'
       }}>
@@ -85,13 +85,15 @@ export default function SubjectManagement() {
             Manage OL and AL subject master list
           </p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} style={{
-          background:'#1a1610', color:'#c49a3c', border:'none',
-          borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
-          fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
-        }}>
-          {showForm ? '✕ Cancel' : '+ Add Subject'}
-        </button>
+        {!readOnly && (
+          <button onClick={() => setShowForm(!showForm)} style={{
+            background:'#1a1610', color:'#c49a3c', border:'none',
+            borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
+            fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+          }}>
+            {showForm ? '✕ Cancel' : '+ Add Subject'}
+          </button>
+        )}
       </div>
 
       {error && (
@@ -124,7 +126,7 @@ export default function SubjectManagement() {
                 <label style={labelStyle}>Subject Name</label>
                 <input style={inputStyle} value={form.subject_name}
                   onChange={e => setForm({...form, subject_name:e.target.value})}
-                  placeholder="e.g. Advanced Mathematics" required />
+                  required />
               </div>
               <div>
                 <label style={labelStyle}>Type</label>
@@ -187,11 +189,8 @@ export default function SubjectManagement() {
       </div>
 
       {/* Subjects Table */}
-      <div style={{
-        background:'#fffef9', border:'1px solid #d4c9b0',
-        borderRadius:'8px', overflow:'hidden'
-      }}>
-        <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
+      <div className="rsp-card-wrap">
+        <table className="rsp-card-table" style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
           <thead>
             <tr style={{background:'#f0ece2'}}>
               {['Subject Name','Type','Core','Order','Status','Action'].map(h => (
@@ -210,10 +209,10 @@ export default function SubjectManagement() {
                 borderBottom:'1px solid #e8e0d0',
                 opacity: s.is_active ? 1 : 0.5
               }}>
-                <td style={{padding:'10px 14px', fontWeight:'600'}}>
+                <td data-label="Subject" style={{padding:'10px 14px', fontWeight:'600'}}>
                   {s.subject_name}
                 </td>
-                <td style={{padding:'10px 14px'}}>
+                <td data-label="Type" style={{padding:'10px 14px'}}>
                   <span style={{
                     background: s.subject_type === 'ol' ? '#d8ede4' : '#dce9f5',
                     color: s.subject_type === 'ol' ? '#2d6a4f' : '#1a4068',
@@ -223,7 +222,7 @@ export default function SubjectManagement() {
                     {s.subject_type.toUpperCase()}
                   </span>
                 </td>
-                <td style={{padding:'10px 14px'}}>
+                <td data-label="Core" style={{padding:'10px 14px'}}>
                   {s.is_core ? (
                     <span style={{
                       background:'#f5edd8', color:'#b85c00',
@@ -232,10 +231,10 @@ export default function SubjectManagement() {
                     }}>Core</span>
                   ) : '—'}
                 </td>
-                <td style={{padding:'10px 14px', color:'#6b5e4a'}}>
+                <td data-label="Order" style={{padding:'10px 14px', color:'#6b5e4a'}}>
                   {s.display_order}
                 </td>
-                <td style={{padding:'10px 14px'}}>
+                <td data-label="Status" style={{padding:'10px 14px'}}>
                   <span style={{
                     background: s.is_active ? '#d8ede4' : '#f5e0e3',
                     color: s.is_active ? '#2d6a4f' : '#9b2335',
@@ -245,7 +244,7 @@ export default function SubjectManagement() {
                     {s.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
-                <td style={{padding:'10px 14px'}}>
+                <td data-label="Action" style={{padding:'10px 14px'}}>
                   <button onClick={() => toggleActive(s)} style={{
                     background: s.is_active ? '#f5e0e3' : '#d8ede4',
                     color: s.is_active ? '#9b2335' : '#2d6a4f',

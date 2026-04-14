@@ -5,7 +5,7 @@ import TESApplicationForm from './TESApplicationForm';
 const LANG_LEVELS = ['beginner', 'intermediate', 'advanced', 'proficient'];
 
 export default function TESApplicationDetail({
-  application, batch, isAdmin, onBack, onUpdate
+  application, batch, isAdmin, readOnly = false, onBack, onUpdate
 }) {
   const [editing,        setEditing       ] = useState(false);
   const [savingOfficial, setSavingOfficial] = useState(false);
@@ -23,17 +23,17 @@ export default function TESApplicationDetail({
         }
   const [official, setOfficial] = useState({
     approval_status: application.approval_status || 'pending',
-    official_notes : application.official_notes  || '',
+    admin_notes    : application.admin_notes     || '',
   });
 
   async function saveOfficial(e) {
     e.preventDefault();
     setSavingOfficial(true); setError(''); setSuccess('');
     try {
-      await api.put(
-        `/api/tes/applications/${application.id}/official`,
-        official
-      );
+      await api.put(`/api/tes/applications/${application.id}/official`, {
+        approval_status: official.approval_status,
+        admin_notes    : official.admin_notes,
+      });
       setSuccess('Decision saved successfully');
       onUpdate();
     } catch {
@@ -227,7 +227,7 @@ export default function TESApplicationDetail({
       {/* Personal */}
       <div style={sectionStyle}>
         <div style={secTitle}>Personal Information</div>
-        <div style={{
+        <div className="rsp-grid-3" style={{
           display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'16px'
         }}>
           <InfoRow label="Full Name"    value={application.full_name} />
@@ -249,8 +249,12 @@ export default function TESApplicationDetail({
         application.lang_tamil) && (
         <div style={sectionStyle}>
           <div style={secTitle}>Language Proficiency</div>
+
+          {/* Desktop: matrix table */}
+          <div className="rsp-hide-mobile">
+          <div style={{overflowX:'auto'}}>
           <table style={{
-            width:'100%', borderCollapse:'collapse', fontSize:'13px'
+            width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'360px'
           }}>
             <thead>
               <tr style={{background:'#f0ece2'}}>
@@ -301,13 +305,41 @@ export default function TESApplicationDetail({
               ))}
             </tbody>
           </table>
+          </div>
+          </div>
+
+          {/* Mobile: language + selected level as simple rows */}
+          <div className="rsp-show-mobile-only">
+            {[
+              { key:'lang_english', label:'English' },
+              { key:'lang_sinhala', label:'Sinhala' },
+              { key:'lang_tamil',   label:'Tamil'   },
+            ].filter(lang => application[lang.key]).map((lang, i, arr) => (
+              <div key={lang.key} style={{
+                display:'flex', alignItems:'center',
+                justifyContent:'space-between',
+                padding:'10px 0',
+                borderBottom: i < arr.length - 1 ? '1px solid #f0ece2' : 'none'
+              }}>
+                <span style={{fontWeight:'600', fontSize:'13px'}}>{lang.label}</span>
+                <span style={{
+                  background:'#c49a3c', color:'#fff',
+                  padding:'3px 12px', borderRadius:'8px',
+                  fontSize:'11px', fontWeight:'700'
+                }}>
+                  {application[lang.key].charAt(0).toUpperCase() +
+                   application[lang.key].slice(1)}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
       {/* Institution */}
       <div style={sectionStyle}>
         <div style={secTitle}>Institution & Course</div>
-        <div style={{
+        <div className="rsp-grid-2" style={{
           display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px'
         }}>
           <InfoRow label="Institution"     value={application.institution_name} />
@@ -336,7 +368,7 @@ export default function TESApplicationDetail({
         application.financial_justification) && (
         <div style={sectionStyle}>
           <div style={secTitle}>Financial Information</div>
-          <div style={{
+          <div className="rsp-grid-4" style={{
             display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr',
             gap:'12px', marginBottom:'14px'
           }}>
@@ -439,6 +471,45 @@ export default function TESApplicationDetail({
         </div>
       )}
 
+      {/* Participant Profile Quick Links (admin only) */}
+      {isAdmin && (
+        <div style={{
+          background:'#fffef9', border:'1px solid #d4c9b0',
+          borderRadius:'8px', padding:'16px 20px', marginBottom:'16px'
+        }}>
+          <div style={{
+            fontSize:'11px', fontWeight:'700', color:'#6b5e4a',
+            textTransform:'uppercase', letterSpacing:'0.6px',
+            marginBottom:'12px'
+          }}>
+            Participant Records
+          </div>
+          <div style={{display:'flex', gap:'10px', flexWrap:'wrap'}}>
+            {[
+              { label:'Academic Records ↗', tab:'academic' },
+              { label:'Certifications ↗',  tab:'certs'    },
+              { label:'Development Plan ↗', tab:'development'  },
+            ].map(link => (
+              <a
+                key={link.tab}
+                href={`/participant/${application.participant_id}?from=admin&tab=${link.tab}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  background:'#dce9f5', color:'#1a4068',
+                  border:'none', borderRadius:'5px',
+                  padding:'7px 14px', fontSize:'12px',
+                  fontWeight:'600', textDecoration:'none',
+                  display:'inline-block'
+                }}
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Admin Decision */}
       {isAdmin && (
         <div style={{
@@ -496,53 +567,78 @@ export default function TESApplicationDetail({
             </div>
           )}
 
-          <form onSubmit={saveOfficial}>
+          {readOnly ? (
             <div style={{
-              display:'grid', gridTemplateColumns:'1fr 1fr',
-              gap:'14px', marginBottom:'14px'
+              display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'
             }}>
               <div>
-                <label style={{...labelStyle, color:'#a09080'}}>
+                <div style={{fontSize:'10px', color:'#a09080', textTransform:'uppercase', marginBottom:'4px'}}>
                   Approval Status
-                </label>
-                <select style={{
-                  ...inputStyle, background:'#2e2a22',
-                  border:'1px solid #4a4234', color:'#f5edd8'
-                }}
-                value={official.approval_status}
-                onChange={e => setOfficial({
-                  ...official, approval_status:e.target.value
-                })}>
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
-                </select>
+                </div>
+                <div style={{fontSize:'13px', color:'#e8d4a0', fontWeight:'600'}}>
+                  {official.approval_status.charAt(0).toUpperCase() + official.approval_status.slice(1)}
+                </div>
               </div>
-              <div>
-                <label style={{...labelStyle, color:'#a09080'}}>
-                  Admin Notes
-                </label>
-                <input style={{
-                  ...inputStyle, background:'#2e2a22',
-                  border:'1px solid #4a4234', color:'#f5edd8'
-                }}
-                placeholder="Optional notes"
-                value={official.official_notes}
-                onChange={e => setOfficial({
-                  ...official, official_notes:e.target.value
-                })} />
-              </div>
+              {official.admin_notes && (
+                <div>
+                  <div style={{fontSize:'10px', color:'#a09080', textTransform:'uppercase', marginBottom:'4px'}}>
+                    Admin Notes
+                  </div>
+                  <div style={{fontSize:'13px', color:'#e8d4a0'}}>
+                    {official.admin_notes}
+                  </div>
+                </div>
+              )}
             </div>
-            <button type="submit" disabled={savingOfficial} style={{
-              background: savingOfficial ? '#555' : '#c49a3c',
-              color:'#1a1610', border:'none', borderRadius:'6px',
-              padding:'10px 24px', fontSize:'13px', fontWeight:'700',
-              cursor: savingOfficial ? 'not-allowed' : 'pointer',
-              fontFamily:'inherit'
-            }}>
-              {savingOfficial ? 'Saving...' : 'Save Decision'}
-            </button>
-          </form>
+          ) : (
+            <form onSubmit={saveOfficial}>
+              <div style={{
+                display:'grid', gridTemplateColumns:'1fr 1fr',
+                gap:'14px', marginBottom:'14px'
+              }}>
+                <div>
+                  <label style={{...labelStyle, color:'#a09080'}}>
+                    Approval Status
+                  </label>
+                  <select style={{
+                    ...inputStyle, background:'#2e2a22',
+                    border:'1px solid #4a4234', color:'#f5edd8'
+                  }}
+                  value={official.approval_status}
+                  onChange={e => setOfficial({
+                    ...official, approval_status:e.target.value
+                  })}>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{...labelStyle, color:'#a09080'}}>
+                    Admin Notes
+                  </label>
+                  <textarea style={{
+                    ...inputStyle, background:'#2e2a22',
+                    border:'1px solid #4a4234', color:'#f5edd8',
+                    minHeight:'60px', resize:'vertical'
+                  }}
+                  value={official.admin_notes}
+                  onChange={e => setOfficial({
+                    ...official, admin_notes:e.target.value
+                  })} />
+                </div>
+              </div>
+              <button type="submit" disabled={savingOfficial} style={{
+                background: savingOfficial ? '#555' : '#c49a3c',
+                color:'#1a1610', border:'none', borderRadius:'6px',
+                padding:'10px 24px', fontSize:'13px', fontWeight:'700',
+                cursor: savingOfficial ? 'not-allowed' : 'pointer',
+                fontFamily:'inherit'
+              }}>
+                {savingOfficial ? 'Saving...' : 'Save Decision'}
+              </button>
+            </form>
+          )}
         </div>
       )}
     </div>

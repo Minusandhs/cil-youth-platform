@@ -145,6 +145,61 @@ export default function TESApplicationForm({
 
   async function handleSubmit(e) {
     e.preventDefault();
+
+    // ── Validate participant's Personal Info profile ──────────────
+    if (profile) {
+      const missing = [];
+      if (!profile.marital_status)  missing.push('Marital Status');
+      if (!profile.ol_status)       missing.push('O/L Status');
+      if (!profile.al_status)       missing.push('A/L Status');
+      if (!profile.current_status)  missing.push('Current Status');
+      if (!profile.short_term_plan) missing.push('Short Term Plan');
+      if (!profile.long_term_plan)  missing.push('Long Term Plan');
+      if (!profile.career_goal)     missing.push('Career Goal');
+      if (!profile.family_income)   missing.push('Family Monthly Income');
+      if (profile.no_of_dependants === '' || profile.no_of_dependants === null || profile.no_of_dependants === undefined)
+        missing.push('Number of Dependants');
+
+      // TES-specific form fields
+      if (!form.institution_type)  missing.push('Institution Type');
+      if (!form.course_duration)   missing.push('Course Duration (Years)');
+      if (!form.course_start_date) missing.push('Course Start Date');
+      if (!form.course_end_date)   missing.push('Course End Date');
+      if (!form.fee_tuition || parseFloat(form.fee_tuition) <= 0)
+        missing.push('Course / Tuition Fee');
+      if (!form.amount_approved || parseFloat(form.amount_approved) <= 0)
+        missing.push('Amount Approved (For Official Use)');
+
+      if (missing.length > 0) {
+        setError(
+          `Cannot submit: the participant's profile is incomplete. ` +
+          `Please update their Personal Info tab first.\n\nMissing: ${missing.join(', ')}`
+        );
+        return;
+      }
+
+      // O/L results check
+      if (['completed_passed', 'completed_failed'].includes(profile.ol_status) && !olResult) {
+        setError(
+          `Cannot submit: O/L Status is "${profile.ol_status === 'completed_passed' ? 'Completed — Passed' : 'Completed — Failed'}" ` +
+          `but no O/L results have been entered. Please add O/L results in Academic Records first.`
+        );
+        return;
+      }
+
+      // A/L results check
+      if (['completed_passed', 'completed_failed'].includes(profile.al_status) && !alResult) {
+        setError(
+          `Cannot submit: A/L Status is "${profile.al_status === 'completed_passed' ? 'Completed — Passed' : 'Completed — Failed'}" ` +
+          `but no A/L results have been entered. Please add A/L results in Academic Records first.`
+        );
+        return;
+      }
+    } else {
+      setError('Cannot submit: this participant has no Personal Info profile recorded. Please complete their profile first.');
+      return;
+    }
+
     if (!form.commitment_confirmed) {
       setError('Participant commitment must be confirmed before submitting.');
       return;
@@ -235,7 +290,6 @@ export default function TESApplicationForm({
           <div style={secTitle}>Select Participant</div>
           <div style={{display:'flex', gap:'10px', marginBottom:'16px'}}>
             <input style={{...inputStyle, flex:1}}
-              placeholder="Search by name or participant ID..."
               value={search}
               onChange={e => setSearch(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && searchParticipants()} />
@@ -335,9 +389,9 @@ export default function TESApplicationForm({
                 </div>
               </div>
           )}
-          <div style={sectionStyle}>
+          <div style={sectionStyle} className="rsp-section">
             <div style={secTitle}>Personal Information (Auto-filled)</div>
-            <div style={{
+            <div className="rsp-grid-3" style={{
               display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'14px'
             }}>
               <div>
@@ -409,7 +463,7 @@ export default function TESApplicationForm({
               <div style={{marginTop:'14px'}}>
                 <label style={labelStyle}>Latest O/L Results</label>
                 <input style={readonlyStyle}
-                  value={`OL ${olResult.exam_year} — ${olResult.school_name || ''} (${olResult.no_of_passes || 0} passes)`}
+                  value={`OL ${olResult.exam_year} — ${olResult.school_name || ''}`}
                   readOnly />
               </div>
             )}
@@ -440,34 +494,34 @@ export default function TESApplicationForm({
           </div>
 
           {/* Contact & Identity */}
-          <div style={sectionStyle}>
+          <div style={sectionStyle} className="rsp-section">
             <div style={secTitle}>Contact & Identity</div>
-            <div style={{
+            <div className="rsp-grid-2" style={{
               display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'
             }}>
               <div>
                 <label style={labelStyle}>Contact Number *</label>
                 <input style={inputStyle} value={form.contact_number}
                   onChange={e => setForm({...form, contact_number:e.target.value})}
-                  placeholder="e.g. 077-1234567" required />
+                  required />
               </div>
               <div>
                 <label style={labelStyle}>Email</label>
                 <input style={inputStyle} type="email" value={form.email}
                   onChange={e => setForm({...form, email:e.target.value})}
-                  placeholder="email@example.com" />
+                  />
               </div>
               <div>
                 <label style={labelStyle}>NIC Number *</label>
                 <input style={inputStyle} value={form.nic_number}
                   onChange={e => setForm({...form, nic_number:e.target.value})}
-                  placeholder="e.g. 200012345678" required />
+                  required />
               </div>
               <div>
                 <label style={labelStyle}>Guardian Name *</label>
                 <input style={inputStyle} value={form.guardian_name}
                   onChange={e => setForm({...form, guardian_name:e.target.value})}
-                  placeholder="Parent or guardian full name" required />
+                  required />
               </div>
             </div>
           </div>
@@ -475,7 +529,9 @@ export default function TESApplicationForm({
           {/* Language Proficiency */}
           <div style={sectionStyle}>
             <div style={secTitle}>Language Proficiency</div>
-            <div style={{overflowX:'auto', WebkitOverflowScrolling:'touch'}}>
+
+            {/* Desktop: matrix table */}
+            <div className="rsp-hide-mobile" style={{overflowX:'auto', WebkitOverflowScrolling:'touch'}}>
             <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'380px'}}>
               <thead>
                 <tr style={{background:'#f0ece2'}}>
@@ -522,22 +578,55 @@ export default function TESApplicationForm({
               </tbody>
             </table>
             </div>
+
+            {/* Mobile: pill-style radio buttons per language */}
+            <div className="rsp-show-mobile-only" style={{display:'flex', flexDirection:'column', gap:'12px'}}>
+              {[
+                { key:'lang_english', label:'English' },
+                { key:'lang_sinhala', label:'Sinhala' },
+                { key:'lang_tamil',   label:'Tamil'   },
+              ].map(lang => (
+                <div key={lang.key} style={{paddingBottom:'12px', borderBottom:'1px solid #e8e0d0'}}>
+                  <div style={{fontSize:'13px', fontWeight:'700', marginBottom:'8px', color:'#1a1610'}}>
+                    {lang.label}
+                  </div>
+                  <div style={{display:'flex', gap:'6px', flexWrap:'wrap'}}>
+                    {LANG_LEVELS.map(level => (
+                      <label key={level} style={{
+                        display:'flex', alignItems:'center',
+                        padding:'7px 14px', borderRadius:'20px', cursor:'pointer',
+                        fontSize:'12px', fontWeight:'600',
+                        border: form[lang.key] === level ? 'none' : '1px solid #d4c9b0',
+                        background: form[lang.key] === level ? '#1a1610' : '#faf8f3',
+                        color:      form[lang.key] === level ? '#c49a3c' : '#6b5e4a',
+                      }}>
+                        <input type="radio" name={`m_${lang.key}`} value={level}
+                          checked={form[lang.key] === level}
+                          onChange={() => setForm({...form, [lang.key]:level})}
+                          style={{display:'none'}} />
+                        {level.charAt(0).toUpperCase()+level.slice(1)}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Institution & Course */}
-          <div style={sectionStyle}>
+          <div style={sectionStyle} className="rsp-section">
             <div style={secTitle}>Institution & Course Information</div>
-            <div style={{
+            <div className="rsp-grid-2" style={{
               display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'
             }}>
               <div>
                 <label style={labelStyle}>Institution Name *</label>
                 <input style={inputStyle} value={form.institution_name}
                   onChange={e => setForm({...form, institution_name:e.target.value})}
-                  placeholder="e.g. University of Kelaniya" required />
+                  required />
               </div>
               <div>
-                <label style={labelStyle}>Institution Type</label>
+                <label style={labelStyle}>Institution Type *</label>
                 <select style={inputStyle} value={form.institution_type}
                   onChange={e => setForm({...form, institution_type:e.target.value})}>
                   <option value="">— Select Type —</option>
@@ -550,16 +639,16 @@ export default function TESApplicationForm({
                 <label style={labelStyle}>Course Name *</label>
                 <input style={inputStyle} value={form.course_name}
                   onChange={e => setForm({...form, course_name:e.target.value})}
-                  placeholder="e.g. BSc Computer Science" required />
+                  required />
               </div>
               <div>
                 <label style={labelStyle}>Registration Number</label>
                 <input style={inputStyle} value={form.registration_number}
                   onChange={e => setForm({...form, registration_number:e.target.value})}
-                  placeholder="Student/Registration number" />
+                  />
               </div>
               <div>
-                <label style={labelStyle}>Course Duration (Years)</label>
+                <label style={labelStyle}>Course Duration (Years) *</label>
                 <input style={inputStyle} type="number" min="1" max="10"
                   value={form.course_duration}
                   onChange={e => setForm({...form, course_duration:e.target.value})} />
@@ -571,13 +660,13 @@ export default function TESApplicationForm({
                   onChange={e => setForm({...form, course_year:e.target.value})} />
               </div>
               <div>
-                <label style={labelStyle}>Course Start Date</label>
+                <label style={labelStyle}>Course Start Date *</label>
                 <input style={inputStyle} type="date"
                   value={form.course_start_date}
                   onChange={e => setForm({...form, course_start_date:e.target.value})} />
               </div>
               <div>
-                <label style={labelStyle}>Course End Date</label>
+                <label style={labelStyle}>Course End Date *</label>
                 <input style={inputStyle} type="date"
                   value={form.course_end_date}
                   onChange={e => setForm({...form, course_end_date:e.target.value})} />
@@ -586,18 +675,17 @@ export default function TESApplicationForm({
           </div>
 
           {/* Financial */}
-          <div style={sectionStyle}>
+          <div style={sectionStyle} className="rsp-section">
             <div style={secTitle}>Financial Information</div>
-            <div style={{
+            <div className="rsp-grid-2" style={{
               display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px',
               marginBottom:'14px'
             }}>
               <div>
-                <label style={labelStyle}>Course / Tuition Fee (LKR)</label>
+                <label style={labelStyle}>Course / Tuition Fee (LKR) *</label>
                 <input style={inputStyle} type="number" min="0" step="0.01"
                   value={form.fee_tuition}
-                  onChange={e => setForm({...form, fee_tuition:e.target.value})}
-                  placeholder="0.00" />
+                  onChange={e => setForm({...form, fee_tuition:e.target.value})} />
               </div>
               <div>
                 <label style={labelStyle}>
@@ -605,8 +693,7 @@ export default function TESApplicationForm({
                 </label>
                 <input style={inputStyle} type="number" min="0" step="0.01"
                   value={form.fee_materials}
-                  onChange={e => setForm({...form, fee_materials:e.target.value})}
-                  placeholder="0.00" />
+                  onChange={e => setForm({...form, fee_materials:e.target.value})} />
               </div>
               <div>
                 <label style={labelStyle}>
@@ -614,8 +701,7 @@ export default function TESApplicationForm({
                 </label>
                 <input style={inputStyle} type="number" min="0" step="0.01"
                   value={form.family_contribution}
-                  onChange={e => setForm({...form, family_contribution:e.target.value})}
-                  placeholder="0.00" />
+                  onChange={e => setForm({...form, family_contribution:e.target.value})} />
               </div>
               <div>
                 <label style={labelStyle}>
@@ -639,7 +725,6 @@ export default function TESApplicationForm({
             <div>
               <label style={labelStyle}>Financial Justification *</label>
               <textarea style={{...inputStyle, minHeight:'100px'}}
-                placeholder="Explain the financial need for this scholarship..."
                 value={form.financial_justification}
                 onChange={e => setForm({...form, financial_justification:e.target.value})}
                 required />
@@ -647,16 +732,15 @@ export default function TESApplicationForm({
           </div>
 
           {/* Community */}
-          <div style={sectionStyle}>
+          <div style={sectionStyle} className="rsp-section">
             <div style={secTitle}>Community Contribution</div>
             <textarea style={{...inputStyle, minHeight:'80px'}}
-              placeholder="How will the participant contribute back to the community?"
               value={form.community_contribution}
               onChange={e => setForm({...form, community_contribution:e.target.value})} />
           </div>
 
           {/* Documents & Submit */}
-          <div style={sectionStyle}>
+          <div style={sectionStyle} className="rsp-section">
             <div style={secTitle}>Documents Checklist</div>
             <div style={{display:'grid', gap:'8px', marginBottom:'20px'}}>
               {[
@@ -736,17 +820,17 @@ export default function TESApplicationForm({
               }}>
                 For Official Use Only
               </div>
-              <div style={{
+              <div className="rsp-grid-2" style={{
                 display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'
               }}>
                 <div>
                   <label style={{...labelStyle, color:'#b85c00'}}>
-                    Amount Approved (LKR)
+                    Amount Approved (LKR) *
                   </label>
                   <input style={inputStyle} type="number" min="0" step="0.01"
                     value={form.amount_approved}
                     onChange={e => setForm({...form, amount_approved:e.target.value})}
-                    placeholder="Amount to be funded" />
+                    />
                 </div>
                 <div>
                   <label style={{...labelStyle, color:'#b85c00'}}>
@@ -755,14 +839,14 @@ export default function TESApplicationForm({
                   <input style={inputStyle}
                     value={form.official_notes}
                     onChange={e => setForm({...form, official_notes:e.target.value})}
-                    placeholder="Any official notes" />
+                    />
                 </div>
               </div>
             </div>
           </div>
 
           {/* Submit */}
-          <div style={{display:'flex', gap:'12px'}}>
+          <div className="rsp-submit-row" style={{display:'flex', gap:'12px', flexWrap:'wrap'}}>
             <button type="submit" disabled={saving} style={{
               background: saving ? '#a09080' : '#2d6a4f',
               color:'#fff', border:'none', borderRadius:'6px',

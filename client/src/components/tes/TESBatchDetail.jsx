@@ -3,7 +3,7 @@ import api from '../../lib/api';
 import TESApplicationForm from './TESApplicationForm';
 import TESApplicationDetail from './TESApplicationDetail';
 
-export default function TESBatchDetail({ batch, onBack, isAdmin }) {
+export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = false }) {
   const [applications, setApplications] = useState([]);
   const [loading,      setLoading      ] = useState(true);
   const [showForm,     setShowForm     ] = useState(false);
@@ -171,6 +171,7 @@ export default function TESBatchDetail({ batch, onBack, isAdmin }) {
         application={selApp}
         batch={batch}
         isAdmin={isAdmin}
+        readOnly={readOnly}
         onBack={() => { setSelApp(null); loadApplications(); }}
         onUpdate={loadApplications}
       />
@@ -291,11 +292,8 @@ export default function TESBatchDetail({ batch, onBack, isAdmin }) {
           )}
         </div>
       ) : (
-        <div style={{
-          background:'#fffef9', border:'1px solid #d4c9b0',
-          borderRadius:'8px', overflow:'hidden'
-        }}>
-          <table style={{
+        <div className="rsp-card-wrap">
+          <table className="rsp-card-table rsp-tes-table" style={{
             width:'100%', borderCollapse:'collapse', fontSize:'13px'
           }}>
             <thead>
@@ -319,31 +317,34 @@ export default function TESBatchDetail({ batch, onBack, isAdmin }) {
                   onMouseEnter={e => e.currentTarget.style.background='#faf8f3'}
                   onMouseLeave={e => e.currentTarget.style.background='transparent'}
                 >
-                  <td style={{padding:'10px 14px'}}>
+                  <td data-label="Participant" style={{padding:'10px 14px'}}>
                     <div style={{fontWeight:'600'}}>{app.full_name}</div>
                     <div style={{fontSize:'11px', color:'#a09080'}}>
                       {app.pid}
                     </div>
+                    <div className="rsp-pcard-sub">
+                      {[app.institution_name, app.course_name].filter(Boolean).join(' · ')}
+                    </div>
                   </td>
-                  <td style={{
+                  <td data-label="LDC" style={{
                     padding:'10px 14px', color:'#6b5e4a', fontSize:'12px'
                   }}>
                     {app.ldc_code}
                   </td>
-                  <td style={{
+                  <td data-label="Institution" style={{
                     padding:'10px 14px', color:'#6b5e4a', fontSize:'12px'
                   }}>
                     {app.institution_name || '—'}
                   </td>
-                  <td style={{
+                  <td data-label="Course" style={{
                     padding:'10px 14px', color:'#6b5e4a', fontSize:'12px'
                   }}>
                     {app.course_name || '—'}
                   </td>
-                  <td style={{padding:'10px 14px'}}>
+                  <td data-label="Status" style={{padding:'10px 14px'}}>
                     {statusBadge(app.approval_status)}
                   </td>
-                  <td style={{
+                  <td data-label="Amount" style={{
                     padding:'10px 14px', fontWeight:'600',
                     color: app.amount_approved ? '#2d6a4f' : '#a09080'
                   }}>
@@ -351,10 +352,11 @@ export default function TESBatchDetail({ batch, onBack, isAdmin }) {
                       ? `LKR ${parseFloat(app.amount_approved).toLocaleString()}`
                       : '—'}
                   </td>
-                  <td style={{padding:'10px 14px'}}>
+                  <td data-label="Action" style={{padding:'10px 14px'}}>
                     <div style={{display:'flex', gap:'6px'}}>
                         <button onClick={() => setSelApp(app)} style={{
-                        background:'#1a1610', color:'#c49a3c', border:'none',
+                        background:'#f0ece2', color:'#3d3528',
+                        border:'1px solid #d4c9b0',
                         borderRadius:'4px', padding:'5px 12px', fontSize:'11px',
                         fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
                         }}>View</button>

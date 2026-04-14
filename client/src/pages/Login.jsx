@@ -18,7 +18,7 @@ export default function Login() {
 
     try {
       const user = await login(username, password);
-      if (user.role === 'super_admin') {
+      if (user.role === 'super_admin' || user.role === 'national_admin') {
         navigate('/admin');
       } else {
         navigate('/ldc');
@@ -125,7 +125,6 @@ export default function Login() {
                 type="text"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
-                placeholder="Enter your username"
                 required
                 style={{
                   width:'100%',
@@ -158,7 +157,6 @@ export default function Login() {
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="Enter your password"
                 required
                 style={{
                   width:'100%',

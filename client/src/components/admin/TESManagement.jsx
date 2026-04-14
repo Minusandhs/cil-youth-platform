@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 import TESBatchDetail from '../tes/TESBatchDetail';
 
-export default function TESManagement() {
+export default function TESManagement({ readOnly = false }) {
   const [batches,    setBatches   ] = useState([]);
   const [loading,    setLoading   ] = useState(true);
   const [showForm,   setShowForm  ] = useState(false);
@@ -144,13 +144,14 @@ export default function TESManagement() {
         batch={selBatch}
         onBack={() => { setSelBatch(null); loadBatches(); }}
         isAdmin={true}
+        readOnly={readOnly}
       />
     );
   }
 
   return (
     <div>
-      <div style={{
+      <div className="rsp-section-header" style={{
         display:'flex', justifyContent:'space-between',
         alignItems:'center', marginBottom:'20px'
       }}>
@@ -162,17 +163,19 @@ export default function TESManagement() {
             Manage Tertiary Education Scholarship batches
           </p>
         </div>
-        <button onClick={() => {
-              setShowForm(!showForm);
-              setEditBatch(null);
-              setForm({ batch_name:'', application_end_date:'', update_notes:'' });
-            }} style={{
-                background:'#1a1610', color:'#c49a3c', border:'none',
-                borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
-                fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
-              }}>
-          {showForm ? '✕ Cancel' : '+ New Batch'}
-        </button>
+        {!readOnly && (
+          <button onClick={() => {
+            setShowForm(!showForm);
+            setEditBatch(null);
+            setForm({ batch_name:'', application_end_date:'', update_notes:'' });
+          }} style={{
+            background:'#1a1610', color:'#c49a3c', border:'none',
+            borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
+            fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+          }}>
+            {showForm ? '✕ Cancel' : '+ New Batch'}
+          </button>
+        )}
       </div>
 
       {error && (
@@ -208,7 +211,7 @@ export default function TESManagement() {
                 <label style={labelStyle}>Batch Name *</label>
                 <input style={inputStyle} value={form.batch_name}
                   onChange={e => setForm({...form, batch_name:e.target.value})}
-                  placeholder="e.g. TES Batch 2025 — Cycle 1" required />
+                  required />
               </div>
               <div>
                 <label style={labelStyle}>Application Deadline *</label>
@@ -223,7 +226,6 @@ export default function TESManagement() {
             <div style={{marginBottom:'16px'}}>
               <label style={labelStyle}>Notes</label>
               <textarea style={{...inputStyle, minHeight:'60px'}}
-                placeholder="Any notes about this batch"
                 value={form.update_notes}
                 onChange={e => setForm({...form, update_notes:e.target.value})} />
             </div>
@@ -356,18 +358,21 @@ export default function TESManagement() {
                 {/* Actions */}
                 <div style={{display:'flex', gap:'6px', flexWrap:'wrap'}}>
                     <button onClick={() => setSelBatch(batch)} style={{
-                      background:'#1a1610', color:'#c49a3c', border:'none',
+                      background:'#f0ece2', color:'#3d3528',
+                      border:'1px solid #d4c9b0',
                       borderRadius:'5px', padding:'6px 14px', fontSize:'12px',
                       fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
                     }}>View</button>
+                    {!readOnly && (
                     <button onClick={() => openEdit(batch)} style={{
                       background:'#dce9f5', color:'#1a4068', border:'none',
                       borderRadius:'5px', padding:'6px 14px', fontSize:'12px',
                       fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
                     }}>Edit</button>
+                    )}
 
                   {/* Stop Applications — only when open */}
-                  {batch.status === 'open' && (
+                  {!readOnly && batch.status === 'open' && (
                     <button onClick={() => updateStatus(batch, 'reviewing')} style={{
                       background:'#f0ece2', color:'#6b5e4a', border:'none',
                       borderRadius:'5px', padding:'6px 14px', fontSize:'12px',
@@ -376,7 +381,7 @@ export default function TESManagement() {
                   )}
 
                   {/* Reopen — any stage except open and completed */}
-                  {!['open','completed'].includes(batch.status) && (
+                  {!readOnly && !['open','completed'].includes(batch.status) && (
                     <button onClick={() => {
                       if (window.confirm(
                         `Reopen "${batch.batch_name}"?\nThis will allow new applications again.`
@@ -391,7 +396,7 @@ export default function TESManagement() {
                   )}
 
                   {/* Approve + Reject — only when reviewing */}
-                  {batch.status === 'reviewing' && (
+                  {!readOnly && batch.status === 'reviewing' && (
                     <>
                       <button onClick={() => updateStatus(batch, 'approved')} style={{
                         background:'#dce9f5', color:'#1a4068', border:'none',
@@ -407,7 +412,7 @@ export default function TESManagement() {
                   )}
 
                   {/* Mark Funded — only when approved */}
-                  {batch.status === 'approved' && (
+                  {!readOnly && batch.status === 'approved' && (
                     <button onClick={() => updateStatus(batch, 'funded')} style={{
                       background:'#fdecd8', color:'#b85c00', border:'none',
                       borderRadius:'5px', padding:'6px 14px', fontSize:'12px',
@@ -416,7 +421,7 @@ export default function TESManagement() {
                   )}
 
                   {/* Revert Funded → Approved */}
-                  {batch.status === 'funded' && (
+                  {!readOnly && batch.status === 'funded' && (
                     <>
                       <button onClick={() => updateStatus(batch, 'completed')} style={{
                         background:'#1a1610', color:'#c49a3c', border:'none',

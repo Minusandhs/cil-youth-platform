@@ -7,7 +7,6 @@ const STATUS_FIELDS = {
     label: 'Studying — School',
     fields: [
       { key: 'current_institution', label: 'School Name',  placeholder: 'e.g. Negombo Central College' },
-      { key: 'current_course',      label: 'Grade',        placeholder: 'e.g. Grade 11' },
       { key: 'current_year',        label: 'Year',         placeholder: 'e.g. 2024' },
     ]
   },
@@ -72,14 +71,32 @@ const STATUS_FIELDS = {
   },
 };
 
+// Human-readable labels for OL/AL status values
+const OL_STATUS_LABELS = {
+  not_yet          : 'Not Yet',
+  awaiting_results : 'Awaiting Results',
+  completed_passed : 'Completed — Passed',
+  completed_failed : 'Completed — Failed',
+  not_applicable   : 'Not Applicable',
+};
+const AL_STATUS_LABELS = {
+  not_yet          : 'Not Yet',
+  awaiting_results : 'Awaiting Results',
+  completed_passed : 'Completed — Passed',
+  completed_failed : 'Completed — Failed',
+  not_sitting      : 'Not Sitting',
+  not_applicable   : 'Not Applicable',
+};
+
 export default function PersonalInfo({ participant, onUpdate, readOnly = false }) {
-  const [profile,   setProfile  ] = useState(null);
-  const [history,   setHistory  ] = useState([]);
-  const [loading,   setLoading  ] = useState(true);
-  const [saving,    setSaving   ] = useState(false);
-  const [editMode,  setEditMode ] = useState(false);
-  const [success,   setSuccess  ] = useState('');
-  const [error,     setError    ] = useState('');
+  const [profile,      setProfile     ] = useState(null);
+  const [history,      setHistory     ] = useState([]);
+  const [schoolGrades, setSchoolGrades] = useState([]);
+  const [loading,      setLoading     ] = useState(true);
+  const [saving,       setSaving      ] = useState(false);
+  const [editMode,     setEditMode    ] = useState(false);
+  const [success,      setSuccess     ] = useState('');
+  const [error,        setError       ] = useState('');
   const [form, setForm] = useState({
     marital_status     : '',
     living_outside_ldc : false,
@@ -102,17 +119,18 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
     education_details  : '',
     family_income      : '',
     no_of_dependants   : '',
-    other_assistance   : '',
   });
 
   useEffect(() => { loadAll(); }, [participant?.id]);
 
   async function loadAll() {
     try {
-      const [profileRes, historyRes] = await Promise.all([
+      const [profileRes, historyRes, gradesRes] = await Promise.all([
         api.get(`/api/participants/${participant.id}/profile`).catch(() => null),
-        api.get(`/api/participants/${participant.id}/status-history`).catch(() => ({ data: [] }))
+        api.get(`/api/participants/${participant.id}/status-history`).catch(() => ({ data: [] })),
+        api.get('/api/school-grades').catch(() => ({ data: [] })),
       ]);
+      setSchoolGrades((gradesRes?.data || []).filter(g => g.is_active));
 
       if (profileRes?.data) {
         setProfile(profileRes.data);
@@ -138,7 +156,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           education_details  : profileRes.data.education_details   || '',
           family_income      : profileRes.data.family_income       || '',
           no_of_dependants   : profileRes.data.no_of_dependants    || '',
-          other_assistance   : profileRes.data.other_assistance    || '',
         });
       } else {
         // No profile yet — open in edit mode
@@ -154,8 +171,48 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
 
   async function handleSave(e) {
     e.preventDefault();
-    setSaving(true);
     setError(''); setSuccess('');
+
+    // ── Mandatory field validation ───────────────────────────────
+    const missing = [];
+    if (!form.marital_status)   missing.push('Marital Status');
+    if (!form.ol_status)        missing.push('O/L Status');
+    if (!form.al_status)        missing.push('A/L Status');
+    if (!form.current_status)   missing.push('Current Status');
+    if (!form.family_income)    missing.push('Family Monthly Income');
+    if (form.no_of_dependants === '' || form.no_of_dependants === null || form.no_of_dependants === undefined)
+      missing.push('Number of Dependants');
+    if (!form.short_term_plan)  missing.push('Short Term Plan');
+    if (!form.long_term_plan)   missing.push('Long Term Plan');
+    if (!form.career_goal)      missing.push('Career Goal');
+    if (missing.length > 0) {
+      setError(`Please fill in the following required fields: ${missing.join(', ')}`);
+      return;
+    }
+
+    // ── O/L results check ────────────────────────────────────────
+    if (form.ol_status === 'completed_passed') {
+      try {
+        const olRes = await api.get(`/api/academic/ol/${participant.id}`);
+        if (!olRes.data || olRes.data.length === 0) {
+          setError('O/L status is set to Completed — Passed, but no O/L results have been entered. Please add O/L results in the Academic Records tab first.');
+          return;
+        }
+      } catch { /* ignore — don't block save if check fails */ }
+    }
+
+    // ── A/L results check ────────────────────────────────────────
+    if (form.al_status === 'completed_passed') {
+      try {
+        const alRes = await api.get(`/api/academic/al/${participant.id}`);
+        if (!alRes.data || alRes.data.length === 0) {
+          setError('A/L status is set to Completed — Passed, but no A/L results have been entered. Please add A/L results in the Academic Records tab first.');
+          return;
+        }
+      } catch { /* ignore */ }
+    }
+
+    setSaving(true);
     try {
       // Save profile
       if (profile) {
@@ -199,7 +256,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
         current_status:'', current_institution:'', current_course:'', current_year:'',
         short_term_plan:'', long_term_plan:'', career_goal:'',
         further_education:false, education_details:'',
-        family_income:'', no_of_dependants:'', other_assistance:'',
+        family_income:'', no_of_dependants:'',
       });
       return;
     }
@@ -227,7 +284,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
         education_details  : profile.education_details   || '',
         family_income      : profile.family_income       || '',
         no_of_dependants   : profile.no_of_dependants    || '',
-        other_assistance   : profile.other_assistance    || '',
       });
     }
   }
@@ -339,9 +395,9 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>School Level Status</div>
             <div className="rsp-grid-4" style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:'16px'}}>
-              <ViewField label="O/L Status" value={form.ol_status} />
+              <ViewField label="O/L Status" value={OL_STATUS_LABELS[form.ol_status] || form.ol_status} />
               <ViewField label="O/L Year"   value={form.ol_completion_year} />
-              <ViewField label="A/L Status" value={form.al_status} />
+              <ViewField label="A/L Status" value={AL_STATUS_LABELS[form.al_status] || form.al_status} />
               <ViewField label="A/L Year"   value={form.al_completion_year} />
             </div>
           </div>
@@ -363,6 +419,9 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                 {STATUS_FIELDS[form.current_status].fields.map(f => (
                   <ViewField key={f.key} label={f.label} value={form[f.key]} />
                 ))}
+                {form.current_status === 'studying_school' && form.current_course && (
+                  <ViewField label="Grade" value={form.current_course} />
+                )}
               </div>
             )}
           </div>
@@ -383,10 +442,9 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           {/* Family Background */}
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>Family Background</div>
-            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'16px'}}>
-              <ViewField label="Family Income (LKR)" value={form.family_income} />
-              <ViewField label="No of Dependants"    value={form.no_of_dependants} />
-              <ViewField label="Other Assistance"    value={form.other_assistance} />
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px'}}>
+              <ViewField label="Family Income (LKR/month)" value={form.family_income} />
+              <ViewField label="No of Dependants"          value={form.no_of_dependants} />
             </div>
           </div>
 
@@ -399,7 +457,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
               </div>
             ) : (
               <div style={{overflowX:'auto', WebkitOverflowScrolling:'touch'}}>
-              <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'480px'}}>
+              <table className="rsp-card-table" style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'480px'}}>
                 <thead>
                   <tr style={{background:'#f0ece2'}}>
                     {['Date','Status','Institution','Course/Role','Year/Duration'].map(h => (
@@ -418,10 +476,10 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                       borderBottom:'1px solid #e8e0d0',
                       background: i === 0 ? '#f5edd8' : 'transparent'
                     }}>
-                      <td style={{padding:'8px 12px', color:'#6b5e4a', fontSize:'12px'}}>
+                      <td data-label="Date" style={{padding:'8px 12px', color:'#6b5e4a', fontSize:'12px'}}>
                         {new Date(h.recorded_at).toLocaleDateString('en-GB')}
                       </td>
-                      <td style={{padding:'8px 12px'}}>
+                      <td data-label="Status" style={{padding:'8px 12px'}}>
                         <span style={{
                           background:'#dce9f5', color:'#1a4068',
                           padding:'2px 8px', borderRadius:'10px',
@@ -430,9 +488,9 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                           {statusLabel(h.status)}
                         </span>
                       </td>
-                      <td style={{padding:'8px 12px', color:'#1a1610'}}>{h.institution || '—'}</td>
-                      <td style={{padding:'8px 12px', color:'#1a1610'}}>{h.course      || '—'}</td>
-                      <td style={{padding:'8px 12px', color:'#6b5e4a'}}>{h.year_level  || '—'}</td>
+                      <td data-label="Institution" style={{padding:'8px 12px', color:'#1a1610'}}>{h.institution || '—'}</td>
+                      <td data-label="Course" style={{padding:'8px 12px', color:'#1a1610'}}>{h.course      || '—'}</td>
+                      <td data-label="Year" style={{padding:'8px 12px', color:'#6b5e4a'}}>{h.year_level  || '—'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -505,7 +563,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                     <div>
                       <label style={labelStyle}>Where *</label>
                       <input style={inputStyle(false)}
-                        placeholder="e.g. Colombo, Kandy..."
                         value={form.outside_location}
                         onChange={e => setForm({...form, outside_location:e.target.value})} />
                     </div>
@@ -554,7 +611,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
               <div>
                 <label style={labelStyle}>O/L Year</label>
                 <input style={inputStyle(false)} type="number"
-                  placeholder="e.g. 2022" value={form.ol_completion_year}
+                  value={form.ol_completion_year}
                   onChange={e => setForm({...form, ol_completion_year:e.target.value})} />
               </div>
               <div>
@@ -573,7 +630,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
               <div>
                 <label style={labelStyle}>A/L Year</label>
                 <input style={inputStyle(false)} type="number"
-                  placeholder="e.g. 2024" value={form.al_completion_year}
+                  value={form.al_completion_year}
                   onChange={e => setForm({...form, al_completion_year:e.target.value})} />
               </div>
             </div>
@@ -610,11 +667,24 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                   <div key={f.key}>
                     <label style={labelStyle}>{f.label}</label>
                     <input style={inputStyle(false)}
-                      placeholder={f.placeholder}
                       value={form[f.key]}
                       onChange={e => setForm({...form, [f.key]:e.target.value})} />
                   </div>
                 ))}
+                {/* Grade dropdown — only for school status */}
+                {form.current_status === 'studying_school' && (
+                  <div>
+                    <label style={labelStyle}>Grade</label>
+                    <select style={inputStyle(false)}
+                      value={form.current_course}
+                      onChange={e => setForm({...form, current_course:e.target.value})}>
+                      <option value="">— Select Grade —</option>
+                      {schoolGrades.map(g => (
+                        <option key={g.id} value={g.grade_label}>{g.grade_label}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -626,21 +696,18 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
               <div>
                 <label style={labelStyle}>Short Term Plan (within 1 year)</label>
                 <textarea style={{...inputStyle(false), minHeight:'70px'}}
-                  placeholder="What are their plans for the next year?"
                   value={form.short_term_plan}
                   onChange={e => setForm({...form, short_term_plan:e.target.value})} />
               </div>
               <div>
                 <label style={labelStyle}>Long Term Plan (within 5 years)</label>
                 <textarea style={{...inputStyle(false), minHeight:'70px'}}
-                  placeholder="What are their plans for the next 5 years?"
                   value={form.long_term_plan}
                   onChange={e => setForm({...form, long_term_plan:e.target.value})} />
               </div>
               <div>
                 <label style={labelStyle}>Career Goal</label>
                 <textarea style={{...inputStyle(false), minHeight:'70px'}}
-                  placeholder="What is their ultimate career aspiration?"
                   value={form.career_goal}
                   onChange={e => setForm({...form, career_goal:e.target.value})} />
               </div>
@@ -659,7 +726,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                 <div>
                   <label style={labelStyle}>Education Details</label>
                   <textarea style={{...inputStyle(false), minHeight:'70px'}}
-                    placeholder="Details of further education plans"
                     value={form.education_details}
                     onChange={e => setForm({...form, education_details:e.target.value})} />
                 </div>
@@ -670,26 +736,18 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           {/* Family Background */}
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>Family Background</div>
-            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'14px'}}>
+            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'}}>
               <div>
-                <label style={labelStyle}>Family Monthly Income (LKR)</label>
+                <label style={labelStyle}>Family Monthly Income (LKR) *</label>
                 <input style={inputStyle(false)} type="number"
-                  placeholder="Total family income"
                   value={form.family_income}
                   onChange={e => setForm({...form, family_income:e.target.value})} />
               </div>
               <div>
-                <label style={labelStyle}>Number of Dependants</label>
+                <label style={labelStyle}>Number of Dependants *</label>
                 <input style={inputStyle(false)} type="number" min="0"
                   value={form.no_of_dependants}
                   onChange={e => setForm({...form, no_of_dependants:e.target.value})} />
-              </div>
-              <div>
-                <label style={labelStyle}>Other Assistance</label>
-                <input style={inputStyle(false)}
-                  placeholder="Other scholarships or support"
-                  value={form.other_assistance}
-                  onChange={e => setForm({...form, other_assistance:e.target.value})} />
               </div>
             </div>
           </div>

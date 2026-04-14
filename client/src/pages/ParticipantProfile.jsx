@@ -12,13 +12,16 @@ export default function ParticipantProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const fromAdmin = new URLSearchParams(location.search).get('from') === 'admin';
-  const { user, isLDCStaff, isSuperAdmin } = useAuth();
+  const searchParams = new URLSearchParams(location.search);
+  const fromAdmin = searchParams.get('from') === 'admin';
+  const initialTab = searchParams.get('tab') || 'personal';
+  const { user, isLDCStaff, isSuperAdmin, isNationalAdmin } = useAuth();
   const [participant,  setParticipant ] = useState(null);
   const [loading,      setLoading     ] = useState(true);
-  const [activeTab,    setActiveTab   ] = useState('personal');
+  const [activeTab,    setActiveTab   ] = useState(initialTab);
   const [error,        setError       ] = useState('');
   const [toggling,     setToggling    ] = useState(false);
+  const [menuOpen,     setMenuOpen    ] = useState(false);
 
   useEffect(() => { loadParticipant(); }, [id]);
 
@@ -103,64 +106,78 @@ export default function ParticipantProfile() {
       <header style={{
         background:'#1a1610', position:'sticky',
         top:0, zIndex:100,
-        boxShadow:'0 4px 24px rgba(26,22,16,0.18)'
+        boxShadow:'0 4px 24px rgba(26,22,16,0.18)',
+        overflow:'visible'
       }}>
-        <div style={{
+        <div className="rsp-header-pad" style={{
           maxWidth:'1200px', margin:'0 auto',
           padding:'12px 24px', display:'flex',
           alignItems:'center', gap:'14px'
         }}>
-          <button onClick={() => fromAdmin ? navigate('/admin') : navigate(-1)} style={{
-            background:'#c49a3c', color:'#1a1610',
-            border:'none', borderRadius:'20px',
-            padding:'6px 16px', cursor:'pointer',
-            fontFamily:'inherit', fontWeight:'700',
-            fontSize:'12px', letterSpacing:'0.5px',
-            display:'flex', alignItems:'center', gap:'6px'
-          }}>← Back</button>
-          <div style={{
-            background:'#c49a3c', color:'#1a1610',
-            fontWeight:'700', fontSize:'10px',
-            letterSpacing:'2px', padding:'4px 10px', borderRadius:'2px'
-          }}>CIL</div>
-          <div style={{flex:1}}>
-            <div style={{fontSize:'15px', fontWeight:'700', color:'#e8d4a0'}}>
-              Participant Profile
+          {/* Row 1 left: Back + CIL badge */}
+          <div className="rsp-header-cil" style={{display:'flex', alignItems:'center', gap:'8px'}}>
+            <button onClick={() => fromAdmin ? navigate('/admin') : navigate(-1)}
+              className="rsp-header-btn"
+              style={{
+                background:'#c49a3c', color:'#1a1610',
+                border:'none', borderRadius:'20px',
+                padding:'6px 14px', cursor:'pointer',
+                fontFamily:'inherit', fontWeight:'700',
+                fontSize:'12px', whiteSpace:'nowrap'
+              }}>← Back</button>
+            <div className="rsp-hide-mobile" style={{
+              background:'#c49a3c', color:'#1a1610',
+              fontWeight:'700', fontSize:'10px',
+              letterSpacing:'2px', padding:'4px 10px', borderRadius:'2px'
+            }}>CIL</div>
+          </div>
+
+          {/* Row 2 (mobile) / middle (desktop): title + LDC */}
+          <div className="rsp-header-title-wrap">
+            <div className="rsp-header-title" style={{
+              fontSize:'15px', fontWeight:'700', color:'#e8d4a0',
+              display:'flex', alignItems:'center', gap:'8px'
+            }}>
+              <span style={{whiteSpace:'nowrap'}}>Participant Profile</span>
               {participant && !participant.is_active && (
                 <span style={{
-                  marginLeft:'10px', background:'#6b5e4a',
-                  color:'#e8d4a0', padding:'2px 8px',
-                  borderRadius:'3px', fontSize:'10px',
-                  fontWeight:'700', letterSpacing:'0.5px'
+                  background:'#6b5e4a', color:'#e8d4a0',
+                  padding:'2px 8px', borderRadius:'3px',
+                  fontSize:'10px', fontWeight:'700', letterSpacing:'0.5px',
+                  whiteSpace:'nowrap'
                 }}>INACTIVE</span>
               )}
             </div>
-            <div style={{fontSize:'11px', color:'#a09080'}}>
+            <div className="rsp-header-sub" style={{
+              fontSize:'11px', color:'#a09080',
+              whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'
+            }}>
               {participant?.ldc_code} — {participant?.ldc_name}
             </div>
           </div>
-          {/* Admin — Deactivate / Reactivate */}
-          {isSuperAdmin && participant && (
+
+          {/* Right: mobile ☰ */}
+          <div className="rsp-header-actions">
             <button
-              onClick={toggleActive}
-              disabled={toggling}
+              className="rsp-show-mobile-only"
+              onClick={() => setMenuOpen(o => !o)}
               style={{
-                background: participant.is_active ? '#9b2335' : '#2d6a4f',
-                color:'#fff', border:'none', borderRadius:'6px',
-                padding:'8px 16px', fontSize:'12px', fontWeight:'700',
-                cursor: toggling ? 'not-allowed' : 'pointer',
-                fontFamily:'inherit', opacity: toggling ? 0.7 : 1
+                background: menuOpen ? '#c49a3c' : 'transparent',
+                border:'1px solid #c49a3c',
+                color: menuOpen ? '#1a1610' : '#c49a3c',
+                borderRadius:'6px', padding:'6px 11px',
+                cursor:'pointer', fontSize:'17px', lineHeight:1,
+                fontFamily:'inherit', fontWeight:'700'
               }}
-            >
-              {toggling ? '...' : participant.is_active ? 'Deactivate' : 'Reactivate'}
-            </button>
-          )}
+            >☰</button>
+          </div>
         </div>
 
         {/* Tabs */}
         <div style={{borderTop:'1px solid #3a3428'}}>
           <div style={{maxWidth:'1200px', margin:'0 auto'}}>
-            <div className="rsp-tabs">
+            {/* Desktop tab bar */}
+            <div className="rsp-tabs rsp-tabs-desktop">
               {tabs.map(tab => (
                 <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
                   fontSize:'12px', fontWeight:'600',
@@ -173,8 +190,37 @@ export default function ParticipantProfile() {
                 }}>{tab.label}</button>
               ))}
             </div>
+            {/* Mobile active-tab label */}
+            <div className="rsp-tabs-mobile" style={{
+              alignItems:'center', padding:'0 16px',
+              borderBottom:'2px solid #3a3428'
+            }}>
+              <span style={{fontSize:'12px', fontWeight:'600', color:'#c49a3c', padding:'13px 0'}}>
+                {tabs.find(t => t.id === activeTab)?.label}
+              </span>
+            </div>
           </div>
         </div>
+        {/* Mobile dropdown menu */}
+        {menuOpen && (
+          <div className="rsp-tabs-mobile" style={{
+            flexDirection:'column',
+            position:'absolute', top:'100%', left:0, right:0,
+            background:'#1a1610', borderTop:'1px solid #3a3428',
+            zIndex:200, boxShadow:'0 8px 24px rgba(0,0,0,0.3)'
+          }}>
+            {tabs.map(tab => (
+              <button key={tab.id} onClick={() => { setActiveTab(tab.id); setMenuOpen(false); }} style={{
+                display:'block', width:'100%', textAlign:'left',
+                fontSize:'13px', fontWeight: activeTab === tab.id ? '700' : '500',
+                color: activeTab === tab.id ? '#c49a3c' : '#a09080',
+                background: activeTab === tab.id ? '#2a2418' : 'transparent',
+                border:'none', borderBottom:'1px solid #3a3428',
+                padding:'14px 20px', cursor:'pointer', fontFamily:'inherit'
+              }}>{tab.label}</button>
+            ))}
+          </div>
+        )}
       </header>
 
       {/* Participant Summary Bar */}
@@ -187,53 +233,109 @@ export default function ParticipantProfile() {
           display:'flex', alignItems:'center',
           gap:'24px', flexWrap:'wrap'
         }}>
-          {/* Avatar */}
-          <div style={{
-            width:'52px', height:'52px', borderRadius:'50%',
-            background:'#1a1610', display:'flex',
-            alignItems:'center', justifyContent:'center',
-            fontSize:'20px', fontWeight:'700', color:'#c49a3c',
-            flexShrink:0
-          }}>
-            {participant?.full_name?.charAt(0)}
-          </div>
-          {/* Name & ID */}
-          <div style={{flex:1}}>
-            <div style={{fontSize:'18px', fontWeight:'700', letterSpacing:'-0.3px'}}>
-              {participant?.full_name}
+
+          {/* Row 1 — Avatar + Name/ID (always a row) */}
+          <div className="rsp-sumbar-identity">
+            <div style={{
+              width:'52px', height:'52px', borderRadius:'50%',
+              background:'#1a1610', display:'flex',
+              alignItems:'center', justifyContent:'center',
+              fontSize:'20px', fontWeight:'700', color:'#c49a3c',
+              flexShrink:0
+            }}>
+              {participant?.full_name?.charAt(0)}
             </div>
-            <div style={{fontSize:'12px', color:'#6b5e4a', marginTop:'2px'}}>
-              {participant?.participant_id} · {participant?.ldc_code}
+            <div>
+              <div style={{fontSize:'18px', fontWeight:'700', letterSpacing:'-0.3px'}}>
+                {participant?.full_name}
+              </div>
+              <div style={{fontSize:'12px', color:'#6b5e4a', marginTop:'2px'}}>
+                {participant?.participant_id} · {participant?.ldc_code}
+              </div>
+              {/* Desktop only: Deactivate/Reactivate below name */}
+              {isSuperAdmin && !isNationalAdmin && participant && (
+                <button
+                  onClick={toggleActive}
+                  disabled={toggling}
+                  className="rsp-hide-mobile"
+                  style={{
+                    marginTop:'8px',
+                    background: participant.is_active ? '#9b2335' : '#2d6a4f',
+                    color:'#fff', border:'none', borderRadius:'6px',
+                    padding:'5px 14px', fontSize:'11px', fontWeight:'700',
+                    cursor: toggling ? 'not-allowed' : 'pointer',
+                    fontFamily:'inherit', opacity: toggling ? 0.7 : 1,
+                    whiteSpace:'nowrap'
+                  }}
+                >
+                  {toggling ? '...' : participant.is_active ? 'Deactivate' : 'Reactivate'}
+                </button>
+              )}
             </div>
           </div>
-          {/* Quick Stats */}
-          {[
-            { label:'Age',    value: calcAge(participant?.date_of_birth)     },
-            { label:'Gender', value: participant?.gender || '—'              },
-            { label:'DOB',    value: formatDate(participant?.date_of_birth)  },
-            { label:'Completion', value: formatDate(participant?.planned_completion) },
-          ].map(s => (
-            <div key={s.label} style={{textAlign:'center'}}>
+
+          {/* Rows 2 & 3 — Stats (desktop: flex row / mobile: 2×2 grid) */}
+          <div className="rsp-sumbar-stats">
+            {/* Row 2 col 1 — Age */}
+            <div className="rsp-sumbar-stat" style={{textAlign:'center'}}>
               <div style={{fontSize:'15px', fontWeight:'700', color:'#1a1610'}}>
-                {s.value}
+                {calcAge(participant?.date_of_birth)}
               </div>
-              <div style={{
-                fontSize:'10px', color:'#a09080',
-                textTransform:'uppercase', letterSpacing:'0.4px'
-              }}>
-                {s.label}
+              <div style={{fontSize:'10px', color:'#a09080', textTransform:'uppercase', letterSpacing:'0.4px'}}>
+                Age
               </div>
             </div>
-          ))}
-          {/* Gender Badge */}
-          <span style={{
-            background: participant?.gender === 'Female' ? '#f5e0e3' : '#dce9f5',
-            color: participant?.gender === 'Female' ? '#9b2335' : '#1a4068',
-            padding:'4px 12px', borderRadius:'12px',
-            fontSize:'11px', fontWeight:'700'
-          }}>
-            {participant?.gender}
-          </span>
+            {/* Row 2 col 2 — Gender badge (replaces old text stat) */}
+            <div className="rsp-sumbar-gender-cell">
+              <span style={{
+                background: participant?.gender === 'Female' ? '#f5e0e3' : '#dce9f5',
+                color: participant?.gender === 'Female' ? '#9b2335' : '#1a4068',
+                padding:'4px 12px', borderRadius:'12px',
+                fontSize:'11px', fontWeight:'700'
+              }}>
+                {participant?.gender}
+              </span>
+            </div>
+            {/* Row 3 col 1 — DOB */}
+            <div className="rsp-sumbar-stat" style={{textAlign:'center'}}>
+              <div style={{fontSize:'15px', fontWeight:'700', color:'#1a1610'}}>
+                {formatDate(participant?.date_of_birth)}
+              </div>
+              <div style={{fontSize:'10px', color:'#a09080', textTransform:'uppercase', letterSpacing:'0.4px'}}>
+                DOB
+              </div>
+            </div>
+            {/* Row 3 col 2 — Completion */}
+            <div className="rsp-sumbar-stat" style={{textAlign:'center'}}>
+              <div style={{fontSize:'15px', fontWeight:'700', color:'#1a1610'}}>
+                {formatDate(participant?.planned_completion)}
+              </div>
+              <div style={{fontSize:'10px', color:'#a09080', textTransform:'uppercase', letterSpacing:'0.4px'}}>
+                Completion
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile only — Deactivate/Reactivate full-width */}
+          {isSuperAdmin && !isNationalAdmin && participant && (
+            <div className="rsp-show-mobile-only" style={{width:'100%'}}>
+              <button
+                onClick={toggleActive}
+                disabled={toggling}
+                style={{
+                  width:'100%',
+                  background: participant.is_active ? '#9b2335' : '#2d6a4f',
+                  color:'#fff', border:'none', borderRadius:'6px',
+                  padding:'8px 14px', fontSize:'12px', fontWeight:'700',
+                  cursor: toggling ? 'not-allowed' : 'pointer',
+                  fontFamily:'inherit', opacity: toggling ? 0.7 : 1,
+                }}
+              >
+                {toggling ? '...' : participant.is_active ? 'Deactivate' : 'Reactivate'}
+              </button>
+            </div>
+          )}
+
         </div>
       </div>
 
@@ -277,27 +379,27 @@ export default function ParticipantProfile() {
           <PersonalInfo
             participant={participant}
             onUpdate={loadParticipant}
-            readOnly={isLDCStaff && !participant?.is_active}
+            readOnly={isNationalAdmin || (isLDCStaff && !participant?.is_active)}
           />
         )}
         {activeTab === 'academic'    && (
           <AcademicRecords
             participantId={id}
             participant={participant}
-            readOnly={isLDCStaff && !participant?.is_active}
+            readOnly={isNationalAdmin || (isLDCStaff && !participant?.is_active)}
           />
         )}
         {activeTab === 'certs'       && (
           <Certifications
             participantId={id}
-            readOnly={isLDCStaff && !participant?.is_active}
+            readOnly={isNationalAdmin || (isLDCStaff && !participant?.is_active)}
           />
         )}
         {activeTab === 'development' && (
           <DevelopmentPlan
             participantId={id}
             participant={participant}
-            readOnly={isLDCStaff && !participant?.is_active}
+            readOnly={isNationalAdmin || (isLDCStaff && !participant?.is_active)}
           />
         )}
           {activeTab === 'tes' && participant && (

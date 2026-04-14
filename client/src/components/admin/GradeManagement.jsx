@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 
-export default function GradeManagement() {
+export default function GradeManagement({ readOnly = false }) {
   const [grades,     setGrades    ] = useState([]);
   const [loading,    setLoading   ] = useState(true);
   const [showForm,   setShowForm  ] = useState(false);
@@ -17,9 +17,7 @@ export default function GradeManagement() {
 
   async function loadGrades() {
     try {
-      const res = await api.get('/api/grades', {
-        params: { type: filterType }
-      });
+      const res = await api.get('/api/grades', { params: { type: filterType } });
       setGrades(res.data);
     } catch {
       setError('Failed to load grades');
@@ -35,10 +33,7 @@ export default function GradeManagement() {
       await api.post('/api/grades', form);
       setSuccess('Grade added successfully');
       setShowForm(false);
-      setForm({
-        grade_name:'', grade_type:'ol',
-        description:'', is_pass:true, display_order:0
-      });
+      setForm({ grade_name:'', grade_type:'ol', description:'', is_pass:true, display_order:0 });
       loadGrades();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to add grade');
@@ -65,7 +60,6 @@ export default function GradeManagement() {
     color:'#3d3528', letterSpacing:'0.3px',
     textTransform:'uppercase', marginBottom:'5px'
   };
-
   const inputStyle = {
     width:'100%', padding:'9px 11px',
     border:'1px solid #d4c9b0', borderRadius:'5px',
@@ -73,29 +67,29 @@ export default function GradeManagement() {
     background:'#faf8f3', outline:'none', fontFamily:'inherit'
   };
 
-  if (loading) return (
-    <div style={{padding:'32px', color:'#6b5e4a'}}>Loading...</div>
-  );
+  if (loading) return <div style={{padding:'32px', color:'#6b5e4a'}}>Loading...</div>;
 
   return (
     <div>
-      <div style={{
+      <div className="rsp-section-header" style={{
         display:'flex', justifyContent:'space-between',
         alignItems:'center', marginBottom:'20px'
       }}>
         <div>
-          <h2 style={{fontSize:'20px', fontWeight:'700'}}>Grade Management</h2>
+          <h2 style={{fontSize:'20px', fontWeight:'700'}}>Exam Grade Management</h2>
           <p style={{color:'#6b5e4a', fontSize:'13px', marginTop:'2px'}}>
-            Manage OL and AL grade master list
+            Manage OL and AL exam grade master list
           </p>
         </div>
-        <button onClick={() => setShowForm(!showForm)} style={{
-          background:'#1a1610', color:'#c49a3c', border:'none',
-          borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
-          fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
-        }}>
-          {showForm ? '✕ Cancel' : '+ Add Grade'}
-        </button>
+        {!readOnly && (
+          <button onClick={() => setShowForm(!showForm)} style={{
+            background:'#1a1610', color:'#c49a3c', border:'none',
+            borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
+            fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+          }}>
+            {showForm ? '✕ Cancel' : '+ Add Grade'}
+          </button>
+        )}
       </div>
 
       {error && (
@@ -131,7 +125,7 @@ export default function GradeManagement() {
                 <label style={labelStyle}>Grade Name</label>
                 <input style={inputStyle} value={form.grade_name}
                   onChange={e => setForm({...form, grade_name:e.target.value})}
-                  placeholder="e.g. A+" required />
+                  required />
               </div>
               <div>
                 <label style={labelStyle}>Type</label>
@@ -145,7 +139,7 @@ export default function GradeManagement() {
                 <label style={labelStyle}>Description</label>
                 <input style={inputStyle} value={form.description}
                   onChange={e => setForm({...form, description:e.target.value})}
-                  placeholder="e.g. Distinction" />
+                  />
               </div>
               <div>
                 <label style={labelStyle}>Display Order</label>
@@ -198,11 +192,8 @@ export default function GradeManagement() {
       </div>
 
       {/* Grades Table */}
-      <div style={{
-        background:'#fffef9', border:'1px solid #d4c9b0',
-        borderRadius:'8px', overflow:'hidden'
-      }}>
-        <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
+      <div className="rsp-card-wrap">
+        <table className="rsp-card-table" style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
           <thead>
             <tr style={{background:'#f0ece2'}}>
               {['Grade','Type','Description','Pass/Fail','Order','Status','Action'].map(h => (
@@ -221,7 +212,7 @@ export default function GradeManagement() {
                 borderBottom:'1px solid #e8e0d0',
                 opacity: g.is_active ? 1 : 0.5
               }}>
-                <td style={{padding:'10px 14px'}}>
+                <td data-label="Grade" style={{padding:'10px 14px'}}>
                   <span style={{
                     fontSize:'18px', fontWeight:'700',
                     color: g.is_pass ? '#2d6a4f' : '#9b2335'
@@ -229,7 +220,7 @@ export default function GradeManagement() {
                     {g.grade_name}
                   </span>
                 </td>
-                <td style={{padding:'10px 14px'}}>
+                <td data-label="Type" style={{padding:'10px 14px'}}>
                   <span style={{
                     background: g.grade_type === 'ol' ? '#d8ede4' : '#dce9f5',
                     color: g.grade_type === 'ol' ? '#2d6a4f' : '#1a4068',
@@ -239,10 +230,10 @@ export default function GradeManagement() {
                     {g.grade_type.toUpperCase()}
                   </span>
                 </td>
-                <td style={{padding:'10px 14px', color:'#6b5e4a'}}>
+                <td data-label="Description" style={{padding:'10px 14px', color:'#6b5e4a'}}>
                   {g.description || '—'}
                 </td>
-                <td style={{padding:'10px 14px'}}>
+                <td data-label="Pass/Fail" style={{padding:'10px 14px'}}>
                   <span style={{
                     background: g.is_pass ? '#d8ede4' : '#f5e0e3',
                     color: g.is_pass ? '#2d6a4f' : '#9b2335',
@@ -252,10 +243,10 @@ export default function GradeManagement() {
                     {g.is_pass ? 'Pass' : 'Fail'}
                   </span>
                 </td>
-                <td style={{padding:'10px 14px', color:'#6b5e4a'}}>
+                <td data-label="Order" style={{padding:'10px 14px', color:'#6b5e4a'}}>
                   {g.display_order}
                 </td>
-                <td style={{padding:'10px 14px'}}>
+                <td data-label="Status" style={{padding:'10px 14px'}}>
                   <span style={{
                     background: g.is_active ? '#d8ede4' : '#f5e0e3',
                     color: g.is_active ? '#2d6a4f' : '#9b2335',
@@ -265,16 +256,18 @@ export default function GradeManagement() {
                     {g.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
-                <td style={{padding:'10px 14px'}}>
-                  <button onClick={() => toggleActive(g)} style={{
-                    background: g.is_active ? '#f5e0e3' : '#d8ede4',
-                    color: g.is_active ? '#9b2335' : '#2d6a4f',
-                    border:'none', borderRadius:'4px',
-                    padding:'4px 10px', fontSize:'11px',
-                    fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                  }}>
-                    {g.is_active ? 'Deactivate' : 'Activate'}
-                  </button>
+                <td data-label="Action" style={{padding:'10px 14px'}}>
+                  {!readOnly && (
+                    <button onClick={() => toggleActive(g)} style={{
+                      background: g.is_active ? '#f5e0e3' : '#d8ede4',
+                      color: g.is_active ? '#9b2335' : '#2d6a4f',
+                      border:'none', borderRadius:'4px',
+                      padding:'4px 10px', fontSize:'11px',
+                      fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
+                    }}>
+                      {g.is_active ? 'Deactivate' : 'Activate'}
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

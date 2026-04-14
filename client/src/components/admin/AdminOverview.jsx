@@ -527,7 +527,8 @@ export default function AdminOverview() {
             <span style={{ background: filterLDC ? '#dce9f5' : '#f0ece2',
               color: filterLDC ? '#1a4068' : '#6b5e4a',
               padding:'3px 10px', borderRadius:'10px',
-              fontSize:'12px', fontWeight:'700' }}>
+              fontSize:'12px', fontWeight:'700',
+              whiteSpace:'nowrap', flexShrink:0 }}>
               {selectedLDCLabel}
             </span>
             {!filterLDC && (

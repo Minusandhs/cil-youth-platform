@@ -27,7 +27,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
 
   const [olForm, setOlForm] = useState({
     exam_year: '', index_number: '', school_name: '',
-    no_of_passes: '', results_verified: false, notes: '',
+    results_verified: false, notes: '',
     subjects: []
   });
 
@@ -140,7 +140,6 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
       exam_year       : result.exam_year        || '',
       index_number    : result.index_number     || '',
       school_name     : result.school_name      || '',
-      no_of_passes    : result.no_of_passes     || '',
       results_verified: result.results_verified || false,
       notes           : result.notes            || '',
       subjects        : result.subjects?.filter(s => s.subject_name) || []
@@ -186,7 +185,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
       setShowOLForm(false); setEditOL(null);
       setOlForm({
         exam_year:'', index_number:'', school_name:'',
-        no_of_passes:'', results_verified:false, notes:'', subjects:[]
+        results_verified:false, notes:'', subjects:[]
       });
       loadAll();
     } catch (err) {
@@ -304,8 +303,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                 setEditOL(null);
                 setOlForm({
                   exam_year:'', index_number:'', school_name:'',
-                  no_of_passes:'', results_verified:false,
-                  notes:'', subjects:[]
+                  results_verified:false, notes:'', subjects:[]
                 });
                 setShowOLForm(true);
               }} style={{
@@ -330,21 +328,19 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                   <div>
                     <label style={labelStyle}>Exam Year *</label>
                     <input style={inputStyle} type="number"
-                      placeholder="e.g. 2022" required
+                      required
                       value={olForm.exam_year}
                       onChange={e => setOlForm({...olForm, exam_year:e.target.value})} />
                   </div>
                   <div>
                     <label style={labelStyle}>Index Number</label>
                     <input style={inputStyle}
-                      placeholder="Exam index number"
                       value={olForm.index_number}
                       onChange={e => setOlForm({...olForm, index_number:e.target.value})} />
                   </div>
                   <div>
                     <label style={labelStyle}>School Name</label>
                     <input style={inputStyle}
-                      placeholder="School name"
                       value={olForm.school_name}
                       onChange={e => setOlForm({...olForm, school_name:e.target.value})} />
                   </div>
@@ -417,18 +413,12 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                 </div>
 
                 <div style={{
-                  display:'grid', gridTemplateColumns:'1fr 1fr',
-                  gap:'14px', marginBottom:'16px'
+                  display:'flex', alignItems:'center',
+                  gap:'10px', marginBottom:'16px'
                 }}>
-                  <div>
-                    <label style={labelStyle}>No. of Passes</label>
-                    <input style={inputStyle} type="number" min="0"
-                      value={olForm.no_of_passes}
-                      onChange={e => setOlForm({...olForm, no_of_passes:e.target.value})} />
-                  </div>
                   <div style={{
                     display:'flex', alignItems:'center',
-                    gap:'10px', paddingTop:'20px'
+                    gap:'10px'
                   }}>
                     <input type="checkbox" id="ol_verified"
                       checked={olForm.results_verified}
@@ -443,7 +433,6 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                 <div style={{marginBottom:'16px'}}>
                   <label style={labelStyle}>Notes</label>
                   <textarea style={{...inputStyle, minHeight:'60px'}}
-                    placeholder="Any additional notes"
                     value={olForm.notes}
                     onChange={e => setOlForm({...olForm, notes:e.target.value})} />
                 </div>
@@ -497,8 +486,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                     </div>
                     <div style={{fontSize:'12px', color:'#6b5e4a', marginTop:'2px'}}>
                       {result.school_name && `${result.school_name} · `}
-                      {result.index_number && `Index: ${result.index_number} · `}
-                      {result.no_of_passes && `${result.no_of_passes} passes`}
+                      {result.index_number && `Index: ${result.index_number}`}
                       {result.results_verified && (
                         <span style={{
                           marginLeft:'8px', background:'#d8ede4',
@@ -594,21 +582,19 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                   <div>
                     <label style={labelStyle}>Exam Year *</label>
                     <input style={inputStyle} type="number"
-                      placeholder="e.g. 2024" required
+                      required
                       value={alForm.exam_year}
                       onChange={e => setAlForm({...alForm, exam_year:e.target.value})} />
                   </div>
                   <div>
                     <label style={labelStyle}>Index Number</label>
                     <input style={inputStyle}
-                      placeholder="Exam index number"
                       value={alForm.index_number}
                       onChange={e => setAlForm({...alForm, index_number:e.target.value})} />
                   </div>
                   <div>
                     <label style={labelStyle}>School Name</label>
                     <input style={inputStyle}
-                      placeholder="School name"
                       value={alForm.school_name}
                       onChange={e => setAlForm({...alForm, school_name:e.target.value})} />
                   </div>
@@ -635,7 +621,6 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                   <div>
                     <label style={labelStyle}>Z-Score</label>
                     <input style={inputStyle} type="number" step="0.0001"
-                      placeholder="e.g. 1.2345"
                       value={alForm.z_score}
                       onChange={e => setAlForm({...alForm, z_score:e.target.value})} />
                   </div>
@@ -675,14 +660,12 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                       <div>
                         <label style={labelStyle}>University Name</label>
                         <input style={inputStyle}
-                          placeholder="e.g. University of Colombo"
                           value={alForm.university_name}
                           onChange={e => setAlForm({...alForm, university_name:e.target.value})} />
                       </div>
                       <div>
                         <label style={labelStyle}>Course Selected</label>
                         <input style={inputStyle}
-                          placeholder="e.g. BSc Computer Science"
                           value={alForm.course_selected}
                           onChange={e => setAlForm({...alForm, course_selected:e.target.value})} />
                       </div>

@@ -6,6 +6,9 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true,
+    watch: {
+      usePolling: true,   // required for hot-reload inside Docker on Windows
+    },
     proxy: {
       '/api': {
         target: 'http://server:5000',

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 
-export default function UserManagement() {
+export default function UserManagement({ readOnly = false }) {
   const [users,    setUsers   ] = useState([]);
   const [ldcs,     setLdcs    ] = useState([]);
   const [loading,  setLoading ] = useState(true);
@@ -134,7 +134,7 @@ export default function UserManagement() {
 
   return (
     <div>
-      <div style={{
+      <div className="rsp-section-header" style={{
         display:'flex', justifyContent:'space-between',
         alignItems:'center', marginBottom:'20px'
       }}>
@@ -144,13 +144,15 @@ export default function UserManagement() {
             Create and manage LDC staff accounts
           </p>
         </div>
-        <button onClick={openCreate} style={{
-          background:'#1a1610', color:'#c49a3c', border:'none',
-          borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
-          fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
-        }}>
-          + New User
-        </button>
+        {!readOnly && (
+          <button onClick={openCreate} style={{
+            background:'#1a1610', color:'#c49a3c', border:'none',
+            borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
+            fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+          }}>
+            + New User
+          </button>
+        )}
       </div>
 
       {error && (
@@ -183,7 +185,7 @@ export default function UserManagement() {
                 <label style={labelStyle}>Full Name</label>
                 <input style={inputStyle} value={form.full_name}
                   onChange={e => setForm({...form, full_name:e.target.value})}
-                  placeholder="e.g. Kasun Perera" required />
+                  required />
               </div>
               <div>
                 <label style={labelStyle}>Username</label>
@@ -194,7 +196,6 @@ export default function UserManagement() {
                 }}
                 value={form.username}
                 onChange={e => setForm({...form, username:e.target.value})}
-                placeholder="e.g. lk0101staff"
                 readOnly={!!editUser}
                 required />
                 {editUser && (
@@ -208,7 +209,7 @@ export default function UserManagement() {
                   <label style={labelStyle}>Password</label>
                   <input style={inputStyle} type="password" value={form.password}
                     onChange={e => setForm({...form, password:e.target.value})}
-                    placeholder="Min 6 characters" required />
+                    required />
                 </div>
               )}
               <div>
@@ -217,6 +218,7 @@ export default function UserManagement() {
                   onChange={e => setForm({...form, role:e.target.value})}
                   disabled={!!editUser}>
                   <option value="ldc_staff">LDC Staff</option>
+                  <option value="national_admin">National Admin (Read Only)</option>
                   <option value="super_admin">Super Admin</option>
                 </select>
               </div>
@@ -275,7 +277,7 @@ export default function UserManagement() {
               <input style={inputStyle} type="password"
                 value={newPassword}
                 onChange={e => setNewPassword(e.target.value)}
-                placeholder="Min 6 characters" />
+                />
             </div>
             <button onClick={() => handleResetPassword(showPwForm.id)} style={{
               background:'#c49a3c', color:'#1a1610', border:'none',
@@ -298,11 +300,8 @@ export default function UserManagement() {
       )}
 
       {/* Users Table */}
-      <div style={{
-        background:'#fffef9', border:'1px solid #d4c9b0',
-        borderRadius:'8px', overflow:'hidden'
-      }}>
-        <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
+      <div className="rsp-card-wrap">
+        <table className="rsp-card-table" style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
           <thead>
             <tr style={{background:'#f0ece2'}}>
               {['Full Name','Username','Role','LDC','Status','Last Login','Actions'].map(h => (
@@ -321,22 +320,25 @@ export default function UserManagement() {
                 borderBottom:'1px solid #e8e0d0',
                 opacity: u.is_active ? 1 : 0.6
               }}>
-                <td style={{padding:'10px 14px', fontWeight:'600'}}>{u.full_name}</td>
-                <td style={{padding:'10px 14px', color:'#6b5e4a'}}>{u.username}</td>
-                <td style={{padding:'10px 14px'}}>
+                <td data-label="Name" style={{padding:'10px 14px', fontWeight:'600'}}>{u.full_name}</td>
+                <td data-label="Username" style={{padding:'10px 14px', color:'#6b5e4a'}}>{u.username}</td>
+                <td data-label="Role" style={{padding:'10px 14px'}}>
                   <span style={{
-                    background: u.role === 'super_admin' ? '#1a1610' : '#dce9f5',
-                    color: u.role === 'super_admin' ? '#c49a3c' : '#1a4068',
+                    background: u.role === 'super_admin' ? '#1a1610'
+                      : u.role === 'national_admin' ? '#2e1a4a' : '#dce9f5',
+                    color: u.role === 'super_admin' ? '#c49a3c'
+                      : u.role === 'national_admin' ? '#c4a3e8' : '#1a4068',
                     padding:'2px 8px', borderRadius:'10px',
                     fontSize:'10px', fontWeight:'700'
                   }}>
-                    {u.role === 'super_admin' ? 'Super Admin' : 'LDC Staff'}
+                    {u.role === 'super_admin' ? 'Super Admin'
+                      : u.role === 'national_admin' ? 'National Admin' : 'LDC Staff'}
                   </span>
                 </td>
-                <td style={{padding:'10px 14px', color:'#6b5e4a'}}>
+                <td data-label="LDC" style={{padding:'10px 14px', color:'#6b5e4a'}}>
                   {u.ldc_code || '—'}
                 </td>
-                <td style={{padding:'10px 14px'}}>
+                <td data-label="Status" style={{padding:'10px 14px'}}>
                   <span style={{
                     background: u.is_active ? '#d8ede4' : '#f5e0e3',
                     color: u.is_active ? '#2d6a4f' : '#9b2335',
@@ -346,38 +348,37 @@ export default function UserManagement() {
                     {u.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
-                <td style={{padding:'10px 14px', color:'#6b5e4a', fontSize:'12px'}}>
+                <td data-label="Last Login" style={{padding:'10px 14px', color:'#6b5e4a', fontSize:'12px'}}>
                   {u.last_login ? new Date(u.last_login).toLocaleDateString() : 'Never'}
                 </td>
-                <td style={{padding:'10px 14px'}}>
-                  <div style={{display:'flex', gap:'6px', flexWrap:'wrap'}}>
-                    {/* Edit */}
-                    <button onClick={() => openEdit(u)} style={{
-                      background:'#dce9f5', color:'#1a4068', border:'none',
-                      borderRadius:'4px', padding:'4px 10px', fontSize:'11px',
-                      fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                    }}>Edit</button>
-                    {/* Reset Password */}
-                    {u.role !== 'super_admin' && (
-                      <button onClick={() => { setShowPwForm(u); setShowForm(false); }} style={{
-                        background:'#f5edd8', color:'#b85c00', border:'none',
+                <td data-label="Actions" style={{padding:'10px 14px'}}>
+                  {!readOnly && (
+                    <div style={{display:'flex', gap:'6px', flexWrap:'wrap'}}>
+                      <button onClick={() => openEdit(u)} style={{
+                        background:'#dce9f5', color:'#1a4068', border:'none',
                         borderRadius:'4px', padding:'4px 10px', fontSize:'11px',
                         fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                      }}>Reset PW</button>
-                    )}
-                    {/* Activate / Deactivate */}
-                    {u.role !== 'super_admin' && (
-                      <button onClick={() => toggleActive(u)} style={{
-                        background: u.is_active ? '#f5e0e3' : '#d8ede4',
-                        color: u.is_active ? '#9b2335' : '#2d6a4f',
-                        border:'none', borderRadius:'4px', padding:'4px 10px',
-                        fontSize:'11px', fontWeight:'600',
-                        cursor:'pointer', fontFamily:'inherit'
-                      }}>
-                        {u.is_active ? 'Deactivate' : 'Activate'}
-                      </button>
-                    )}
-                  </div>
+                      }}>Edit</button>
+                      {u.role !== 'super_admin' && (
+                        <button onClick={() => { setShowPwForm(u); setShowForm(false); }} style={{
+                          background:'#f5edd8', color:'#b85c00', border:'none',
+                          borderRadius:'4px', padding:'4px 10px', fontSize:'11px',
+                          fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
+                        }}>Reset PW</button>
+                      )}
+                      {u.role !== 'super_admin' && (
+                        <button onClick={() => toggleActive(u)} style={{
+                          background: u.is_active ? '#f5e0e3' : '#d8ede4',
+                          color: u.is_active ? '#9b2335' : '#2d6a4f',
+                          border:'none', borderRadius:'4px', padding:'4px 10px',
+                          fontSize:'11px', fontWeight:'600',
+                          cursor:'pointer', fontFamily:'inherit'
+                        }}>
+                          {u.is_active ? 'Deactivate' : 'Activate'}
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
