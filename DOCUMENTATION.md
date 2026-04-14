@@ -5,9 +5,9 @@ the CIL Youth Development Platform. Written for someone who may not have deep
 programming experience but needs to keep the system running and make changes with
 the help of Claude Code.
 
-**Version:** 1.0.0
+**Version:** 1.0.1
 **Live URL:** https://cilyouth.org
-**Last updated:** 2026-04-14
+**Last updated:** 2026-04-15
 
 ---
 
@@ -63,15 +63,17 @@ cil-youth-platform/
 │   │   │
 │   │   ├── components/             # Reusable sections within pages
 │   │   │   ├── admin/              # Admin-only components
-│   │   │   │   ├── AdminOverview.jsx       # Dashboard overview stats
-│   │   │   │   ├── UserManagement.jsx      # Manage staff users
-│   │   │   │   ├── LDCManagement.jsx       # Manage LDC centres
-│   │   │   │   ├── ParticipantList.jsx     # List all participants
-│   │   │   │   ├── ParticipantSync.jsx     # CSV sync from Salesforce
-│   │   │   │   ├── SubjectManagement.jsx   # OL/AL subject master list
-│   │   │   │   ├── GradeManagement.jsx     # Grade master list
-│   │   │   │   ├── CertTypeManagement.jsx  # Certificate type master list
-│   │   │   │   └── TESManagement.jsx       # TES batch management
+│   │   │   │   ├── AdminOverview.jsx         # Dashboard overview stats
+│   │   │   │   ├── UserManagement.jsx        # Manage staff users
+│   │   │   │   ├── LDCManagement.jsx         # Manage LDC centres
+│   │   │   │   ├── ParticipantList.jsx       # List all participants (paginated)
+│   │   │   │   ├── ParticipantSync.jsx       # CSV sync from Salesforce
+│   │   │   │   ├── ReferenceData.jsx         # Sub-tab wrapper for reference tables
+│   │   │   │   ├── SubjectManagement.jsx     # OL/AL subject master list
+│   │   │   │   ├── GradeManagement.jsx       # OL/AL exam grade master list
+│   │   │   │   ├── SchoolGradeManagement.jsx # School Grade 1-13 configurable list
+│   │   │   │   ├── CertTypeManagement.jsx    # Certificate type master list
+│   │   │   │   └── TESManagement.jsx         # TES batch management
 │   │   │   │
 │   │   │   ├── ldc/                # LDC staff-only components
 │   │   │   │   ├── LDCOverview.jsx         # LDC dashboard overview
@@ -118,7 +120,8 @@ cil-youth-platform/
 │   │   ├── auth.js                 # Login, users, change password
 │   │   ├── participants.js         # Participant CRUD + sync
 │   │   ├── tes.js                  # TES batches + applications
-│   │   └── masterdata.js           # Subjects, grades, cert types
+│   │   ├── masterdata.js           # Subjects, grades, cert types
+│   │   └── schoolGrades.js         # School grade levels (Grade 1-13)
 │   ├── models/
 │   │   └── schema.sql              # Database table definitions (runs once)
 │   ├── migrations/                 # Database changes after initial setup
@@ -131,7 +134,10 @@ cil-youth-platform/
 │   │   ├── 007_tes.sql
 │   │   ├── 008_tes_history.sql
 │   │   ├── 009_add_is_exited.sql
-│   │   └── 010_search_index.sql
+│   │   ├── 010_search_index.sql
+│   │   ├── 011_national_admin_role.sql   # Adds national_admin to users role constraint
+│   │   ├── 012_tes_admin_notes.sql       # Adds admin_notes column to tes_applications
+│   │   └── 013_school_grade_levels.sql   # Creates school_grade_levels table + seed data
 │   └── Dockerfile.prod             # How to build backend for production
 │
 ├── docker-compose.yml              # Local development setup
@@ -404,9 +410,10 @@ docker exec -i cil_db psql -U cil_admin -d cil_platform < server/migrations/011_
 | development_plan_history | History of plan updates |
 | development_plan_goal_snapshots | Goal snapshots per history entry |
 | tes_batches | TES funding batches |
-| tes_applications | Individual TES applications |
+| tes_applications | Individual TES applications (+ admin_notes separate from official_notes) |
 | subjects | Admin-controlled OL/AL subject master list |
-| grades | Admin-controlled grade master list |
+| grades | Admin-controlled OL/AL exam grade master list |
+| school_grade_levels | Configurable school grade dropdown (Grade 1–13) |
 
 ---
 
@@ -553,21 +560,30 @@ const notes = response.data;
 
 ## 11. User Roles & Permissions
 
-There are two roles in the system:
+There are three roles in the system:
 
 ### super_admin
 - Can see and manage everything across all LDCs
 - Can create/edit/deactivate users and LDC centres
 - Can access all participant profiles
-- Can manage master lists (subjects, grades, cert types)
+- Can manage master lists (subjects, grades, cert types, school grade levels)
 - Can approve/reject/fund TES applications
+- Can activate/deactivate participants
+- Can change their own password
+
+### national_admin
+- Read-only access to Overview, Participants, and TES Batches tabs only
+- Cannot manage users, LDCs, or reference data
+- Cannot edit any participant data
+- Can change their own password
 
 ### ldc_staff
 - Can only see participants belonging to their LDC
 - Cannot manage users or LDCs
-- Cannot edit profiles of inactive/exited participants
+- Cannot edit profiles of inactive participants
 - Can submit and edit TES applications (only when batch is open)
 - Cannot change the development plan year after creation
+- Can change their own password
 
 ### How permissions work in the backend
 ```javascript
@@ -618,16 +634,65 @@ const isLDCStaff = user?.role === 'ldc_staff';
 - Configured in: `server/index.js`
 
 ### Responsive CSS classes
-Defined in `client/src/index.css`:
+Defined in `client/src/index.css`. Breakpoint: **768px** (and 480px for tightest grids).
+
+**Layout utilities**
 | Class | What it does |
 |---|---|
-| `rsp-tabs` | Tab bar scrolls horizontally on mobile |
-| `rsp-main` | Reduces main content padding on mobile |
+| `rsp-main` | Reduces main content padding on mobile (24px → 12px) |
+| `rsp-hide-mobile` | `display: none` on screens ≤768px |
+| `rsp-show-mobile-only` | `display: none` on desktop, `display: block` on mobile |
+| `rsp-section-header` | Flex row (desktop) → stacked column (mobile) for title + action button |
+| `rsp-section` | Reduces section card padding to 14px on mobile |
+| `rsp-submit-row` | Submit buttons stack full-width on mobile |
+
+**Grids**
+| Class | What it does |
+|---|---|
 | `rsp-grid-2` | 2-col grid → 1-col on mobile |
-| `rsp-grid-3` | 3-col grid → 1-col on mobile |
-| `rsp-grid-4` | 4-col grid → 2-col → 1-col on mobile |
-| `rsp-hide-mobile` | Hidden on screens under 768px |
-| `rsp-export-row` | Export buttons wrap on mobile |
+| `rsp-grid-3` | 3-col grid → 2-col (768px) → 1-col (480px) |
+| `rsp-grid-4` | 4-col grid → 2-col (768px) → 1-col (480px) |
+
+**Tab bars**
+| Class | What it does |
+|---|---|
+| `rsp-tabs` | Horizontal scroll tab bar (scrollbar hidden) |
+| `rsp-tabs-desktop` | Visible on desktop, hidden on mobile |
+| `rsp-tabs-mobile` | Hidden on desktop, visible on mobile |
+
+**Tables → card layout**
+| Class | What it does |
+|---|---|
+| `rsp-card-wrap` | Desktop: bordered container; mobile: transparent (card rows supply own borders) |
+| `rsp-card-table` | Table → card rows on mobile with data-label column headers |
+| `rsp-participant-table` | Extends `rsp-card-table` with avatar/name/stats grid layout |
+| `rsp-tes-table` | Extends `rsp-card-table` with TES participant card layout |
+
+**Search bar**
+| Class | What it does |
+|---|---|
+| `rsp-search-input` | Search input goes full-width on mobile (row 1) |
+| `rsp-search-filter` | Filter dropdown goes full-width on mobile (row 2) |
+| `rsp-search-buttons` | Buttons share a flex row with gap on all sizes; full-width on mobile |
+
+**Participant Summary Bar**
+| Class | What it does |
+|---|---|
+| `rsp-sumbar-identity` | Avatar + name flex row (always a row) |
+| `rsp-sumbar-stats` | Stats flex row (desktop) → 2×2 grid (mobile) |
+| `rsp-sumbar-stat` | Individual stat cell |
+| `rsp-sumbar-gender-cell` | Gender badge cell |
+
+**Participant card internals**
+| Class | What it does |
+|---|---|
+| `rsp-pcard-avatar` | Hidden on desktop; 52×52 circle with initial on mobile |
+| `rsp-pcard-sub` | Hidden on desktop; sub-text (ID/LDC) below name on mobile |
+
+**Exports**
+| Class | What it does |
+|---|---|
+| `rsp-export-row` | 2-col grid on mobile; buttons go 100% width |
 
 ---
 
