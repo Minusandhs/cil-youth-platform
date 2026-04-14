@@ -35,10 +35,10 @@ if [ ! -e "$CONF_PATH/live/$DOMAIN/privkey.pem" ]; then
   echo "### Creating temporary self-signed certificate ..."
   mkdir -p "$CONF_PATH/live/$DOMAIN"
   docker compose -f docker-compose.prod.yml run --rm --entrypoint \
-    "openssl req -x509 -nodes -newkey rsa:4096 -days 1 \
+    "sh -c 'mkdir -p /etc/letsencrypt/live/$DOMAIN && openssl req -x509 -nodes -newkey rsa:4096 -days 1 \
       -keyout /etc/letsencrypt/live/$DOMAIN/privkey.pem \
       -out    /etc/letsencrypt/live/$DOMAIN/fullchain.pem \
-      -subj '/CN=localhost'" certbot
+      -subj \"/CN=localhost\"'" certbot
 fi
 
 # ── 4. Start nginx (it can now start with the dummy cert) ────────
