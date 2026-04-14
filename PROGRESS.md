@@ -4,20 +4,43 @@
 Full-stack web application for Compassion International Lanka (CIL) to manage
 participant progress tracking and TES scholarship applications.
 
-- GitHub: https://github.com/Minusandhs/cil-youth-platform
-- Stack: React + Vite + Tailwind (frontend) | Node.js + Express (backend) | PostgreSQL 16 | Docker
-- Run: docker compose up
-- Frontend: http://localhost:3000
-- Backend: http://localhost:5000/health
+- **GitHub:** https://github.com/Minusandhs/cil-youth-platform
+- **Live:** https://cilyouth.org (v1.0.0 — production)
+- **Stack:** React + Vite + Tailwind (frontend) | Node.js + Express (backend) | PostgreSQL 16 | Docker + nginx + Let's Encrypt
+- **Local dev:** `docker compose up` → http://localhost:3000
+- **Deploy:** `./deploy.sh` (one command)
 
 ---
 
-## Credentials (Development Only — Delete Before Deploy)
-Role        | Username     | Password
-------------|--------------|---------------
-Super Admin | superadmin   | CIL@admin2025
-LDC Staff   | lk0101staff  | Test@1234
-LDC Staff 2 | lk0101staff2 | Test@1234
+## Credentials
+
+### Development (local only)
+| Role | Username | Password |
+|---|---|---|
+| Super Admin | superadmin | CIL@admin2025 |
+| LDC Staff | lk0101staff | Test@1234 |
+| LDC Staff 2 | lk0101staff2 | Test@1234 |
+
+### Production Server
+| Item | Value |
+|---|---|
+| Server | DigitalOcean Droplet — Ubuntu 24.04 LTS |
+| IP | 143.244.141.100 |
+| SSH | `ssh cil-server` (key: `~/.ssh/cil_platform`) |
+| App path | /opt/cil-platform |
+| .env path | /opt/cil-platform/.env |
+
+---
+
+## Version History
+
+### v1.0.0 — 2026-04-14 — Production Launch
+- System live at https://cilyouth.org
+- HTTPS/SSL via Let's Encrypt (auto-renewing)
+- www.cilyouth.org → cilyouth.org redirect
+- SSH access configured (`ssh cil-server`)
+- `./deploy.sh` one-command deployment script
+- Git tag: `v1.0.0`
 
 ---
 
@@ -46,7 +69,7 @@ LDC Staff 2 | lk0101staff2 | Test@1234
 ### Participant Profile (Admin + LDC)
 Accessible from both Admin and LDC dashboards
 
-Personal Info
+**Personal Info**
 - View/edit mode with dynamic status fields
 - Status history tracking
 - School level (OL/AL status)
@@ -54,19 +77,19 @@ Personal Info
 - Future plans (short/long term, career goal)
 - Living outside LDC (checkbox + purpose + location)
 
-Academic Records
+**Academic Records**
 - OL results — flexible subjects from master list
 - AL results — streams, z-score, university selection
 - Dynamic grades from master list
 - Duplicate subject prevention (frontend + backend)
 
-Certifications
+**Certifications**
 - Card view, add/edit/delete
 - Admin-controlled certificate types
 - NVQ level conditional display
 - Expiry indicator
 
-Development Plan
+**Development Plan**
 - One plan per year with year selector (locked after creation)
 - 5 goal categories (Spiritual, Academic, Social, Vocational, Health)
 - Action plan + mentor + review schedule
@@ -74,200 +97,163 @@ Development Plan
 - Full history with goal snapshots
 - Notes mandatory only when updating progress
 
-TES History
+**TES History**
 - Full TES support history per participant
 - Total amount received (excluding reverted)
 - Auto-recorded when batch marked Funded or Completed
 - Reverted entries marked clearly
 
-### Bug Fixes & UI Polish (session 2026-04-13)
-- Sync exit logic: participants absent from CSV now set `is_active = FALSE` (show as INACTIVE, not still active)
-- Sync reactivation: participants reappearing in CSV auto-reactivate (`is_active = TRUE`)
-- Removed separate EXITED badge — exited and deactivated are treated identically, both show INACTIVE
-- Profile lock for LDC staff now triggers on `!is_active` (covers both exit and manual deactivation)
-- Dev plan year "Change" button hidden for LDC staff — year is locked after plan creation
+### Security Hardening
+- `helmet` for HTTP security headers (CSP, X-Frame-Options, etc.)
+- `express-rate-limit`: 20 req/15min on login, 10 req/hr on sync
+- CORS origin driven by `CORS_ORIGIN` env var (no hardcoded values)
+- `.env.example` with all required vars documented
+- JWT_SECRET and DB credentials sourced from env — no defaults in code
+- Migration 010: GIN index on `participants.full_name` + index on `participant_id`
+
+### Production Infrastructure
+- `docker-compose.prod.yml` — 4-container production stack
+- `server/Dockerfile.prod` — no devDependencies, runs `npm start`
+- `client/Dockerfile.prod` — Vite build → nginx static serve
+- `client/nginx.conf` — HTTPS, HTTP→HTTPS redirect, www→apex redirect, /api proxy
+- Let's Encrypt SSL via Certbot (auto-renewing every 12h check)
+- HSTS header (`Strict-Transport-Security: max-age=63072000`)
+- `deploy.sh` — one-command deploy from local machine
+- SSH config (`~/.ssh/config`) — `ssh cil-server` shortcut
+
+### Bug Fixes & UI Polish
+- Sync exit logic: participants absent from CSV now set `is_active = FALSE`
+- Sync reactivation: participants reappearing in CSV auto-reactivate
+- Removed separate EXITED badge — exited and deactivated both show INACTIVE
+- Profile lock for LDC staff triggers on `!is_active`
+- Dev plan year "Change" button hidden for LDC staff
 - Favicon replaced with CIL-branded SVG (gold "CIL" on dark background)
-- Page title changed from "client" → "CIL Youth Platform"
-- Top bar badge changed from "CIL · TES" → "CIL"
+- Page title changed to "CIL Youth Platform"
+- Top bar badge changed to "CIL"
 - Go Back button restyled as gold pill badge (← Back)
 - Sync result stat renamed from "Exited (Locked)" → "Deactivated"
 - Export column renamed from "Exited" → "Active" (Yes/No)
 
-### Mobile Responsiveness (session 2026-04-13)
-- Tab bars (Admin, LDC, Profile) scroll horizontally on mobile — scrollbar hidden
-- Stat grids collapse: 3-col → 2-col at 768px → 1-col at 480px
-- TES grids collapse: 4-col → 2-col at 768px → 1-col at 480px
-- Participant Info grid: 2-col → 1-col at 768px
-- School Level Status grid: 4-col → 2-col → 1-col
-- Personal & Family grid: 3-col → 2-col → 1-col
+### Mobile Responsiveness
+- Tab bars scroll horizontally on mobile (scrollbar hidden)
+- Stat grids collapse: 3-col → 2-col → 1-col
+- TES grids collapse: 4-col → 2-col → 1-col
+- Participant Info grid: 2-col → 1-col
 - Status History table: horizontal scroll wrapper
 - Language Proficiency table (TES form): horizontal scroll wrapper
-- Participant list tables: horizontal scroll wrapper with minWidth set
-- Data Export section: 2-column grid on mobile
+- Participant list tables: horizontal scroll wrapper
 - Main content padding: 24px → 12px on mobile
-- Username hidden in header on mobile to save space
-- CSS utility classes added to index.css (rsp-tabs, rsp-grid-2/3/4, rsp-main, rsp-hide-mobile, rsp-export-row, rsp-section-header)
+- Username hidden in header on mobile
+- CSS utility classes: `rsp-tabs`, `rsp-grid-2/3/4`, `rsp-main`, `rsp-hide-mobile`, `rsp-export-row`
 
-### LDC Staff Dashboard Overview (new first tab)
-- Overview tab added as first tab in LDC Dashboard (pushing Participants and TES Batches to 2nd/3rd)
-- Summary: Active Participants for their LDC only
-- TES section: Approved/Completed, Pending, Rejected, Total Disbursed — filtered to their LDC
-- Participant Information: same layout as admin (status breakdown, TES type, personal stats, TES amount) — no filter needed, always their LDC
-- Data Export: same 5 buttons as admin, exports their LDC data only
-- Backend: /api/auth/stats and all /api/participants/overview + export endpoints now support ldc_staff (auto-filter by req.user.ldc_id, no requireSuperAdmin)
-- Bug fixed: double-WHERE SQL error in stats/overview endpoints (AND vs WHERE)
-- Bug fixed: STATUS_LABELS corrected — unemployed_seeking + unemployed_not (was wrong key 'unemployed')
+### LDC Staff Dashboard Overview
+- Overview tab (first tab) with summary stats for their LDC
+- TES section: Approved/Completed, Pending, Rejected, Total Disbursed
+- Participant Information: status breakdown, TES type, personal stats
+- Data Export: 5 buttons (exports their LDC data only)
+- Backend: `/api/auth/stats` and overview endpoints support `ldc_staff` (auto-filter)
 
 ### Admin Dashboard Overview (rebuilt)
-- Section 1 — Summary: Users, LDC Centres, Active Participants (global)
-- Section 2 — TES Stats: Approved/Completed, Pending, Rejected counts + Total Disbursed (global)
-- Section 3 — Participant Information (filterable by LDC dropdown):
-  - Status breakdown with bar chart (Studying/Employed/etc.)
-  - TES by Institution Type (University/College/Vocational/Other) from tes_history
-  - Personal stats: Married, Has Children, Pregnant, Living Outside LDC
+- Section 1: Summary (Users, LDC Centres, Active Participants — global)
+- Section 2: TES Stats (Approved/Completed, Pending, Rejected, Total Disbursed)
+- Section 3: Participant Information (filterable by LDC dropdown)
+  - Status breakdown with bar chart
+  - TES by Institution Type
+  - Personal stats (Married, Children, Pregnant, Living Outside LDC)
   - Total TES amount for selected LDC
-- Section 4 — Data Export (5 separate buttons, respect LDC filter):
-  - Participants (personal info + condensed OL/AL/Certs)
-  - Academic Records (full OL + AL subject detail)
-  - Certifications (all certifications)
-  - Development Plans (goals, progress, mentors)
-  - TES History (amounts per batch)
-- Quick Actions removed
-- Backend: /api/auth/stats expanded; 6 new endpoints on /api/participants/
-
-### Participant Exit Locking
-- `is_exited` + `exited_at` columns added to participants table (migration 009)
-- Sync route auto-marks participants absent from CSV (but in synced LDCs) as exited
-- Participants who reappear in a future CSV are automatically re-activated
-- Sync result now shows "Exited (Locked)" count alongside inserted/updated/errors
-- All profile write routes (profile, status-history, OL, AL, certifications, dev plan) block LDC staff edits with 403 if participant is exited — admins are never blocked
-- Participant lists show orange EXITED badge next to name
-- Profile page shows EXITED badge in header + orange 🔒 locked banner for LDC staff
-- All tab edit/add/create/delete buttons hidden via `readOnly` prop when locked
+- Section 4: Data Export (5 buttons, respect LDC filter)
+  - Participants, Academic Records, Certifications, Development Plans, TES History
 
 ### TES System
 
-Batch Lifecycle
-OPEN -> REVIEWING -> APPROVED -> FUNDED -> COMPLETED
-                 -> REJECTED
+**Batch Lifecycle:**
+```
+OPEN → REVIEWING → APPROVED → FUNDED → COMPLETED
+                 → REJECTED
+```
 - Manual open/close/reopen at any stage
 - Deadline tracking with days-left countdown
 - Completed/Rejected batches hidden by default (toggle to show)
 
-Applications
-- Participant search + auto-fill (personal, OL/AL/certs, future plans)
-- Language proficiency grid (English/Sinhala/Tamil x 4 levels)
+**Applications:**
+- Participant search + auto-fill
+- Language proficiency grid (English/Sinhala/Tamil × 4 levels)
 - Institution and course information
-- Financial section (tuition + materials - family = requested, auto-calculated)
+- Financial section (tuition + materials − family = requested, auto-calculated)
 - Financial justification + community contribution
 - Document checklist (6 docs)
 - Commitment confirmation
-- Previous TES support banner (for returning applicants)
-- For Official Use Only (LDC fills amount + notes)
+- Previous TES support banner (returning applicants)
+- For Official Use Only section (LDC fills amount + notes)
 - Admin decision (approve/reject + admin notes)
-- Resubmission flow (rejected -> LDC edits -> resubmitted status)
+- Resubmission flow (rejected → LDC edits → resubmitted)
 - Remove application (LDC, open batch, pending only)
 - Excel export (Admin = all LDCs, LDC = own only)
 
 ---
 
 ## Database Tables
-participants
-participant_profiles
-participant_status_history
-participant_tes_history
-ldcs
-users
-ol_results + ol_result_subjects
-al_results + al_result_subjects
-certifications
-cert_types
-development_plans
-development_plan_history
-development_plan_goal_snapshots
-tes_batches
-tes_applications
-subjects
-grades
+| Table | Description |
+|---|---|
+| participants | Core records |
+| participant_profiles | Extended profile |
+| participant_status_history | Status change history |
+| participant_tes_history | TES amounts per participant |
+| ldcs | LDC centres |
+| users | Staff accounts |
+| ol_results + ol_result_subjects | O/L results |
+| al_results + al_result_subjects | A/L results |
+| certifications | Certificates held |
+| cert_types | Admin cert category list |
+| development_plans | Annual plans |
+| development_plan_history | Plan update history |
+| development_plan_goal_snapshots | Goal snapshots |
+| tes_batches | TES funding batches |
+| tes_applications | Individual applications |
+| subjects | OL/AL subject master list |
+| grades | Grade master list |
 
 ## Migrations Applied
-001 - participant_status_history
-002 - subjects table + OL/AL seed data
-003 - grades table + seed data
-004 - Fix z_score DECIMAL precision
-005 - cert_types + certifications
-006 - dev plan history + snapshots
-007 - tes_batches + tes_applications
-008 - participant_tes_history
-009 - is_exited + exited_at on participants
-Manual - Add fee_tuition, fee_materials, family_contribution, requested_amount to tes_applications
-Manual - Add living_outside_ldc, outside_purpose, outside_location to participant_profiles
-Manual - Fix tes_applications status constraint (add resubmitted)
-Manual - Fix tes_batches status constraint (add reviewing, completed)
+| # | File | What it does |
+|---|---|---|
+| 001 | participant_status_history | Status tracking table |
+| 002 | subjects | Subject master list + OL/AL seed data |
+| 003 | grades | Grade master list + seed data |
+| 004 | fix_zscore | Fix z_score DECIMAL precision |
+| 005 | certifications | cert_types + certifications tables |
+| 006 | dev_plan_history | Dev plan history + snapshots |
+| 007 | tes | tes_batches + tes_applications |
+| 008 | tes_history | participant_tes_history |
+| 009 | add_is_exited | is_exited + exited_at on participants |
+| 010 | search_index | GIN index on full_name + participant_id index |
+| — | Manual | fee_tuition, fee_materials, family_contribution, requested_amount on tes_applications |
+| — | Manual | living_outside_ldc, outside_purpose, outside_location on participant_profiles |
+| — | Manual | Fix tes_applications status constraint (add resubmitted) |
+| — | Manual | Fix tes_batches status constraint (add reviewing, completed) |
 
 ---
 
 ## Key Technical Decisions
-- Subjects/grades/cert-types are admin-controlled master lists
-- OL/AL use flexible subject tables (not fixed columns)
+- Subjects/grades/cert-types are admin-controlled master lists — not hardcoded
+- OL/AL use flexible subject tables (not fixed columns) for future-proofing
 - Development plan history snapshots goals on every save
 - TES history auto-recorded when batch marked funded/completed
 - Batch "close" renamed to "reviewing" for clarity
-- Admin can access all participant profiles (any role route)
+- Admin can access all participant profiles regardless of LDC
 - Living outside LDC tracked with purpose and location
-
----
-
-## Pre-Deployment Tasks
-- Delete test participants (LK010100001 to LK010100005)
-- Delete test OL/AL/certification/dev plan data
-- Delete test TES applications and batches
-- Delete test users (lk0101staff, lk0101staff2)
-- Keep only real LDC centres and super admin account
-- Set strong production passwords
-- Configure production environment variables
-- Deploy to DigitalOcean ($6/month droplet)
-
----
-
-## Bug Fixes (session 2026-04-13 cont.)
-- POST /profile now blocks LDC staff edits on exited participants (was missing check)
-- TES PUT /applications/:id checks batch status — LDC staff blocked if batch not open
-- TES export refactored from N+1 queries → 4 bulk queries (fixes timeout on large batches)
-- TES participant search excludes inactive participants
-- PersonalInfo: cancel on failed new profile creation resets form to blank
-- DevelopmentPlan: notes required on new plan creation (matches backend validation)
-
-## Security Hardening (session 2026-04-13)
-- helmet added for HTTP security headers
-- express-rate-limit: 20 req/15min on login, 10 req/hr on sync
-- CORS origin driven by CORS_ORIGIN env var
-- .env.example created with all required vars
-- Migration 010: GIN index on participants.full_name + index on participant_id
-
-## Production Deployment Files
-- docker-compose.prod.yml — secrets from .env, DB port hidden, nginx on port 80
-- server/Dockerfile.prod — no devDependencies, runs npm start
-- client/Dockerfile.prod — Vite build → nginx static serve
-- client/nginx.conf — serves frontend, proxies /api/* to backend
-- Target server: Contabo VPS (Ubuntu + Docker)
-
-## Remaining Work
-- Pre-deployment data cleanup (delete test participants, users, TES data)
-- Production deployment on Contabo VPS
-
-## Session Notes
-- Claude Code (not Claude chat) is being used to continue development from this point forward
-- Claude Code has full file access, can run Docker commands, apply migrations, and rebuild containers
-- Apply migrations with: `docker exec -i cil_db psql -U cil_admin -d cil_platform < server/migrations/NNN_name.sql`
-- Rebuild after backend/frontend changes: `docker compose down && docker compose up --build -d`
+- Nginx inlines SSL settings (no external certbot config file dependency)
+- Certbot uses standalone mode for initial cert issuance, webroot for renewal
 
 ---
 
 ## Lessons Learned
-- Use cat > terminal commands to write files (VS Code paste causes encoding issues)
-- Always rebuild Docker after file changes: docker compose down && docker compose up --build
+- Use Claude Code terminal to write files (VS Code paste causes encoding issues)
+- Always rebuild Docker after file changes: `docker compose down && docker compose up --build`
 - Docker only runs schema.sql on first startup — use migrations for DB changes
-- Apply migrations: docker exec -i cil_db psql -U cil_admin -d cil_platform < migration.sql
-- Batch status "closed" was confusing — renamed to "reviewing" for clarity
+- Apply migrations: `docker exec -i cil_db psql -U cil_admin -d cil_platform < migration.sql`
+- Batch status "closed" was confusing — renamed to "reviewing"
 - Always check both frontend AND backend when data isn't saving
+- Docker `up --build` uses cached layers — use `--no-cache` if config files aren't updating
+- nginx can't start if SSL cert files are missing — use certbot standalone for first issuance
+- SSH config (`~/.ssh/config`) avoids long `ssh -i key user@ip` commands every time
+- `./deploy.sh` from local machine handles the full git push + server pull + rebuild cycle

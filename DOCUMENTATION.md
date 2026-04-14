@@ -5,6 +5,10 @@ the CIL Youth Development Platform. Written for someone who may not have deep
 programming experience but needs to keep the system running and make changes with
 the help of Claude Code.
 
+**Version:** 1.0.0
+**Live URL:** https://cilyouth.org
+**Last updated:** 2026-04-14
+
 ---
 
 ## Table of Contents
@@ -15,14 +19,15 @@ the help of Claude Code.
 4. [Running Locally (Development)](#4-running-locally-development)
 5. [Production Server](#5-production-server)
 6. [How to Deploy Updates](#6-how-to-deploy-updates)
-7. [Database & Migrations](#7-database--migrations)
-8. [How to Add a New Module](#8-how-to-add-a-new-module)
-9. [How to Add a New API Endpoint](#9-how-to-add-a-new-api-endpoint)
-10. [User Roles & Permissions](#10-user-roles--permissions)
-11. [Important Code Locations](#11-important-code-locations)
-12. [Environment Variables](#12-environment-variables)
-13. [Common Tasks & Commands](#13-common-tasks--commands)
-14. [Troubleshooting](#14-troubleshooting)
+7. [SSL Certificate](#7-ssl-certificate)
+8. [Database & Migrations](#8-database--migrations)
+9. [How to Add a New Module](#9-how-to-add-a-new-module)
+10. [How to Add a New API Endpoint](#10-how-to-add-a-new-api-endpoint)
+11. [User Roles & Permissions](#11-user-roles--permissions)
+12. [Important Code Locations](#12-important-code-locations)
+13. [Environment Variables](#13-environment-variables)
+14. [Common Tasks & Commands](#14-common-tasks--commands)
+15. [Troubleshooting](#15-troubleshooting)
 
 ---
 
@@ -39,6 +44,7 @@ The CIL Youth Development Platform is a web application that allows:
 | Backend | Node.js + Express | The server that handles all data requests |
 | Database | PostgreSQL 16 | Stores all data permanently |
 | Infrastructure | Docker + nginx | Packages everything and serves it to the internet |
+| SSL | Let's Encrypt + Certbot | Free HTTPS certificate, auto-renews every 90 days |
 
 ---
 
@@ -97,7 +103,7 @@ cil-youth-platform/
 │   │   ├── main.jsx                # App entry point
 │   │   └── index.css               # Global CSS + responsive utility classes
 │   │
-│   ├── nginx.conf                  # nginx routing config (production)
+│   ├── nginx.conf                  # nginx routing + SSL config (production)
 │   ├── Dockerfile.prod             # How to build frontend for production
 │   └── index.html                  # HTML shell for the React app
 │
@@ -129,7 +135,9 @@ cil-youth-platform/
 │   └── Dockerfile.prod             # How to build backend for production
 │
 ├── docker-compose.yml              # Local development setup
-├── docker-compose.prod.yml         # Production setup
+├── docker-compose.prod.yml         # Production setup (nginx + certbot + SSL)
+├── deploy.sh                       # One-command deploy script
+├── init-letsencrypt.sh             # One-time SSL certificate bootstrap (already run)
 ├── .env.example                    # Template for environment variables
 ├── PROGRESS.md                     # Feature log and session notes
 └── DOCUMENTATION.md                # This file
@@ -147,6 +155,8 @@ User's Browser
       │  types cilyouth.org
       ▼
    nginx (cil_client container)
+   Port 80  → redirects to HTTPS
+   Port 443 → serves app over SSL
       │
       ├── page request → serves React HTML/JS files
       │
@@ -155,6 +165,8 @@ User's Browser
                               Node.js (cil_server)
                                     │
                               PostgreSQL (cil_db)
+
+   certbot (cil_certbot) runs in background, renews SSL cert every 12h check
 ```
 
 ### Frontend (React)
@@ -178,7 +190,14 @@ User's Browser
 - Docker packages each part of the app into a "container"
 - Containers are like isolated boxes — the database doesn't interfere with the backend, etc.
 - `docker-compose.yml` defines how all containers work together locally
-- `docker-compose.prod.yml` is the production version (no exposed DB port, nginx serves frontend)
+- `docker-compose.prod.yml` is the production version — 4 containers:
+
+| Container | Image | Role |
+|---|---|---|
+| `cil_db` | postgres:16 | Database |
+| `cil_server` | cil-platform-server | Node.js API |
+| `cil_client` | cil-platform-client | nginx (frontend + SSL) |
+| `cil_certbot` | certbot/certbot | SSL certificate auto-renewal |
 
 ---
 
@@ -229,68 +248,115 @@ docker logs cil_db        # database logs
 |---|---|
 | Provider | DigitalOcean |
 | IP Address | 143.244.141.100 |
-| Domain | cilyouth.org |
+| Domain | https://cilyouth.org |
 | OS | Ubuntu 24.04 LTS |
 | App location | /opt/cil-platform |
 | SSH key | ~/.ssh/cil_platform (on your PC) |
+| SSH alias | `ssh cil-server` (configured in ~/.ssh/config) |
 
 ### Connect to the server
 ```bash
-ssh -i ~/.ssh/cil_platform root@143.244.141.100
+ssh cil-server
 ```
 
 ### Check what's running
 ```bash
-docker ps
+ssh cil-server "docker ps"
 ```
-You should see 3 containers: `cil_db`, `cil_server`, `cil_client`
+You should see 4 containers: `cil_db`, `cil_server`, `cil_client`, `cil_certbot`
 
 ### Check server health
 ```bash
-curl http://localhost/health
+ssh cil-server "curl -s http://localhost/health"
 ```
 Should return: `{"status":"ok",...}`
+
+### SSH key backup reminder
+Your SSH private key lives at `C:\Users\minus\.ssh\cil_platform` on your PC.
+**Back this file up to a USB drive or password manager.** If your PC is reformatted
+and you lose this key, you will be locked out of the server.
 
 ---
 
 ## 6. How to Deploy Updates
 
-Every time you change code and want to update the live site:
+Every time you change code and want to update the live site, run one command:
 
-### Step 1 — Make and commit changes locally
 ```bash
-# (Claude Code does this for you)
-git add <files>
-git commit -m "Description of change"
-git push origin main
+./deploy.sh
 ```
 
-### Step 2 — Deploy to production
-```bash
-# Connect to server
-ssh -i ~/.ssh/cil_platform root@143.244.141.100
+This script automatically:
+1. Pushes your latest code to GitHub
+2. Pulls the code on the server
+3. Rebuilds Docker containers with the new code
+4. Restarts everything
 
-# Go to app folder and update
-cd /opt/cil-platform
-git pull origin main
-docker compose -f docker-compose.prod.yml up --build -d
+### Manual deploy (if needed)
+```bash
+git push origin main
+ssh cil-server "cd /opt/cil-platform && git pull origin main && docker compose -f docker-compose.prod.yml up -d --build"
+```
+
+### Important: If you changed the database schema
+After deploying, also apply the migration:
+```bash
+ssh cil-server "docker exec -i cil_db psql -U cil_admin -d cil_platform < /opt/cil-platform/server/migrations/NNN_name.sql"
 ```
 
 ### What happens during deployment
 1. Git pulls the latest code from GitHub
 2. Docker rebuilds the backend and frontend images
 3. Old containers are replaced with new ones
-4. Database container is NOT rebuilt (data is safe in a Docker volume)
+4. Database container is NOT rebuilt — data is safe in a Docker volume
+5. SSL certificate is not affected
 
-### Important: If you changed the database schema
-You must also apply the migration after rebuilding:
+---
+
+## 7. SSL Certificate
+
+The site runs on HTTPS via a free Let's Encrypt certificate.
+
+| Detail | Value |
+|---|---|
+| Certificate authority | Let's Encrypt |
+| Issued for | cilyouth.org + www.cilyouth.org |
+| Expiry | 2026-07-13 (auto-renews) |
+| Cert location on server | `/var/lib/docker/volumes/cil-platform_certbot_conf/` |
+
+### Auto-renewal
+The `cil_certbot` container runs 24/7 and checks for renewal every 12 hours.
+No manual action is needed. Let's Encrypt certificates last 90 days and are
+renewed automatically when less than 30 days remain.
+
+### Verify SSL is working
 ```bash
-docker exec -i cil_db psql -U cil_admin -d cil_platform < /opt/cil-platform/server/migrations/NNN_name.sql
+curl -I https://cilyouth.org
+# Expect: HTTP/1.1 200 OK + Strict-Transport-Security header
+
+curl -I http://www.cilyouth.org
+# Expect: HTTP/1.1 301 Moved Permanently → https://cilyouth.org
+```
+
+### If the certificate ever needs to be reissued
+```bash
+# Stop nginx first
+ssh cil-server "docker compose -f /opt/cil-platform/docker-compose.prod.yml stop client"
+
+# Reissue cert
+ssh cil-server "docker run --rm -p 80:80 \
+  -v cil-platform_certbot_conf:/etc/letsencrypt \
+  certbot/certbot certonly --standalone \
+  --email minusandhs@gmail.com --agree-tos --no-eff-email \
+  -d cilyouth.org -d www.cilyouth.org"
+
+# Restart everything
+ssh cil-server "cd /opt/cil-platform && docker compose -f docker-compose.prod.yml up -d"
 ```
 
 ---
 
-## 7. Database & Migrations
+## 8. Database & Migrations
 
 ### What is a migration?
 When the app is already running and you need to change the database structure
@@ -313,8 +379,7 @@ ALTER TABLE participants ADD COLUMN IF NOT EXISTS phone_number VARCHAR(20);
 
 ### Apply a migration on production
 ```bash
-ssh -i ~/.ssh/cil_platform root@143.244.141.100
-docker exec -i cil_db psql -U cil_admin -d cil_platform < /opt/cil-platform/server/migrations/011_description.sql
+ssh cil-server "docker exec -i cil_db psql -U cil_admin -d cil_platform < /opt/cil-platform/server/migrations/011_description.sql"
 ```
 
 ### Apply locally
@@ -345,7 +410,7 @@ docker exec -i cil_db psql -U cil_admin -d cil_platform < server/migrations/011_
 
 ---
 
-## 8. How to Add a New Module
+## 9. How to Add a New Module
 
 A "module" is a new tab/section in the dashboard. Example: adding an "Events" tab.
 
@@ -442,7 +507,7 @@ import EventManagement from '../components/admin/EventManagement';
 
 ---
 
-## 9. How to Add a New API Endpoint
+## 10. How to Add a New API Endpoint
 
 API endpoints are URLs the frontend calls to get or save data. They follow this pattern:
 
@@ -486,7 +551,7 @@ const notes = response.data;
 
 ---
 
-## 10. User Roles & Permissions
+## 11. User Roles & Permissions
 
 There are two roles in the system:
 
@@ -529,7 +594,7 @@ const isLDCStaff = user?.role === 'ldc_staff';
 
 ---
 
-## 11. Important Code Locations
+## 12. Important Code Locations
 
 ### Authentication flow
 - Login endpoint: `server/routes/auth.js` → `POST /api/auth/login`
@@ -566,7 +631,7 @@ Defined in `client/src/index.css`:
 
 ---
 
-## 12. Environment Variables
+## 13. Environment Variables
 
 Stored in `.env` on the production server at `/opt/cil-platform/.env`.
 Never committed to GitHub. A template is in `.env.example`.
@@ -581,50 +646,53 @@ Never committed to GitHub. A template is in `.env.example`.
 | PORT | Backend port (5000) |
 | JWT_SECRET | Secret key for signing login tokens (keep private!) |
 | JWT_EXPIRES_IN | How long login sessions last (`8h`) |
-| CORS_ORIGIN | Allowed frontend URL (your domain) |
-| VITE_API_URL | Backend URL baked into the frontend at build time |
+| CORS_ORIGIN | Allowed frontend URL (`https://cilyouth.org`) |
+| VITE_API_URL | Backend URL baked into the frontend (`https://cilyouth.org`) |
 
 ### To edit .env on the server
 ```bash
-ssh -i ~/.ssh/cil_platform root@143.244.141.100
+ssh cil-server
 nano /opt/cil-platform/.env
 # Edit, then Ctrl+X → Y → Enter to save
-# Then rebuild: docker compose -f docker-compose.prod.yml up --build -d
+# Then rebuild:
+cd /opt/cil-platform
+docker compose -f docker-compose.prod.yml up --build -d
 ```
 
 ---
 
-## 13. Common Tasks & Commands
+## 14. Common Tasks & Commands
 
 ### Connect to production server
 ```bash
-ssh -i ~/.ssh/cil_platform root@143.244.141.100
+ssh cil-server
 ```
 
 ### Deploy latest code to production
 ```bash
-ssh -i ~/.ssh/cil_platform root@143.244.141.100
-cd /opt/cil-platform
-git pull origin main
-docker compose -f docker-compose.prod.yml up --build -d
+./deploy.sh
 ```
 
 ### View backend logs (debug errors)
 ```bash
-ssh -i ~/.ssh/cil_platform root@143.244.141.100
-docker logs cil_server --tail 50
+ssh cil-server "docker logs cil_server --tail 50"
+```
+
+### View all container logs
+```bash
+ssh cil-server "docker logs cil_server --tail 30"   # API
+ssh cil-server "docker logs cil_client --tail 30"   # nginx
+ssh cil-server "docker logs cil_certbot --tail 30"  # SSL renewal
 ```
 
 ### Apply a new migration on production
 ```bash
-ssh -i ~/.ssh/cil_platform root@143.244.141.100
-docker exec -i cil_db psql -U cil_admin -d cil_platform < /opt/cil-platform/server/migrations/NNN_name.sql
+ssh cil-server "docker exec -i cil_db psql -U cil_admin -d cil_platform < /opt/cil-platform/server/migrations/NNN_name.sql"
 ```
 
 ### Run a SQL query on production database
 ```bash
-ssh -i ~/.ssh/cil_platform root@143.244.141.100
-docker exec -it cil_db psql -U cil_admin -d cil_platform
+ssh cil-server "docker exec -it cil_db psql -U cil_admin -d cil_platform"
 # Then type your SQL query, end with semicolon
 # Type \q to exit
 ```
@@ -634,108 +702,107 @@ Admin Dashboard → User Management → find the user → Reset Password button
 
 ### Reset superadmin password (via server)
 ```bash
-ssh -i ~/.ssh/cil_platform root@143.244.141.100
-docker exec cil_server node -e "
+ssh cil-server "docker exec cil_server node -e \"
 const bcrypt = require('bcryptjs');
 const {Client} = require('pg');
 bcrypt.hash('YOUR_NEW_PASSWORD', 10).then(h => {
   const c = new Client({connectionString: process.env.DATABASE_URL});
-  c.connect().then(() => c.query('UPDATE users SET password_hash = \$1 WHERE username = \$2', [h, 'superadmin'])).then(() => { console.log('done'); c.end(); });
+  c.connect().then(() => c.query('UPDATE users SET password_hash = \\\$1 WHERE username = \\\$2', [h, 'superadmin'])).then(() => { console.log('done'); c.end(); });
 });
-"
+\""
 ```
 
 ### Check disk space on server
 ```bash
-ssh -i ~/.ssh/cil_platform root@143.244.141.100
-df -h
+ssh cil-server "df -h"
 ```
 
 ### Check memory usage on server
 ```bash
-ssh -i ~/.ssh/cil_platform root@143.244.141.100
-free -h
+ssh cil-server "free -h"
 ```
 
 ### Restart all containers (without rebuilding)
 ```bash
-ssh -i ~/.ssh/cil_platform root@143.244.141.100
-cd /opt/cil-platform
-docker compose -f docker-compose.prod.yml restart
+ssh cil-server "cd /opt/cil-platform && docker compose -f docker-compose.prod.yml restart"
 ```
 
 ### Stop all containers
 ```bash
-ssh -i ~/.ssh/cil_platform root@143.244.141.100
-cd /opt/cil-platform
-docker compose -f docker-compose.prod.yml down
+ssh cil-server "cd /opt/cil-platform && docker compose -f docker-compose.prod.yml down"
+```
+
+### Free up disk space (remove unused Docker images)
+```bash
+ssh cil-server "docker system prune -f"
 ```
 
 ---
 
-## 14. Troubleshooting
+## 15. Troubleshooting
 
 ### Site is down / not loading
 ```bash
 # Check if containers are running
-ssh -i ~/.ssh/cil_platform root@143.244.141.100
-docker ps
+ssh cil-server "docker ps"
 
-# If containers are stopped, start them
-cd /opt/cil-platform
-docker compose -f docker-compose.prod.yml up -d
+# If client container is stopped or restarting, check why
+ssh cil-server "docker logs cil_client --tail 30"
 
-# Check for errors
-docker logs cil_server --tail 30
-docker logs cil_client --tail 30
+# Start everything
+ssh cil-server "cd /opt/cil-platform && docker compose -f docker-compose.prod.yml up -d"
 ```
 
 ### Login not working
 ```bash
 # Check backend is responding
-curl http://143.244.141.100/health
+ssh cil-server "curl -s http://localhost/health"
 
 # Check backend logs for errors
-docker logs cil_server --tail 50
+ssh cil-server "docker logs cil_server --tail 50"
 ```
 
 ### Data not saving
 - Check browser console (F12 → Console tab) for red error messages
-- Check backend logs: `docker logs cil_server --tail 30`
+- Check backend logs: `ssh cil-server "docker logs cil_server --tail 30"`
 - The error message will tell you what went wrong
 
 ### "Something went wrong" errors in the app
 Always check the backend logs first — they contain the real error:
 ```bash
-docker logs cil_server --tail 50
+ssh cil-server "docker logs cil_server --tail 50"
 ```
 
 ### Server ran out of disk space
 ```bash
-# Check space
-df -h
-
-# Remove unused Docker images to free space
-docker system prune -f
+ssh cil-server "df -h"
+ssh cil-server "docker system prune -f"
 ```
 
 ### Database connection errors
 ```bash
 # Check if DB container is healthy
-docker ps
+ssh cil-server "docker ps"
 # Should show cil_db as "healthy"
 
 # If not healthy, restart it
-docker compose -f docker-compose.prod.yml restart db
+ssh cil-server "cd /opt/cil-platform && docker compose -f docker-compose.prod.yml restart db"
 ```
 
 ### After a server reboot (containers stopped)
 Docker is configured to auto-restart containers (`restart: unless-stopped`).
 If they don't restart automatically:
 ```bash
-ssh -i ~/.ssh/cil_platform root@143.244.141.100
-cd /opt/cil-platform
-docker compose -f docker-compose.prod.yml up -d
+ssh cil-server "cd /opt/cil-platform && docker compose -f docker-compose.prod.yml up -d"
+```
+
+### SSL certificate error in browser
+```bash
+# Check certbot logs
+ssh cil-server "docker logs cil_certbot --tail 30"
+
+# Check cert expiry date
+ssh cil-server "docker run --rm -v cil-platform_certbot_conf:/etc/letsencrypt certbot/certbot certificates"
 ```
 
 ---
@@ -753,23 +820,22 @@ Backend:  http://localhost:5000/health
 
 PRODUCTION SERVER
 ─────────────────
-SSH:      ssh -i ~/.ssh/cil_platform root@143.244.141.100
+SSH:      ssh cil-server
 App path: /opt/cil-platform
-Domain:   https://cilyouth.org (after SSL setup)
+Domain:   https://cilyouth.org
+IP:       143.244.141.100
 
 DEPLOY UPDATE
 ─────────────
-1. Push to GitHub (git push origin main)
-2. SSH to server
-3. cd /opt/cil-platform
-4. git pull origin main
-5. docker compose -f docker-compose.prod.yml up --build -d
+./deploy.sh
+(that's it — one command does everything)
 
 CREDENTIALS (keep private)
 ──────────────────────────
 Superadmin username: superadmin
-SSH key location:    ~/.ssh/cil_platform  (on your PC)
+SSH key location:    C:\Users\minus\.ssh\cil_platform  (back this up!)
 .env location:       /opt/cil-platform/.env  (on server)
+SSL cert email:      minusandhs@gmail.com
 
 KEY FOLDERS
 ───────────
@@ -778,4 +844,11 @@ Frontend sections:  client/src/components/
 Backend routes:     server/routes/
 Database schema:    server/models/schema.sql
 Database changes:   server/migrations/
+
+CONTAINERS (production)
+───────────────────────
+cil_db       PostgreSQL database
+cil_server   Node.js API backend
+cil_client   nginx (frontend + SSL termination)
+cil_certbot  Let's Encrypt auto-renewal
 ```
