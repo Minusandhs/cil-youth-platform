@@ -12,7 +12,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./server/models/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
-    # DB port NOT exposed in production — only accessible internally
+    # DB port NOT exposed — only accessible internally
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -27,12 +27,12 @@ services:
     container_name: cil_server
     restart: unless-stopped
     environment:
-      NODE_ENV:     production
-      PORT:         ${PORT}
-      DATABASE_URL: ${DATABASE_URL}
-      JWT_SECRET:   ${JWT_SECRET}
+      NODE_ENV:       production
+      PORT:           ${PORT}
+      DATABASE_URL:   ${DATABASE_URL}
+      JWT_SECRET:     ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
-      CORS_ORIGIN:  ${CORS_ORIGIN}
+      CORS_ORIGIN:    ${CORS_ORIGIN}
     # Port NOT exposed externally — nginx proxies to it internally
     depends_on:
       db:
@@ -48,9 +48,28 @@ services:
     container_name: cil_client
     restart: unless-stopped
     ports:
-      - "80:80"       # HTTP — point your domain here
+      - "80:80"
+      - "443:443"
+    volumes:
+      # Let's Encrypt certs (read-only for nginx)
+      - certbot_conf:/etc/letsencrypt:ro
+      # Certbot webroot for ACME http-01 challenge
+      - certbot_www:/var/www/certbot:ro
     depends_on:
       - server
 
+  # ─── CERTBOT (SSL certificate management) ───────────
+  certbot:
+    image: certbot/certbot:latest
+    container_name: cil_certbot
+    volumes:
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    # Runs on-demand (init-letsencrypt.sh) or via cron for renewal.
+    # --dry-run flag is safe to test without hitting rate limits.
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
 volumes:
   postgres_data:
+  certbot_conf:
+  certbot_www:
