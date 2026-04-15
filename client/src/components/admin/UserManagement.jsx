@@ -37,6 +37,7 @@ export default function UserManagement({ readOnly = false }) {
     setForm({ username:'', password:'', full_name:'', role:'ldc_staff', ldc_id:'' });
     setShowForm(true);
     setError(''); setSuccess('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function openEdit(user) {
@@ -49,7 +50,9 @@ export default function UserManagement({ readOnly = false }) {
       password : ''
     });
     setShowForm(true);
+    setShowPwForm(null);
     setError(''); setSuccess('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function cancelForm() {
@@ -180,7 +183,7 @@ export default function UserManagement({ readOnly = false }) {
             {editUser ? `Edit User — ${editUser.username}` : 'Create New User'}
           </h3>
           <form onSubmit={handleSubmit}>
-            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'}}>
+            <div className="rsp-grid-2" style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'}}>
               <div>
                 <label style={labelStyle}>Full Name</label>
                 <input style={inputStyle} value={form.full_name}
@@ -238,7 +241,7 @@ export default function UserManagement({ readOnly = false }) {
                 </div>
               )}
             </div>
-            <div style={{display:'flex', gap:'10px', marginTop:'16px'}}>
+            <div className="rsp-submit-row" style={{display:'flex', gap:'10px', marginTop:'16px'}}>
               <button type="submit" style={{
                 background:'#2d6a4f', color:'#fff', border:'none',
                 borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
@@ -271,14 +274,14 @@ export default function UserManagement({ readOnly = false }) {
           <p style={{fontSize:'12px', color:'#6b5e4a', marginBottom:'14px'}}>
             Enter a new password for this user.
           </p>
-          <div style={{display:'flex', gap:'10px', alignItems:'flex-end'}}>
-            <div style={{flex:1}}>
-              <label style={labelStyle}>New Password</label>
-              <input style={inputStyle} type="password"
-                value={newPassword}
-                onChange={e => setNewPassword(e.target.value)}
-                />
-            </div>
+          <div>
+            <label style={labelStyle}>New Password</label>
+            <input style={{...inputStyle, marginBottom:'12px'}} type="password"
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+              />
+          </div>
+          <div className="rsp-submit-row" style={{display:'flex', gap:'10px'}}>
             <button onClick={() => handleResetPassword(showPwForm.id)} style={{
               background:'#c49a3c', color:'#1a1610', border:'none',
               borderRadius:'6px', padding:'10px 20px', fontSize:'13px',
@@ -360,7 +363,7 @@ export default function UserManagement({ readOnly = false }) {
                         fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
                       }}>Edit</button>
                       {u.role !== 'super_admin' && (
-                        <button onClick={() => { setShowPwForm(u); setShowForm(false); }} style={{
+                        <button onClick={() => { setShowPwForm(u); setShowForm(false); setError(''); setSuccess(''); window.scrollTo({ top: 0, behavior: 'smooth' }); }} style={{
                           background:'#f5edd8', color:'#b85c00', border:'none',
                           borderRadius:'4px', padding:'4px 10px', fontSize:'11px',
                           fontWeight:'600', cursor:'pointer', fontFamily:'inherit'

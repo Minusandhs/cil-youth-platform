@@ -121,7 +121,7 @@ export default function SubjectManagement({ readOnly = false }) {
             Add New Subject
           </h3>
           <form onSubmit={handleCreate}>
-            <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'14px'}}>
+            <div className="rsp-grid-3" style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'14px'}}>
               <div>
                 <label style={labelStyle}>Subject Name</label>
                 <input style={inputStyle} value={form.subject_name}
@@ -157,19 +157,21 @@ export default function SubjectManagement({ readOnly = false }) {
                 Core / Mandatory Subject
               </label>
             </div>
-            <button type="submit" style={{
-              background:'#2d6a4f', color:'#fff', border:'none',
-              borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
-              fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
-            }}>
-              Add Subject
-            </button>
+            <div className="rsp-submit-row" style={{display:'flex'}}>
+              <button type="submit" style={{
+                background:'#2d6a4f', color:'#fff', border:'none',
+                borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
+                fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+              }}>
+                Add Subject
+              </button>
+            </div>
           </form>
         </div>
       )}
 
       {/* Filter Tabs */}
-      <div style={{
+      <div className="ar-tab-toggle" style={{
         display:'flex', gap:'8px', marginBottom:'16px'
       }}>
         {[

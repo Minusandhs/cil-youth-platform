@@ -79,6 +79,7 @@ export default function AdminOverview() {
   const [ovLoading,       setOvLoading      ] = useState(false);
   const [exporting,       setExporting      ] = useState('');
   const [exportError,     setExportError    ] = useState('');
+  const [exportType,      setExportType     ] = useState('participants');
 
   useEffect(() => {
     loadAll();
@@ -321,10 +322,15 @@ export default function AdminOverview() {
       {/* ── SECTION 1: Summary ───────────────────────────────────── */}
       <div style={{ marginBottom:'32px' }}>
         <div style={sectionTitle}>Summary</div>
+        <div className="rsp-grid-3" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'16px', marginBottom:'16px' }}>
+          <StatCard label="Total Users"         value={stats?.users}        color="#c49a3c" />
+          <StatCard label="LDC Centres"         value={stats?.ldcs}         color="#2d6a4f" />
+          <StatCard label="Active Participants"  value={stats?.participants} color="#1a4068" />
+        </div>
         <div className="rsp-grid-3" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'16px' }}>
-          <StatCard label="Total Users"      value={stats?.users}        color="#c49a3c" />
-          <StatCard label="LDC Centres"      value={stats?.ldcs}         color="#2d6a4f" />
-          <StatCard label="Active Participants" value={stats?.participants} color="#1a4068" />
+          <StatCard label="Inactive Participants" value={stats?.inactive_participants} color="#9b2335" />
+          <StatCard label="Active Male"           value={stats?.active_male}           color="#2d6a4f" />
+          <StatCard label="Active Female"         value={stats?.active_female}         color="#5a3e8a" />
         </div>
       </div>
 
@@ -517,68 +523,81 @@ export default function AdminOverview() {
       </div>
 
       {/* ── SECTION 4: Data Export ────────────────────────────────── */}
-      <div>
-        <div style={sectionTitle}>Data Export</div>
-        <div style={{ ...card }}>
-          <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'16px' }}>
-            <span style={{ fontSize:'12px', color:'#6b5e4a', fontWeight:'600' }}>
-              Exporting:
-            </span>
-            <span style={{ background: filterLDC ? '#dce9f5' : '#f0ece2',
-              color: filterLDC ? '#1a4068' : '#6b5e4a',
-              padding:'3px 10px', borderRadius:'10px',
-              fontSize:'12px', fontWeight:'700',
-              whiteSpace:'nowrap', flexShrink:0 }}>
-              {selectedLDCLabel}
-            </span>
-            {!filterLDC && (
-              <span style={{ fontSize:'12px', color:'#a09080' }}>
-                — use the filter above to export a single LDC
-              </span>
-            )}
-          </div>
-
-          {exportError && (
-            <div style={{ background:'#f5e0e3', border:'1px solid #9b2335',
-              borderRadius:'6px', padding:'8px 12px', color:'#9b2335',
-              fontSize:'12px', marginBottom:'14px' }}>
-              {exportError}
-            </div>
-          )}
-
-          <div className="rsp-export-row" style={{ display:'flex', gap:'10px', flexWrap:'wrap' }}>
-            {[
-              { key:'participants',   label:'Participants',     fn: exportParticipants, color:'#1a1610', text:'#c49a3c',
-                note:'Personal info + OL/AL/Certs condensed' },
-              { key:'academic',      label:'Academic Records', fn: exportAcademic,     color:'#1a4068', text:'#fff',
-                note:'Full OL & AL subject detail' },
-              { key:'certifications',label:'Certifications',   fn: exportCertifications, color:'#2d6a4f', text:'#fff',
-                note:'All certifications detail' },
-              { key:'development',   label:'Development Plans',fn: exportDevelopment,  color:'#5a3e8a', text:'#fff',
-                note:'Goals, progress, mentors' },
-              { key:'tes-history',   label:'TES History',      fn: exportTESHistory,   color:'#9b2335', text:'#fff',
-                note:'Amounts received per batch' },
-            ].map(btn => (
-              <div key={btn.key} style={{ display:'flex', flexDirection:'column', gap:'4px' }}>
-                <button
-                  onClick={btn.fn}
-                  disabled={!!exporting}
-                  style={{ background: exporting === btn.key ? '#a09080' : btn.color,
-                    color: btn.text, border:'none', borderRadius:'6px',
-                    padding:'10px 18px', fontSize:'13px', fontWeight:'700',
-                    cursor: exporting ? 'not-allowed' : 'pointer',
-                    fontFamily:'inherit', minWidth:'160px',
-                    opacity: exporting && exporting !== btn.key ? 0.5 : 1 }}>
-                  {exporting === btn.key ? 'Exporting…' : `↓ ${btn.label}`}
-                </button>
-                <div style={{ fontSize:'10px', color:'#a09080', textAlign:'center' }}>
-                  {btn.note}
-                </div>
+      {(() => {
+        const EXPORT_OPTIONS = [
+          { key: 'participants',   label: 'Participants',      fn: exportParticipants,   note: 'Personal info + OL/AL/Certs condensed' },
+          { key: 'academic',       label: 'Academic Records',  fn: exportAcademic,       note: 'Full OL & AL subject detail' },
+          { key: 'certifications', label: 'Certifications',    fn: exportCertifications, note: 'All certifications detail' },
+          { key: 'development',    label: 'Development Plans', fn: exportDevelopment,    note: 'Goals, progress, mentors' },
+          { key: 'tes-history',    label: 'TES History',       fn: exportTESHistory,     note: 'Amounts received per batch' },
+        ];
+        const selected = EXPORT_OPTIONS.find(o => o.key === exportType);
+        return (
+          <div>
+            <div style={sectionTitle}>Data Export</div>
+            <div style={card}>
+              <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'16px' }}>
+                <span style={{ fontSize:'12px', color:'var(--color-text-subdued)', fontWeight:'600' }}>
+                  Exporting:
+                </span>
+                <span style={{ background: filterLDC ? 'var(--color-tint-info)' : 'var(--color-bg-stripe)',
+                  color: filterLDC ? 'var(--color-info)' : 'var(--color-text-subdued)',
+                  padding:'3px 10px', borderRadius:'10px',
+                  fontSize:'12px', fontWeight:'700',
+                  whiteSpace:'nowrap', flexShrink:0 }}>
+                  {selectedLDCLabel}
+                </span>
+                {!filterLDC && (
+                  <span style={{ fontSize:'12px', color:'var(--color-text-muted)' }}>
+                    — use the filter above to export a single LDC
+                  </span>
+                )}
               </div>
-            ))}
+
+              {exportError && (
+                <div style={{ background:'var(--color-tint-danger)', border:'1px solid var(--color-danger)',
+                  borderRadius:'6px', padding:'8px 12px', color:'var(--color-danger)',
+                  fontSize:'12px', marginBottom:'14px' }}>
+                  {exportError}
+                </div>
+              )}
+
+              <div className="rsp-submit-row" style={{ display:'flex', gap:'12px', alignItems:'flex-start' }}>
+                <div style={{ flex:1 }}>
+                  <select
+                    value={exportType}
+                    onChange={e => setExportType(e.target.value)}
+                    disabled={!!exporting}
+                    style={{ width:'100%', padding:'9px 11px',
+                      border:'1px solid var(--color-border-subtle)', borderRadius:'5px',
+                      fontSize:'13px', color:'var(--color-brand-primary)',
+                      background:'var(--color-bg-page)', outline:'none', fontFamily:'inherit',
+                      cursor: exporting ? 'not-allowed' : 'pointer' }}>
+                    {EXPORT_OPTIONS.map(opt => (
+                      <option key={opt.key} value={opt.key}>{opt.label}</option>
+                    ))}
+                  </select>
+                  {selected && (
+                    <div style={{ fontSize:'10px', color:'var(--color-text-muted)', marginTop:'5px' }}>
+                      {selected.note}
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={() => selected?.fn()}
+                  disabled={!!exporting}
+                  style={{ background: exporting ? 'var(--color-text-muted)' : 'var(--color-brand-primary)',
+                    color:'var(--color-brand-accent)', border:'none', borderRadius:'6px',
+                    padding:'10px 24px', fontSize:'13px', fontWeight:'700',
+                    cursor: exporting ? 'not-allowed' : 'pointer',
+                    fontFamily:'inherit', whiteSpace:'nowrap', flexShrink:0 }}>
+                  {exporting ? 'Exporting…' : '↓ Export'}
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        );
+      })()}
     </div>
   );
 }

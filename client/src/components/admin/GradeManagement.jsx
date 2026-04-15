@@ -117,7 +117,7 @@ export default function GradeManagement({ readOnly = false }) {
             Add New Grade
           </h3>
           <form onSubmit={handleCreate}>
-            <div style={{
+            <div className="rsp-grid-4" style={{
               display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr',
               gap:'14px', marginBottom:'14px'
             }}>
@@ -162,19 +162,21 @@ export default function GradeManagement({ readOnly = false }) {
                 Counts as a Pass
               </label>
             </div>
-            <button type="submit" style={{
-              background:'#2d6a4f', color:'#fff', border:'none',
-              borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
-              fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
-            }}>
-              Add Grade
-            </button>
+            <div className="rsp-submit-row" style={{display:'flex'}}>
+              <button type="submit" style={{
+                background:'#2d6a4f', color:'#fff', border:'none',
+                borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
+                fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+              }}>
+                Add Grade
+              </button>
+            </div>
           </form>
         </div>
       )}
 
       {/* Filter Tabs */}
-      <div style={{display:'flex', gap:'8px', marginBottom:'16px'}}>
+      <div className="ar-tab-toggle" style={{display:'flex', gap:'8px', marginBottom:'16px'}}>
         {[
           { value:'ol', label:'O/L Grades' },
           { value:'al', label:'A/L Grades' },

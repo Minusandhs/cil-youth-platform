@@ -245,27 +245,33 @@ router.get('/stats', verifyToken, async (req, res) => {
     const p = ldcId ? [ldcId] : [];
 
     const queries = [
-      // participants
+      // 0: active participants
       query(`SELECT COUNT(*) FROM participants WHERE is_active = true ${ldcWhereOnly}`, p),
-      // TES approved/completed
+      // 1: TES approved/completed
       query(`SELECT COUNT(*) FROM tes_applications a
              WHERE (a.approval_status = 'approved'
                 OR a.batch_id IN (SELECT id FROM tes_batches WHERE status IN ('funded','completed')))
              ${ldcWhereApp}`, p),
-      // TES pending
+      // 2: TES pending
       query(`SELECT COUNT(*) FROM tes_applications a
              WHERE a.approval_status = 'pending' ${ldcWhereApp}`, p),
-      // TES rejected
+      // 3: TES rejected
       query(`SELECT COUNT(*) FROM tes_applications a
              WHERE a.approval_status = 'rejected' ${ldcWhereApp}`, p),
-      // TES amount
+      // 4: TES amount
       query(`SELECT COALESCE(SUM(h.amount_received), 0) as total
              FROM participant_tes_history h
              JOIN participants p ON h.participant_id = p.id
              WHERE h.status != 'reverted' ${ldcWhereHist}`, p),
+      // 5: inactive participants
+      query(`SELECT COUNT(*) FROM participants WHERE is_active = false ${ldcWhereOnly}`, p),
+      // 6: active male
+      query(`SELECT COUNT(*) FROM participants WHERE is_active = true AND gender = 'Male' ${ldcWhereOnly}`, p),
+      // 7: active female
+      query(`SELECT COUNT(*) FROM participants WHERE is_active = true AND gender = 'Female' ${ldcWhereOnly}`, p),
     ];
 
-    // Admin-only extras
+    // Admin-only extras (8, 9)
     if (!isLDC) {
       queries.push(
         query('SELECT COUNT(*) FROM users WHERE is_active = true'),
@@ -274,19 +280,23 @@ router.get('/stats', verifyToken, async (req, res) => {
     }
 
     const results = await Promise.all(queries);
-    const [participants, tesApproved, tesPending, tesRejected, tesAmount] = results;
+    const [participants, tesApproved, tesPending, tesRejected, tesAmount,
+           inactiveParticipants, activeMale, activeFemale] = results;
 
     const out = {
-      participants : parseInt(participants.rows[0].count),
-      tes_approved : parseInt(tesApproved.rows[0].count),
-      tes_pending  : parseInt(tesPending.rows[0].count),
-      tes_rejected : parseInt(tesRejected.rows[0].count),
-      tes_amount   : parseFloat(tesAmount.rows[0].total),
+      participants          : parseInt(participants.rows[0].count),
+      tes_approved          : parseInt(tesApproved.rows[0].count),
+      tes_pending           : parseInt(tesPending.rows[0].count),
+      tes_rejected          : parseInt(tesRejected.rows[0].count),
+      tes_amount            : parseFloat(tesAmount.rows[0].total),
+      inactive_participants : parseInt(inactiveParticipants.rows[0].count),
+      active_male           : parseInt(activeMale.rows[0].count),
+      active_female         : parseInt(activeFemale.rows[0].count),
     };
 
     if (!isLDC) {
-      out.users = parseInt(results[5].rows[0].count);
-      out.ldcs  = parseInt(results[6].rows[0].count);
+      out.users = parseInt(results[8].rows[0].count);
+      out.ldcs  = parseInt(results[9].rows[0].count);
     }
 
     res.json(out);

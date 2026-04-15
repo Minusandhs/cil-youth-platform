@@ -43,15 +43,16 @@ export default function TESManagement({ readOnly = false }) {
   }
 
   function openEdit(batch) {
-  setEditBatch(batch);
-  setForm({
-    batch_name          : batch.batch_name,
-    application_end_date: batch.application_end_date
-                          ? batch.application_end_date.split('T')[0] : '',
-    update_notes        : batch.update_notes || ''
-  });
-  setShowForm(true);
-}
+    setEditBatch(batch);
+    setForm({
+      batch_name          : batch.batch_name,
+      application_end_date: batch.application_end_date
+                            ? batch.application_end_date.split('T')[0] : '',
+      update_notes        : batch.update_notes || ''
+    });
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   async function handleEdit(e) {
     e.preventDefault();
@@ -203,7 +204,7 @@ export default function TESManagement({ readOnly = false }) {
             {editBatch ? 'Edit Batch' : 'Create New Batch'}
           </h3>
           <form onSubmit={editBatch ? handleEdit : handleCreate}>
-            <div style={{
+            <div className="rsp-grid-2" style={{
               display:'grid', gridTemplateColumns:'1fr 1fr',
               gap:'14px', marginBottom:'14px'
             }}>
@@ -229,7 +230,7 @@ export default function TESManagement({ readOnly = false }) {
                 value={form.update_notes}
                 onChange={e => setForm({...form, update_notes:e.target.value})} />
             </div>
-              <div style={{display:'flex', gap:'10px'}}>
+              <div className="rsp-submit-row" style={{display:'flex', gap:'10px'}}>
                 <button type="submit" style={{
                   background:'#2d6a4f', color:'#fff', border:'none',
                   borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
@@ -356,7 +357,7 @@ export default function TESManagement({ readOnly = false }) {
                 </div>
 
                 {/* Actions */}
-                <div style={{display:'flex', gap:'6px', flexWrap:'wrap'}}>
+                <div className="rsp-submit-row" style={{display:'flex', gap:'6px', flexWrap:'wrap'}}>
                     <button onClick={() => setSelBatch(batch)} style={{
                       background:'#f0ece2', color:'#3d3528',
                       border:'1px solid #d4c9b0',

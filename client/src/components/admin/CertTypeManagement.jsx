@@ -150,13 +150,15 @@ export default function CertTypeManagement({ readOnly = false }) {
                 </label>
               </div>
             </div>
-            <button type="submit" style={{
-              background:'#2d6a4f', color:'#fff', border:'none',
-              borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
-              fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
-            }}>
-              Add Type
-            </button>
+            <div className="rsp-submit-row" style={{display:'flex'}}>
+              <button type="submit" style={{
+                background:'#2d6a4f', color:'#fff', border:'none',
+                borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
+                fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+              }}>
+                Add Type
+              </button>
+            </div>
           </form>
         </div>
       )}

@@ -292,12 +292,12 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
       )}
 
       {/* Year Selector */}
-      <div style={{
+      <div className="rsp-section-header" style={{
         display:'flex', justifyContent:'space-between',
         alignItems:'center', marginBottom:'20px',
         flexWrap:'wrap', gap:'10px'
       }}>
-        <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
+        <div className="dp-year-row" style={{display:'flex', alignItems:'center', gap:'10px'}}>
           <h3 style={{fontSize:'16px', fontWeight:'700'}}>
             Development Plan
           </h3>
@@ -397,7 +397,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                   value={form.actions}
                   onChange={e => setForm({...form, actions:e.target.value})} />
               </div>
-              <div style={{
+              <div className="rsp-grid-2" style={{
                 display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'
               }}>
                 <div>
@@ -419,7 +419,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
           {/* Mentor */}
           <div style={sectionStyle}>
             <div style={secTitle}>Mentor Details</div>
-            <div style={{
+            <div className="rsp-grid-2" style={{
               display:'grid', gridTemplateColumns:'1fr 1fr',
               gap:'14px', marginBottom:'14px'
             }}>
@@ -540,7 +540,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
           </div>
 
           {/* Buttons */}
-          <div style={{display:'flex', gap:'12px'}}>
+          <div className="rsp-submit-row" style={{display:'flex', gap:'12px'}}>
             <button type="submit" disabled={saving} style={{
               background: saving ? '#a09080' : '#2d6a4f',
               color:'#fff', border:'none', borderRadius:'6px',

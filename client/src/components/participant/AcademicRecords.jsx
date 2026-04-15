@@ -273,7 +273,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
       )}
 
       {/* OL / AL Tabs */}
-      <div style={{display:'flex', gap:'8px', marginBottom:'20px'}}>
+      <div className="ar-tab-toggle" style={{display:'flex', gap:'8px', marginBottom:'20px'}}>
         {[
           { id:'ol', label:'O/L Results' },
           { id:'al', label:'A/L Results' },
@@ -291,7 +291,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
       {/* ── OL TAB ───────────────────────────────────────────── */}
       {activeTab === 'ol' && (
         <div>
-          <div style={{
+          <div className="rsp-section-header" style={{
             display:'flex', justifyContent:'space-between',
             alignItems:'center', marginBottom:'16px'
           }}>
@@ -321,7 +321,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                 {editOL ? 'Edit OL Result' : 'Add OL Result'}
               </h4>
               <form onSubmit={handleSaveOL}>
-                <div style={{
+                <div className="rsp-grid-3" style={{
                   display:'grid', gridTemplateColumns:'1fr 1fr 1fr',
                   gap:'14px', marginBottom:'20px'
                 }}>
@@ -437,7 +437,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                     onChange={e => setOlForm({...olForm, notes:e.target.value})} />
                 </div>
 
-                <div style={{display:'flex', gap:'10px'}}>
+                <div className="rsp-submit-row" style={{display:'flex', gap:'10px'}}>
                   <button type="submit" disabled={saving} style={{
                     background: saving ? '#a09080' : '#2d6a4f',
                     color:'#fff', border:'none', borderRadius:'6px',
@@ -541,7 +541,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
       {/* ── AL TAB ───────────────────────────────────────────── */}
       {activeTab === 'al' && (
         <div>
-          <div style={{
+          <div className="rsp-section-header" style={{
             display:'flex', justifyContent:'space-between',
             alignItems:'center', marginBottom:'16px'
           }}>
@@ -575,7 +575,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                 {editAL ? 'Edit AL Result' : 'Add AL Result'}
               </h4>
               <form onSubmit={handleSaveAL}>
-                <div style={{
+                <div className="rsp-grid-3" style={{
                   display:'grid', gridTemplateColumns:'1fr 1fr 1fr',
                   gap:'14px', marginBottom:'16px'
                 }}>
@@ -609,9 +609,9 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                     </select>
                   </div>
                   <div>
-                    <label style={labelStyle}>Medium</label>
+                    <label style={labelStyle}>Medium *</label>
                     <select style={inputStyle} value={alForm.medium}
-                      onChange={e => setAlForm({...alForm, medium:e.target.value})}>
+                      onChange={e => setAlForm({...alForm, medium:e.target.value})} required>
                       <option value="">— Select Medium —</option>
                       {AL_MEDIUMS.map(m => (
                         <option key={m} value={m}>{m}</option>
@@ -656,16 +656,16 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                     }}>Selected for University</label>
                   </div>
                   {alForm.university_selected && (
-                    <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'}}>
+                    <div className="rsp-grid-2" style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'}}>
                       <div>
-                        <label style={labelStyle}>University Name</label>
-                        <input style={inputStyle}
+                        <label style={labelStyle}>University Name *</label>
+                        <input style={inputStyle} required
                           value={alForm.university_name}
                           onChange={e => setAlForm({...alForm, university_name:e.target.value})} />
                       </div>
                       <div>
-                        <label style={labelStyle}>Course Selected</label>
-                        <input style={inputStyle}
+                        <label style={labelStyle}>Course Selected *</label>
+                        <input style={inputStyle} required
                           value={alForm.course_selected}
                           onChange={e => setAlForm({...alForm, course_selected:e.target.value})} />
                       </div>
@@ -802,7 +802,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                     onChange={e => setAlForm({...alForm, notes:e.target.value})} />
                 </div>
 
-                <div style={{display:'flex', gap:'10px'}}>
+                <div className="rsp-submit-row" style={{display:'flex', gap:'10px'}}>
                   <button type="submit" disabled={saving} style={{
                     background: saving ? '#a09080' : '#2d6a4f',
                     color:'#fff', border:'none', borderRadius:'6px',

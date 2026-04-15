@@ -36,6 +36,7 @@ export default function LDCManagement({ readOnly = false }) {
     });
     setShowForm(true);
     setError(''); setSuccess('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function openCreate() {
@@ -43,6 +44,7 @@ export default function LDCManagement({ readOnly = false }) {
     setForm({ ldc_id:'', name:'', region:'', church_partner:'', address:'' });
     setShowForm(true);
     setError(''); setSuccess('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function cancelForm() {
@@ -175,7 +177,7 @@ export default function LDCManagement({ readOnly = false }) {
             {editLDC ? `Edit LDC — ${editLDC.ldc_id}` : 'Add New LDC'}
           </h3>
           <form onSubmit={handleSubmit}>
-            <div style={{
+            <div className="rsp-grid-2" style={{
               display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'
             }}>
               <div>
@@ -220,7 +222,7 @@ export default function LDCManagement({ readOnly = false }) {
                   />
               </div>
             </div>
-            <div style={{display:'flex', gap:'10px', marginTop:'16px'}}>
+            <div className="rsp-submit-row" style={{display:'flex', gap:'10px', marginTop:'16px'}}>
               <button type="submit" style={{
                 background:'#2d6a4f', color:'#fff', border:'none',
                 borderRadius:'6px', padding:'10px 24px', fontSize:'13px',

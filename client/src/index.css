@@ -15,6 +15,52 @@
   --font-sans: 'DM Sans', sans-serif;
 }
 
+/* ── CSS Variables ─────────────────────────────────── */
+:root {
+  /* Brand */
+  --color-brand-primary:    #1a1610;
+  --color-brand-accent:     #c49a3c;
+  --color-brand-accent-lt:  #e8d4a0;
+
+  /* Backgrounds */
+  --color-bg-page:          #faf8f3;
+  --color-bg-card:          #fffef9;
+  --color-bg-stripe:        #f0ece2;
+  --color-bg-highlight:     #f5edd8;
+
+  /* Borders */
+  --color-border-subtle:    #d4c9b0;
+  --color-border-heavy:     #4a4234;
+  --color-divider:          #e8e0d0;
+
+  /* Text */
+  --color-text-heading:     #3d3528;
+  --color-text-subdued:     #6b5e4a;
+  --color-text-muted:       #a09080;
+  --color-text-nav-muted:   #5a5040;
+  --color-text-placeholder: #c0b090;
+
+  /* Header-specific */
+  --color-header-border:    #3a3428;
+  --color-header-active-bg: #2a2418;
+  --color-header-bg-deep:   #111009;
+  --color-header-tabs-bg:   #211e18;
+
+  /* Semantic */
+  --color-success:          #2d6a4f;
+  --color-info:             #1a4068;
+  --color-warning:          #b85c00;
+  --color-danger:           #9b2335;
+  --color-danger-lt:        #e07070;
+  --color-special:          #5a3e8a;
+
+  /* Tints */
+  --color-tint-info:        #dce9f5;
+  --color-tint-success:     #d8ede4;
+  --color-tint-danger:      #f5e0e3;
+  --color-tint-warning:     #fdecd8;
+}
+
 /* ── Base Styles ───────────────────────────────────── */
 * {
   box-sizing: border-box;
@@ -149,7 +195,7 @@ body {
   .rsp-hide-mobile { display: none !important; }
 
   /* Show only on mobile */
-  .rsp-show-mobile-only { display: block !important; }
+  .rsp-show-mobile-only { display: flex !important; }
 
   /* Participant Summary Bar — 3-row mobile layout */
   .rsp-sumbar-identity { flex: none !important; width: 100%; }
@@ -182,6 +228,19 @@ body {
     align-items: flex-start !important;
     gap: 10px !important;
   }
+  /* Section header action button goes full-width when stacked */
+  .rsp-section-header > button { width: 100% !important; }
+
+  /* Academic Records tab toggle — equal-width buttons on mobile */
+  .ar-tab-toggle { width: 100%; }
+  .ar-tab-toggle > button { flex: 1 !important; text-align: center; }
+
+  /* Edit Profile button — full width on mobile */
+  .rsp-edit-btn-row { flex-direction: column !important; }
+  .rsp-edit-btn-row > button { width: 100% !important; }
+
+  /* Development Plan year row — stretch full width, push year badge right */
+  .dp-year-row { width: 100%; justify-content: space-between !important; }
 
   /* Responsive grids */
   .rsp-grid-2 { grid-template-columns: 1fr !important; }
@@ -197,8 +256,10 @@ body {
   .rsp-section { padding: 14px !important; }
 
   /* Submit row — stack buttons full-width on mobile */
-  .rsp-submit-row { flex-direction: column !important; }
-  .rsp-submit-row > button { width: 100% !important; }
+  .rsp-submit-row { flex-direction: column !important; width: 100% !important; }
+  .rsp-submit-row > button,
+  .rsp-submit-row > div,
+  .rsp-submit-row > select { width: 100% !important; }
 }
 
 /* ── Card tables on mobile ─────────────────────────── */
@@ -236,6 +297,14 @@ body {
     letter-spacing: 0.4px;
     flex-shrink: 0;
   }
+}
+
+/* ── Inline view fields — desktop layout fix ───────── */
+/* On desktop: fixed label width so label+value sit close together.
+   On mobile: no rule here → inline style's space-between takes over. */
+@media (min-width: 769px) {
+  .pi-vf-row { justify-content: flex-start !important; }
+  .pi-vf-lbl { min-width: 200px; max-width: 200px; }
 }
 
 /* ── Participant card utilities (desktop defaults) ── */

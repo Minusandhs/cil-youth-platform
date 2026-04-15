@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { 
+  User, GraduationCap, Award, TrendingUp, 
+  FileText, Menu, ChevronLeft 
+} from 'lucide-react';
 import api from '../lib/api';
 import PersonalInfo     from '../components/participant/PersonalInfo';
 import AcademicRecords  from '../components/participant/AcademicRecords';
 import Certifications   from '../components/participant/Certifications';
 import DevelopmentPlan  from '../components/participant/DevelopmentPlan';
 import TESHistory from '../components/participant/TESHistory';
+import MobileMenu from '../components/common/MobileMenu';
 
 export default function ParticipantProfile() {
   const { id } = useParams();
@@ -62,11 +67,11 @@ export default function ParticipantProfile() {
   }
 
   const tabs = [
-    { id: 'personal',     label: 'Personal Info'     },
-    { id: 'academic',     label: 'Academic Records'  },
-    { id: 'certs',        label: 'Certifications'    },
-    { id: 'development',  label: 'Development Plan'  },
-    { id:'tes',           label:'TES History'        },
+    { id: 'personal',     label: 'Personal Info',    icon: User },
+    { id: 'academic',     label: 'Academic Records', icon: GraduationCap },
+    { id: 'certs',        label: 'Certifications',   icon: Award },
+    { id: 'development',  label: 'Development Plan', icon: TrendingUp },
+    { id:'tes',           label:'TES History',       icon: FileText },
   ];
 
   if (loading) return (
@@ -123,8 +128,9 @@ export default function ParticipantProfile() {
                 border:'none', borderRadius:'20px',
                 padding:'6px 14px', cursor:'pointer',
                 fontFamily:'inherit', fontWeight:'700',
-                fontSize:'12px', whiteSpace:'nowrap'
-              }}>← Back</button>
+                fontSize:'12px', whiteSpace:'nowrap',
+                display: 'flex', alignItems: 'center', gap: '4px'
+              }}><ChevronLeft size={14} strokeWidth={3} /> Back</button>
             <div className="rsp-hide-mobile" style={{
               background:'#c49a3c', color:'#1a1610',
               fontWeight:'700', fontSize:'10px',
@@ -160,16 +166,15 @@ export default function ParticipantProfile() {
           <div className="rsp-header-actions">
             <button
               className="rsp-show-mobile-only"
-              onClick={() => setMenuOpen(o => !o)}
+              onClick={() => setMenuOpen(true)}
               style={{
-                background: menuOpen ? '#c49a3c' : 'transparent',
+                background: 'transparent',
                 border:'1px solid #c49a3c',
-                color: menuOpen ? '#1a1610' : '#c49a3c',
-                borderRadius:'6px', padding:'6px 11px',
-                cursor:'pointer', fontSize:'17px', lineHeight:1,
-                fontFamily:'inherit', fontWeight:'700'
+                color: '#c49a3c',
+                borderRadius:'6px', padding:'6px 8px',
+                cursor:'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}
-            >☰</button>
+            ><Menu size={20} /></button>
           </div>
         </div>
 
@@ -201,26 +206,16 @@ export default function ParticipantProfile() {
             </div>
           </div>
         </div>
-        {/* Mobile dropdown menu */}
-        {menuOpen && (
-          <div className="rsp-tabs-mobile" style={{
-            flexDirection:'column',
-            position:'absolute', top:'100%', left:0, right:0,
-            background:'#1a1610', borderTop:'1px solid #3a3428',
-            zIndex:200, boxShadow:'0 8px 24px rgba(0,0,0,0.3)'
-          }}>
-            {tabs.map(tab => (
-              <button key={tab.id} onClick={() => { setActiveTab(tab.id); setMenuOpen(false); }} style={{
-                display:'block', width:'100%', textAlign:'left',
-                fontSize:'13px', fontWeight: activeTab === tab.id ? '700' : '500',
-                color: activeTab === tab.id ? '#c49a3c' : '#a09080',
-                background: activeTab === tab.id ? '#2a2418' : 'transparent',
-                border:'none', borderBottom:'1px solid #3a3428',
-                padding:'14px 20px', cursor:'pointer', fontFamily:'inherit'
-              }}>{tab.label}</button>
-            ))}
-          </div>
-        )}
+
+        {/* Modern Mobile Drawer Menu */}
+        <MobileMenu 
+          isOpen={menuOpen}
+          onClose={() => setMenuOpen(false)}
+          user={user}
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
       </header>
 
       {/* Participant Summary Bar */}
@@ -276,16 +271,7 @@ export default function ParticipantProfile() {
 
           {/* Rows 2 & 3 — Stats (desktop: flex row / mobile: 2×2 grid) */}
           <div className="rsp-sumbar-stats">
-            {/* Row 2 col 1 — Age */}
-            <div className="rsp-sumbar-stat" style={{textAlign:'center'}}>
-              <div style={{fontSize:'15px', fontWeight:'700', color:'#1a1610'}}>
-                {calcAge(participant?.date_of_birth)}
-              </div>
-              <div style={{fontSize:'10px', color:'#a09080', textTransform:'uppercase', letterSpacing:'0.4px'}}>
-                Age
-              </div>
-            </div>
-            {/* Row 2 col 2 — Gender badge (replaces old text stat) */}
+            {/* Row 2 col 1 — Gender badge */}
             <div className="rsp-sumbar-gender-cell">
               <span style={{
                 background: participant?.gender === 'Female' ? '#f5e0e3' : '#dce9f5',
@@ -295,6 +281,15 @@ export default function ParticipantProfile() {
               }}>
                 {participant?.gender}
               </span>
+            </div>
+            {/* Row 2 col 2 — Age */}
+            <div className="rsp-sumbar-stat" style={{textAlign:'center'}}>
+              <div style={{fontSize:'15px', fontWeight:'700', color:'#1a1610'}}>
+                {calcAge(participant?.date_of_birth)}
+              </div>
+              <div style={{fontSize:'10px', color:'#a09080', textTransform:'uppercase', letterSpacing:'0.4px'}}>
+                Age
+              </div>
             </div>
             {/* Row 3 col 1 — DOB */}
             <div className="rsp-sumbar-stat" style={{textAlign:'center'}}>

@@ -71,6 +71,15 @@ const STATUS_FIELDS = {
   },
 };
 
+// Human-readable labels for marital status values
+const MARITAL_STATUS_LABELS = {
+  single    : 'Single',
+  married   : 'Married',
+  divorced  : 'Divorced',
+  widowed   : 'Widowed',
+  separated : 'Separated',
+};
+
 // Human-readable labels for OL/AL status values
 const OL_STATUS_LABELS = {
   not_yet          : 'Not Yet',
@@ -179,6 +188,14 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
     if (!form.ol_status)        missing.push('O/L Status');
     if (!form.al_status)        missing.push('A/L Status');
     if (!form.current_status)   missing.push('Current Status');
+    if (form.current_status && STATUS_FIELDS[form.current_status]) {
+      for (const f of STATUS_FIELDS[form.current_status].fields) {
+        if (!form[f.key]) missing.push(f.label);
+      }
+      if (form.current_status === 'studying_school' && !form.current_course) {
+        missing.push('Grade');
+      }
+    }
     if (!form.family_income)    missing.push('Family Monthly Income');
     if (form.no_of_dependants === '' || form.no_of_dependants === null || form.no_of_dependants === undefined)
       missing.push('Number of Dependants');
@@ -317,7 +334,28 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
   };
 
   // ── View mode field renderer ────────────────────────────────────
-  function ViewField({ label, value }) {
+  function ViewField({ label, value, inline = false }) {
+    if (inline) {
+      const hasValue = value !== undefined && value !== null && value !== '';
+      return (
+        <div className="pi-vf-row" style={{
+          display:'flex', justifyContent:'space-between', alignItems:'baseline',
+          gap:'16px', padding:'8px 0',
+          borderBottom:'1px solid var(--color-divider)'
+        }}>
+          <div className="pi-vf-lbl" style={{
+            fontSize:'11px', fontWeight:'700', color:'var(--color-text-muted)',
+            textTransform:'uppercase', letterSpacing:'0.4px', flexShrink:0
+          }}>{label}</div>
+          <div style={{
+            fontSize:'13px', textAlign:'right',
+            color: hasValue ? 'var(--color-brand-primary)' : 'var(--color-text-placeholder)'
+          }}>
+            {hasValue ? value : '—'}
+          </div>
+        </div>
+      );
+    }
     return (
       <div>
         <div style={{
@@ -363,7 +401,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
         <div>
           {/* Edit Button */}
           {!readOnly && (
-            <div style={{display:'flex', justifyContent:'flex-end', marginBottom:'16px'}}>
+            <div className="rsp-edit-btn-row" style={{display:'flex', justifyContent:'flex-end', marginBottom:'16px'}}>
               <button onClick={() => setEditMode(true)} style={{
                 background:'#1a1610', color:'#c49a3c', border:'none',
                 borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
@@ -377,28 +415,32 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           {/* Personal & Family */}
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>Personal & Family Status</div>
-            <div className="rsp-grid-3" style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'16px'}}>
-              <ViewField label="Marital Status"     value={form.marital_status} />
+            <div className="rsp-grid-2" style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0 32px'}}>
+              <ViewField inline label="Marital Status"     value={MARITAL_STATUS_LABELS[form.marital_status] || form.marital_status} />
+              <ViewField inline label="Number of Children" value={form.number_of_children} />
+              <ViewField inline label="Pregnant"           value={form.is_pregnant ? 'Yes' : 'No'} />
               {form.living_outside_ldc && (
-                  <>
-                    <ViewField label="Living Outside LDC" value="Yes" />
-                    <ViewField label="Purpose"            value={form.outside_purpose} />
-                    <ViewField label="Location"           value={form.outside_location} />
-                  </>
-                )}
-              <ViewField label="Number of Children" value={form.number_of_children} />
-              <ViewField label="Pregnant"           value={form.is_pregnant ? 'Yes' : 'No'} />
+                <>
+                  <ViewField inline label="Living Outside LDC" value="Yes" />
+                  <ViewField inline label="Purpose"            value={form.outside_purpose} />
+                  <ViewField inline label="Location"           value={form.outside_location} />
+                </>
+              )}
             </div>
           </div>
 
           {/* School Level */}
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>School Level Status</div>
-            <div className="rsp-grid-4" style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:'16px'}}>
-              <ViewField label="O/L Status" value={OL_STATUS_LABELS[form.ol_status] || form.ol_status} />
-              <ViewField label="O/L Year"   value={form.ol_completion_year} />
-              <ViewField label="A/L Status" value={AL_STATUS_LABELS[form.al_status] || form.al_status} />
-              <ViewField label="A/L Year"   value={form.al_completion_year} />
+            <div>
+              <ViewField inline label="O/L Status" value={OL_STATUS_LABELS[form.ol_status] || form.ol_status} />
+              {['awaiting_results','completed_passed','completed_failed'].includes(form.ol_status) && (
+                <ViewField inline label="O/L Year" value={form.ol_completion_year} />
+              )}
+              <ViewField inline label="A/L Status" value={AL_STATUS_LABELS[form.al_status] || form.al_status} />
+              {['awaiting_results','completed_passed','completed_failed'].includes(form.al_status) && (
+                <ViewField inline label="A/L Year" value={form.al_completion_year} />
+              )}
             </div>
           </div>
 
@@ -540,7 +582,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                     })}
                     style={{width:'16px', height:'16px', accentColor:'#c49a3c'}} />
                   <label htmlFor="living_outside" style={{
-                    fontSize:'13px', fontWeight:'600', cursor:'pointer'
+                    fontSize:'13px', fontWeight:'400', cursor:'pointer'
                   }}>
                     Participant is currently living outside the LDC area
                   </label>
@@ -595,11 +637,11 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           {/* School Level */}
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>School Level Status</div>
-            <div className="rsp-grid-4" style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:'14px'}}>
+            <div className="rsp-grid-2" style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'}}>
               <div>
                 <label style={labelStyle}>O/L Status</label>
                 <select style={inputStyle(false)} value={form.ol_status}
-                  onChange={e => setForm({...form, ol_status:e.target.value})}>
+                  onChange={e => setForm({...form, ol_status:e.target.value, ol_completion_year:''})}>
                   <option value="">— Select —</option>
                   <option value="not_yet">Not Yet</option>
                   <option value="awaiting_results">Awaiting Results</option>
@@ -607,17 +649,19 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                   <option value="completed_failed">Completed — Failed</option>
                   <option value="not_applicable">Not Applicable</option>
                 </select>
-              </div>
-              <div>
-                <label style={labelStyle}>O/L Year</label>
-                <input style={inputStyle(false)} type="number"
-                  value={form.ol_completion_year}
-                  onChange={e => setForm({...form, ol_completion_year:e.target.value})} />
+                {['awaiting_results','completed_passed','completed_failed'].includes(form.ol_status) && (
+                  <div style={{marginTop:'10px'}}>
+                    <label style={labelStyle}>O/L Year</label>
+                    <input style={inputStyle(false)} type="number" placeholder="e.g. 2022"
+                      value={form.ol_completion_year}
+                      onChange={e => setForm({...form, ol_completion_year:e.target.value})} />
+                  </div>
+                )}
               </div>
               <div>
                 <label style={labelStyle}>A/L Status</label>
                 <select style={inputStyle(false)} value={form.al_status}
-                  onChange={e => setForm({...form, al_status:e.target.value})}>
+                  onChange={e => setForm({...form, al_status:e.target.value, al_completion_year:''})}>
                   <option value="">— Select —</option>
                   <option value="not_yet">Not Yet</option>
                   <option value="awaiting_results">Awaiting Results</option>
@@ -626,12 +670,14 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                   <option value="not_sitting">Not Sitting</option>
                   <option value="not_applicable">Not Applicable</option>
                 </select>
-              </div>
-              <div>
-                <label style={labelStyle}>A/L Year</label>
-                <input style={inputStyle(false)} type="number"
-                  value={form.al_completion_year}
-                  onChange={e => setForm({...form, al_completion_year:e.target.value})} />
+                {['awaiting_results','completed_passed','completed_failed'].includes(form.al_status) && (
+                  <div style={{marginTop:'10px'}}>
+                    <label style={labelStyle}>A/L Year</label>
+                    <input style={inputStyle(false)} type="number" placeholder="e.g. 2024"
+                      value={form.al_completion_year}
+                      onChange={e => setForm({...form, al_completion_year:e.target.value})} />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -658,25 +704,28 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
 
             {/* Dynamic fields */}
             {form.current_status && STATUS_FIELDS[form.current_status] && (
-              <div style={{
+              <div className="rsp-grid-3" style={{
                 display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'14px',
                 background:'#f5edd8', padding:'14px', borderRadius:'6px',
                 border:'1px solid #e8d4a0'
               }}>
                 {STATUS_FIELDS[form.current_status].fields.map(f => (
                   <div key={f.key}>
-                    <label style={labelStyle}>{f.label}</label>
+                    <label style={labelStyle}>{f.label} *</label>
                     <input style={inputStyle(false)}
                       value={form[f.key]}
+                      required
+                      placeholder={f.placeholder || ''}
                       onChange={e => setForm({...form, [f.key]:e.target.value})} />
                   </div>
                 ))}
                 {/* Grade dropdown — only for school status */}
                 {form.current_status === 'studying_school' && (
                   <div>
-                    <label style={labelStyle}>Grade</label>
+                    <label style={labelStyle}>Grade *</label>
                     <select style={inputStyle(false)}
                       value={form.current_course}
+                      required
                       onChange={e => setForm({...form, current_course:e.target.value})}>
                       <option value="">— Select Grade —</option>
                       {schoolGrades.map(g => (
@@ -753,7 +802,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           </div>
 
           {/* Save / Cancel Buttons */}
-          <div style={{display:'flex', gap:'12px'}}>
+          <div className="rsp-submit-row" style={{display:'flex', gap:'12px', justifyContent:'flex-end'}}>
             <button type="submit" disabled={saving} style={{
               background: saving ? '#a09080' : '#2d6a4f',
               color:'#fff', border:'none', borderRadius:'6px',

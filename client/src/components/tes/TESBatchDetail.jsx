@@ -212,7 +212,7 @@ export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = fals
           </div>
         </div>
 
-        <div style={{display:'flex', gap:'8px', flexWrap:'wrap'}}>
+        <div className="rsp-submit-row" style={{display:'flex', gap:'8px'}}>
           {/* Export Button */}
           <button onClick={handleExport} disabled={exporting} style={{
             background:'#1a4068', color:'#fff', border:'none',

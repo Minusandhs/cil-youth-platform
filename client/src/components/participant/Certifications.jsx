@@ -159,7 +159,7 @@ export default function Certifications({ participantId, readOnly = false }) {
       )}
 
       {/* Header */}
-      <div style={{
+      <div className="rsp-section-header" style={{
         display:'flex', justifyContent:'space-between',
         alignItems:'center', marginBottom:'20px'
       }}>
@@ -192,7 +192,7 @@ export default function Certifications({ participantId, readOnly = false }) {
           <form onSubmit={handleSave}>
 
             {/* Type & Name */}
-            <div style={{
+            <div className="rsp-grid-2" style={{
               display:'grid', gridTemplateColumns:'1fr 1fr',
               gap:'14px', marginBottom:'14px'
             }}>
@@ -217,15 +217,15 @@ export default function Certifications({ participantId, readOnly = false }) {
             </div>
 
             {/* Issuing Body & NVQ Level */}
-            <div style={{
+            <div className="rsp-grid-2" style={{
               display:'grid', gridTemplateColumns:'1fr 1fr',
               gap:'14px', marginBottom:'14px'
             }}>
               <div>
-                <label style={labelStyle}>Issuing Body / Institution</label>
+                <label style={labelStyle}>Issuing Body / Institution *</label>
                 <input style={inputStyle} value={form.issuing_body}
                   onChange={e => setForm({...form, issuing_body:e.target.value})}
-                  />
+                  required />
               </div>
               {hasNvq && (
                 <div>
@@ -242,15 +242,16 @@ export default function Certifications({ participantId, readOnly = false }) {
             </div>
 
             {/* Dates & Grade */}
-            <div style={{
+            <div className="rsp-grid-2" style={{
               display:'grid', gridTemplateColumns:'1fr 1fr',
               gap:'14px', marginBottom:'14px'
             }}>
               <div>
-                <label style={labelStyle}>Issue Date</label>
+                <label style={labelStyle}>Issue Date *</label>
                 <input style={inputStyle} type="date"
                   value={form.issued_date}
-                  onChange={e => setForm({...form, issued_date:e.target.value})} />
+                  onChange={e => setForm({...form, issued_date:e.target.value})}
+                  required />
               </div>
               <div>
                 <label style={labelStyle}>Grade / Result</label>
@@ -282,7 +283,7 @@ export default function Certifications({ participantId, readOnly = false }) {
             </div>
 
             {/* Buttons */}
-            <div style={{display:'flex', gap:'10px'}}>
+            <div className="rsp-submit-row" style={{display:'flex', gap:'10px'}}>
               <button type="submit" disabled={saving} style={{
                 background: saving ? '#a09080' : '#2d6a4f',
                 color:'#fff', border:'none', borderRadius:'6px',
