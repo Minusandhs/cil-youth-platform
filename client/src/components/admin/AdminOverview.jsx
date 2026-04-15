@@ -374,6 +374,7 @@ export default function AdminOverview() {
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
             <select
+              aria-label="Filter by LDC"
               value={filterLDC}
               onChange={e => handleLDCChange(e.target.value)}
               style={{ padding:'7px 11px', border:'1px solid #d4c9b0',
@@ -565,6 +566,7 @@ export default function AdminOverview() {
               <div className="rsp-submit-row" style={{ display:'flex', gap:'12px', alignItems:'flex-start' }}>
                 <div style={{ flex:1 }}>
                   <select
+                    aria-label="Export type"
                     value={exportType}
                     onChange={e => setExportType(e.target.value)}
                     disabled={!!exporting}

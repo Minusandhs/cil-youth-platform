@@ -218,7 +218,7 @@ export default function ParticipantSync({ readOnly = false }) {
             Supports .csv only
           </div>
         </div>
-        <input type="file" id="syncFile" accept=".csv"
+        <input type="file" id="syncFile" accept=".csv" aria-label="Upload CSV file"
           style={{display:'none'}}
           onChange={e => handleFile(e.target.files[0])} />
 
