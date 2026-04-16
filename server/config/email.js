@@ -1,39 +1,37 @@
-const nodemailer = require('nodemailer');
+const { google } = require('googleapis');
 
 /**
- * Configure Nodemailer with OAuth2 for Google/Gmail
- * Requirements in .env:
- * EMAIL_USER: The gmail address sending the mail
- * GOOGLE_CLIENT_ID
- * GOOGLE_CLIENT_SECRET
- * GOOGLE_REFRESH_TOKEN
+ * Configure Google OAuth2 Client
  */
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    type: 'OAuth2',
-    user: process.env.EMAIL_USER,
-    clientId: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
-  }
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  'https://developers.google.com/oauthplayground'
+);
+
+oauth2Client.setCredentials({
+  refresh_token: process.env.GOOGLE_REFRESH_TOKEN
 });
 
+const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
+
 /**
- * Verify connection configuration and send a test log
+ * Verify connection configuration
+ * Note: REST API doesn't have a persistent connection like SMTP, 
+ * so we verify by checking if we can get the profile.
  */
 const verifyConnection = async () => {
   try {
-    await transporter.verify();
-    console.log('✅ Email service is ready and authenticated');
+    await gmail.users.getProfile({ userId: 'me' });
+    console.log('✅ Gmail API service is ready (Port 443)');
     return true;
   } catch (error) {
-    console.error('❌ Email service authentication failed:', error);
+    console.error('❌ Gmail API authentication failed:', error.message);
     return false;
   }
 };
 
 module.exports = {
-  transporter,
+  gmail,
   verifyConnection
 };

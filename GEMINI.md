@@ -40,3 +40,8 @@ This file serves as the primary context for Gemini CLI's involvement in the proj
     - Fixed `admin_notes` bug in `server/routes/tes.js` and integrated rejection email trigger.
     - Applied DB migration `014` to add `email` column to `users` table.
     - Polished User Management UI to match tinted-background consistency.
+- **2026-04-16:** Deployed rejection notification system to production (cilyouth.org).
+    - Updated production `.env` with Google OAuth2 credentials.
+    - Synchronized GitHub and pulled latest changes to server.
+    - Updated `docker-compose.prod.yml` to pass credentials to the production container.
+    - Note: Outbound SMTP currently timing out on production server; may require hosting provider to unblock ports 465/587.
