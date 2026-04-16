@@ -9,9 +9,7 @@ const nodemailer = require('nodemailer');
  * GOOGLE_REFRESH_TOKEN
  */
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true, // Use SSL/TLS
+  service: 'gmail',
   auth: {
     type: 'OAuth2',
     user: process.env.EMAIL_USER,
