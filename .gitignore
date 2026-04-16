@@ -20,3 +20,8 @@ Thumbs.db
 
 # Docker
 .docker/
+
+#Other Important Files
+.claude/
+DOCUMENTATION.md
+.aider*

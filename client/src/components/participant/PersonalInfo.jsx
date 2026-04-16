@@ -1,103 +1,14 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
-
-// ── Dynamic fields per status ─────────────────────────────────────
-const STATUS_FIELDS = {
-  studying_school: {
-    label: 'Studying — School',
-    fields: [
-      { key: 'current_institution', label: 'School Name',  placeholder: 'e.g. Negombo Central College' },
-      { key: 'current_year',        label: 'Year',         placeholder: 'e.g. 2024' },
-    ]
-  },
-  studying_tertiary: {
-    label: 'Studying — Tertiary',
-    fields: [
-      { key: 'current_institution', label: 'University / Institute', placeholder: 'e.g. University of Kelaniya' },
-      { key: 'current_course',      label: 'Course / Degree',        placeholder: 'e.g. BSc Computer Science' },
-      { key: 'current_year',        label: 'Year of Study',          placeholder: 'e.g. Year 2' },
-    ]
-  },
-  studying_vocational: {
-    label: 'Studying — Vocational',
-    fields: [
-      { key: 'current_institution', label: 'Institution',   placeholder: 'e.g. NAITA' },
-      { key: 'current_course',      label: 'Course',        placeholder: 'e.g. NVQ Level 3 Electrical' },
-      { key: 'current_year',        label: 'Duration',      placeholder: 'e.g. 6 months' },
-    ]
-  },
-  employed_full: {
-    label: 'Employed — Full Time',
-    fields: [
-      { key: 'current_institution', label: 'Employer',    placeholder: 'Company name' },
-      { key: 'current_course',      label: 'Job Title',   placeholder: 'e.g. Sales Assistant' },
-      { key: 'current_year',        label: 'Years Employed', placeholder: 'e.g. 2 years' },
-    ]
-  },
-  employed_part: {
-    label: 'Employed — Part Time',
-    fields: [
-      { key: 'current_institution', label: 'Employer',    placeholder: 'Company name' },
-      { key: 'current_course',      label: 'Job Title',   placeholder: 'e.g. Cashier' },
-      { key: 'current_year',        label: 'Hours/Week',  placeholder: 'e.g. 20 hours/week' },
-    ]
-  },
-  self_employed: {
-    label: 'Self Employed',
-    fields: [
-      { key: 'current_institution', label: 'Business Type', placeholder: 'e.g. Small shop' },
-      { key: 'current_course',      label: 'Description',   placeholder: 'Brief description' },
-      { key: 'current_year',        label: 'Years Running', placeholder: 'e.g. 1 year' },
-    ]
-  },
-  unemployed_seeking: {
-    label: 'Unemployed — Seeking',
-    fields: [
-      { key: 'current_course',  label: 'Type of Work Seeking', placeholder: 'e.g. Factory work' },
-      { key: 'current_year',    label: 'Duration Unemployed',  placeholder: 'e.g. 3 months' },
-    ]
-  },
-  unemployed_not: {
-    label: 'Unemployed — Not Seeking',
-    fields: [
-      { key: 'current_course', label: 'Reason', placeholder: 'Reason for not seeking employment' },
-    ]
-  },
-  other: {
-    label: 'Other',
-    fields: [
-      { key: 'current_institution', label: 'Details', placeholder: 'Describe current situation' },
-    ]
-  },
-};
-
-// Human-readable labels for marital status values
-const MARITAL_STATUS_LABELS = {
-  single    : 'Single',
-  married   : 'Married',
-  divorced  : 'Divorced',
-  widowed   : 'Widowed',
-  separated : 'Separated',
-};
-
-// Human-readable labels for OL/AL status values
-const OL_STATUS_LABELS = {
-  not_yet          : 'Not Yet',
-  awaiting_results : 'Awaiting Results',
-  completed_passed : 'Completed — Passed',
-  completed_failed : 'Completed — Failed',
-  not_applicable   : 'Not Applicable',
-};
-const AL_STATUS_LABELS = {
-  not_yet          : 'Not Yet',
-  awaiting_results : 'Awaiting Results',
-  completed_passed : 'Completed — Passed',
-  completed_failed : 'Completed — Failed',
-  not_sitting      : 'Not Sitting',
-  not_applicable   : 'Not Applicable',
-};
+import {
+  CURRENT_STATUS,
+  statusLabel, maritalLabel, olLabel, alLabel, examStatusShowYear,
+  OL_STATUS, AL_STATUS,
+} from '../../lib/constants';
+import { useConstants } from '../../lib/useConstants';
 
 export default function PersonalInfo({ participant, onUpdate, readOnly = false }) {
+  const options = useConstants();
   const [profile,      setProfile     ] = useState(null);
   const [history,      setHistory     ] = useState([]);
   const [schoolGrades, setSchoolGrades] = useState([]);
@@ -188,12 +99,9 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
     if (!form.ol_status)        missing.push('O/L Status');
     if (!form.al_status)        missing.push('A/L Status');
     if (!form.current_status)   missing.push('Current Status');
-    if (form.current_status && STATUS_FIELDS[form.current_status]) {
-      for (const f of STATUS_FIELDS[form.current_status].fields) {
+    if (form.current_status && CURRENT_STATUS[form.current_status]) {
+      for (const f of CURRENT_STATUS[form.current_status].fields) {
         if (!form[f.key]) missing.push(f.label);
-      }
-      if (form.current_status === 'studying_school' && !form.current_course) {
-        missing.push('Grade');
       }
     }
     if (!form.family_income)    missing.push('Family Monthly Income');
@@ -369,11 +277,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
     );
   }
 
-  // ── Status label helper ─────────────────────────────────────────
-  function statusLabel(status) {
-    return STATUS_FIELDS[status]?.label || status || '—';
-  }
-
   if (loading) return (
     <div style={{padding:'32px', color:'#6b5e4a'}}>Loading profile...</div>
   );
@@ -416,7 +319,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>Personal & Family Status</div>
             <div className="rsp-grid-2" style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0 32px'}}>
-              <ViewField inline label="Marital Status"     value={MARITAL_STATUS_LABELS[form.marital_status] || form.marital_status} />
+              <ViewField inline label="Marital Status"     value={maritalLabel(form.marital_status)} />
               <ViewField inline label="Number of Children" value={form.number_of_children} />
               <ViewField inline label="Pregnant"           value={form.is_pregnant ? 'Yes' : 'No'} />
               {form.living_outside_ldc && (
@@ -433,12 +336,12 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>School Level Status</div>
             <div>
-              <ViewField inline label="O/L Status" value={OL_STATUS_LABELS[form.ol_status] || form.ol_status} />
-              {['awaiting_results','completed_passed','completed_failed'].includes(form.ol_status) && (
+              <ViewField inline label="O/L Status" value={olLabel(form.ol_status)} />
+              {examStatusShowYear(OL_STATUS, form.ol_status) && (
                 <ViewField inline label="O/L Year" value={form.ol_completion_year} />
               )}
-              <ViewField inline label="A/L Status" value={AL_STATUS_LABELS[form.al_status] || form.al_status} />
-              {['awaiting_results','completed_passed','completed_failed'].includes(form.al_status) && (
+              <ViewField inline label="A/L Status" value={alLabel(form.al_status)} />
+              {examStatusShowYear(AL_STATUS, form.al_status) && (
                 <ViewField inline label="A/L Year" value={form.al_completion_year} />
               )}
             </div>
@@ -456,14 +359,11 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                 {statusLabel(form.current_status)}
               </span>
             </div>
-            {form.current_status && STATUS_FIELDS[form.current_status] && (
+            {form.current_status && CURRENT_STATUS[form.current_status] && (
               <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'16px'}}>
-                {STATUS_FIELDS[form.current_status].fields.map(f => (
+                {CURRENT_STATUS[form.current_status].fields.map(f => (
                   <ViewField key={f.key} label={f.label} value={form[f.key]} />
                 ))}
-                {form.current_status === 'studying_school' && form.current_course && (
-                  <ViewField label="Grade" value={form.current_course} />
-                )}
               </div>
             )}
           </div>
@@ -556,11 +456,9 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                 <select style={inputStyle(false)} value={form.marital_status}
                   onChange={e => setForm({...form, marital_status:e.target.value})}>
                   <option value="">— Select —</option>
-                  <option value="single">Single</option>
-                  <option value="married">Married</option>
-                  <option value="divorced">Divorced</option>
-                  <option value="widowed">Widowed</option>
-                  <option value="separated">Separated</option>
+                  {options.maritalStatuses.map(s => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
                 </select>
               </div>
               {/* Living Outside LDC */}
@@ -597,9 +495,9 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                       <select style={inputStyle(false)} value={form.outside_purpose}
                         onChange={e => setForm({...form, outside_purpose:e.target.value})}>
                         <option value="">— Select Purpose —</option>
-                        <option value="Study">Study</option>
-                        <option value="Work / Business">Work / Business</option>
-                        <option value="Other">Other</option>
+                        {options.outsidePurposes.map(p => (
+                          <option key={p.value} value={p.value}>{p.label}</option>
+                        ))}
                       </select>
                     </div>
                     <div>
@@ -643,13 +541,11 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                 <select style={inputStyle(false)} value={form.ol_status}
                   onChange={e => setForm({...form, ol_status:e.target.value, ol_completion_year:''})}>
                   <option value="">— Select —</option>
-                  <option value="not_yet">Not Yet</option>
-                  <option value="awaiting_results">Awaiting Results</option>
-                  <option value="completed_passed">Completed — Passed</option>
-                  <option value="completed_failed">Completed — Failed</option>
-                  <option value="not_applicable">Not Applicable</option>
+                  {options.olStatuses.map(s => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
                 </select>
-                {['awaiting_results','completed_passed','completed_failed'].includes(form.ol_status) && (
+                {examStatusShowYear(OL_STATUS, form.ol_status) && (
                   <div style={{marginTop:'10px'}}>
                     <label style={labelStyle}>O/L Year</label>
                     <input style={inputStyle(false)} type="number" placeholder="e.g. 2022"
@@ -663,14 +559,11 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                 <select style={inputStyle(false)} value={form.al_status}
                   onChange={e => setForm({...form, al_status:e.target.value, al_completion_year:''})}>
                   <option value="">— Select —</option>
-                  <option value="not_yet">Not Yet</option>
-                  <option value="awaiting_results">Awaiting Results</option>
-                  <option value="completed_passed">Completed — Passed</option>
-                  <option value="completed_failed">Completed — Failed</option>
-                  <option value="not_sitting">Not Sitting</option>
-                  <option value="not_applicable">Not Applicable</option>
+                  {options.alStatuses.map(s => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
                 </select>
-                {['awaiting_results','completed_passed','completed_failed'].includes(form.al_status) && (
+                {examStatusShowYear(AL_STATUS, form.al_status) && (
                   <div style={{marginTop:'10px'}}>
                     <label style={labelStyle}>A/L Year</label>
                     <input style={inputStyle(false)} type="number" placeholder="e.g. 2024"
@@ -696,44 +589,41 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                   current_year       : ''
                 })}>
                 <option value="">— Select Status —</option>
-                {Object.entries(STATUS_FIELDS).map(([key, val]) => (
-                  <option key={key} value={key}>{val.label}</option>
+                {options.currentStatuses.map(s => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
                 ))}
               </select>
             </div>
 
             {/* Dynamic fields */}
-            {form.current_status && STATUS_FIELDS[form.current_status] && (
+            {form.current_status && CURRENT_STATUS[form.current_status] && (
               <div className="rsp-grid-3" style={{
                 display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'14px',
                 background:'#f5edd8', padding:'14px', borderRadius:'6px',
                 border:'1px solid #e8d4a0'
               }}>
-                {STATUS_FIELDS[form.current_status].fields.map(f => (
+                {CURRENT_STATUS[form.current_status].fields.map(f => (
                   <div key={f.key}>
                     <label style={labelStyle}>{f.label} *</label>
-                    <input style={inputStyle(false)}
-                      value={form[f.key]}
-                      required
-                      placeholder={f.placeholder || ''}
-                      onChange={e => setForm({...form, [f.key]:e.target.value})} />
+                    {f.type === 'grade_select' ? (
+                      <select style={inputStyle(false)}
+                        value={form[f.key]}
+                        required
+                        onChange={e => setForm({...form, [f.key]:e.target.value})}>
+                        <option value="">— Select Grade —</option>
+                        {schoolGrades.map(g => (
+                          <option key={g.id} value={g.grade_label}>{g.grade_label}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input style={inputStyle(false)}
+                        value={form[f.key]}
+                        required
+                        placeholder={f.placeholder || ''}
+                        onChange={e => setForm({...form, [f.key]:e.target.value})} />
+                    )}
                   </div>
                 ))}
-                {/* Grade dropdown — only for school status */}
-                {form.current_status === 'studying_school' && (
-                  <div>
-                    <label style={labelStyle}>Grade *</label>
-                    <select style={inputStyle(false)}
-                      value={form.current_course}
-                      required
-                      onChange={e => setForm({...form, current_course:e.target.value})}>
-                      <option value="">— Select Grade —</option>
-                      {schoolGrades.map(g => (
-                        <option key={g.id} value={g.grade_label}>{g.grade_label}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
               </div>
             )}
           </div>

@@ -1,14 +1,9 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
-
-const AL_STREAMS = [
-  'Physical Science', 'Biological Science', 'Commerce',
-  'Arts', 'Technology', 'Engineering Technology',
-  'Bio Systems Technology', 'Other'
-];
-const AL_MEDIUMS = ['Sinhala', 'Tamil', 'English'];
+import { useConstants } from '../../lib/useConstants';
 
 export default function AcademicRecords({ participantId, readOnly = false }) {
+  const options = useConstants();
   const [activeTab,  setActiveTab ] = useState('ol');
   const [olResults,  setOlResults ] = useState([]);
   const [alResults,  setAlResults ] = useState([]);
@@ -603,8 +598,8 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                     <select style={inputStyle} value={alForm.stream}
                       onChange={e => setAlForm({...alForm, stream:e.target.value})} required>
                       <option value="">— Select Stream —</option>
-                      {AL_STREAMS.map(s => (
-                        <option key={s} value={s}>{s}</option>
+                      {options.alStreams.map(s => (
+                        <option key={s.value} value={s.value}>{s.label}</option>
                       ))}
                     </select>
                   </div>
@@ -613,8 +608,8 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                     <select style={inputStyle} value={alForm.medium}
                       onChange={e => setAlForm({...alForm, medium:e.target.value})} required>
                       <option value="">— Select Medium —</option>
-                      {AL_MEDIUMS.map(m => (
-                        <option key={m} value={m}>{m}</option>
+                      {options.alMediums.map(m => (
+                        <option key={m.value} value={m.value}>{m.label}</option>
                       ))}
                     </select>
                   </div>

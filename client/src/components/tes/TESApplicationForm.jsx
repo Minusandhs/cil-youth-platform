@@ -1,17 +1,11 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
-
-const LANG_LEVELS = ['beginner', 'intermediate', 'advanced', 'proficient'];
-const INST_TYPES  = [
-  { value:'university', label:'University'  },
-  { value:'college',    label:'College'     },
-  { value:'vocational', label:'Vocational'  },
-  { value:'other',      label:'Other'       },
-];
+import { useConstants } from '../../lib/useConstants';
 
 export default function TESApplicationForm({
   batch, onBack, onSuccess, existingApp
 }) {
+  const options = useConstants();
   const [participants,   setParticipants  ] = useState([]);
   const [selParticipant, setSelParticipant] = useState(null);
   const [search,         setSearch        ] = useState('');
@@ -542,13 +536,13 @@ export default function TESApplicationForm({
                     color:'#3d3528', borderBottom:'1px solid #d4c9b0',
                     width:'120px'
                   }}>Language</th>
-                  {LANG_LEVELS.map(l => (
-                    <th key={l} style={{
+                  {options.langLevels.map(l => (
+                    <th key={l.value} style={{
                       padding:'8px 12px', textAlign:'center',
                       fontSize:'11px', fontWeight:'700',
                       textTransform:'uppercase', letterSpacing:'0.4px',
                       color:'#3d3528', borderBottom:'1px solid #d4c9b0'
-                    }}>{l.charAt(0).toUpperCase()+l.slice(1)}</th>
+                    }}>{l.label}</th>
                   ))}
                 </tr>
               </thead>
@@ -562,11 +556,11 @@ export default function TESApplicationForm({
                     <td style={{padding:'10px 12px', fontWeight:'600'}}>
                       {lang.label}
                     </td>
-                    {LANG_LEVELS.map(level => (
-                      <td key={level} style={{padding:'10px 12px', textAlign:'center'}}>
-                        <input type="radio" name={lang.key} value={level}
-                          checked={form[lang.key] === level}
-                          onChange={() => setForm({...form, [lang.key]:level})}
+                    {options.langLevels.map(level => (
+                      <td key={level.value} style={{padding:'10px 12px', textAlign:'center'}}>
+                        <input type="radio" name={lang.key} value={level.value}
+                          checked={form[lang.key] === level.value}
+                          onChange={() => setForm({...form, [lang.key]:level.value})}
                           style={{
                             width:'16px', height:'16px',
                             accentColor:'#c49a3c', cursor:'pointer'
@@ -591,20 +585,20 @@ export default function TESApplicationForm({
                     {lang.label}
                   </div>
                   <div style={{display:'flex', gap:'6px', flexWrap:'wrap'}}>
-                    {LANG_LEVELS.map(level => (
-                      <label key={level} style={{
+                    {options.langLevels.map(level => (
+                      <label key={level.value} style={{
                         display:'flex', alignItems:'center',
                         padding:'7px 14px', borderRadius:'20px', cursor:'pointer',
                         fontSize:'12px', fontWeight:'600',
-                        border: form[lang.key] === level ? 'none' : '1px solid #d4c9b0',
-                        background: form[lang.key] === level ? '#1a1610' : '#faf8f3',
-                        color:      form[lang.key] === level ? '#c49a3c' : '#6b5e4a',
+                        border: form[lang.key] === level.value ? 'none' : '1px solid #d4c9b0',
+                        background: form[lang.key] === level.value ? '#1a1610' : '#faf8f3',
+                        color:      form[lang.key] === level.value ? '#c49a3c' : '#6b5e4a',
                       }}>
-                        <input type="radio" name={`m_${lang.key}`} value={level}
-                          checked={form[lang.key] === level}
-                          onChange={() => setForm({...form, [lang.key]:level})}
+                        <input type="radio" name={`m_${lang.key}`} value={level.value}
+                          checked={form[lang.key] === level.value}
+                          onChange={() => setForm({...form, [lang.key]:level.value})}
                           style={{display:'none'}} />
-                        {level.charAt(0).toUpperCase()+level.slice(1)}
+                        {level.label}
                       </label>
                     ))}
                   </div>
@@ -630,7 +624,7 @@ export default function TESApplicationForm({
                 <select style={inputStyle} value={form.institution_type}
                   onChange={e => setForm({...form, institution_type:e.target.value})}>
                   <option value="">— Select Type —</option>
-                  {INST_TYPES.map(t => (
+                  {options.instTypes.map(t => (
                     <option key={t.value} value={t.value}>{t.label}</option>
                   ))}
                 </select>

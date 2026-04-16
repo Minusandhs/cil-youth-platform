@@ -4,6 +4,7 @@
 const express = require('express');
 const { query, transaction } = require('../config/database');
 const { verifyToken } = require('../middleware/auth');
+const { VALID } = require('../constants');
 
 const router = express.Router();
 
@@ -200,6 +201,12 @@ router.post('/al', verifyToken, async (req, res) => {
       results_verified, notes, subjects
     } = req.body;
 
+    // ── Enum validation ──────────────────────────────────────────
+    if (stream && !VALID.alStream.includes(stream))
+      return res.status(400).json({ error: `Invalid stream: ${stream}` });
+    if (medium && !VALID.alMedium.includes(medium))
+      return res.status(400).json({ error: `Invalid medium: ${medium}` });
+
     if (req.user.role === 'ldc_staff') {
       const check = await query('SELECT is_exited FROM participants WHERE id = $1', [participant_id]);
       if (check.rows[0]?.is_exited) {
@@ -268,6 +275,12 @@ router.put('/al/:id', verifyToken, async (req, res) => {
       island_rank, university_selected, university_name,
       course_selected, results_verified, notes, subjects
     } = req.body;
+
+    // ── Enum validation ──────────────────────────────────────────
+    if (stream && !VALID.alStream.includes(stream))
+      return res.status(400).json({ error: `Invalid stream: ${stream}` });
+    if (medium && !VALID.alMedium.includes(medium))
+      return res.status(400).json({ error: `Invalid medium: ${medium}` });
 
     if (req.user.role === 'ldc_staff') {
       const check = await query(

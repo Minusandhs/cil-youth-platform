@@ -5,6 +5,7 @@ const express = require('express');
 const { query, transaction } = require('../config/database');
 const { verifyToken } = require('../middleware/auth');
 const { requireSuperAdmin } = require('../middleware/roleCheck');
+const { VALID } = require('../constants');
 
 const router = express.Router();
 
@@ -14,28 +15,31 @@ router.get('/', verifyToken, async (req, res) => {
     const { ldc_id, search, page = 1, limit = 50, include_inactive } = req.query;
     const offset = (page - 1) * limit;
 
-    // LDC staff can only see their own LDC and only active participants
-    let ldcFilter = '';
-    let params = [];
+    const params = [];
+    const whereClauses = ['1=1']; // Start with a true condition to easily append AND clauses
+    let paramIndex = 1;
 
+    // LDC staff can only see their own LDC and only active participants
     if (req.user.role === 'ldc_staff') {
-      ldcFilter = 'AND p.ldc_id = $1';
+      whereClauses.push(`p.ldc_id = $${paramIndex++}`);
       params.push(req.user.ldc_id);
     } else if (ldc_id) {
-      ldcFilter = 'AND p.ldc_id = $1';
+      // For super_admin, if ldc_id is provided, filter by it
+      whereClauses.push(`p.ldc_id = $${paramIndex++}`);
       params.push(ldc_id);
     }
 
-    let searchFilter = '';
     if (search) {
+      whereClauses.push(`(p.full_name ILIKE $${paramIndex} OR p.participant_id ILIKE $${paramIndex})`);
       params.push(`%${search}%`);
-      searchFilter = `AND (p.full_name ILIKE $${params.length}
-                     OR p.participant_id ILIKE $${params.length})`;
+      paramIndex++;
     }
 
     // LDC staff always see active only; admins can opt in to see inactive too
     const showAll = req.user.role !== 'ldc_staff' && include_inactive === 'true';
-    const activeFilter = showAll ? '' : 'AND p.is_active = true';
+    if (!showAll) {
+      whereClauses.push(`p.is_active = true`);
+    }
 
     params.push(limit, offset);
 
@@ -43,9 +47,9 @@ router.get('/', verifyToken, async (req, res) => {
       `SELECT p.*, l.ldc_id as ldc_code, l.name as ldc_name
        FROM participants p
        LEFT JOIN ldcs l ON p.ldc_id = l.id
-       WHERE 1=1 ${activeFilter} ${ldcFilter} ${searchFilter}
+       WHERE ${whereClauses.join(' AND ')}
        ORDER BY p.is_active DESC, p.full_name
-       LIMIT $${params.length - 1} OFFSET $${params.length}`,
+       LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
       params
     );
 
@@ -310,13 +314,20 @@ router.get('/export/tes-history', verifyToken, async (req, res) => {
 // ── GET /api/participants/:id ────────────────────────────────────
 router.get('/:id', verifyToken, async (req, res) => {
   try {
-    const result = await query(
-      `SELECT p.*, l.ldc_id as ldc_code, l.name as ldc_name
-       FROM participants p
-       LEFT JOIN ldcs l ON p.ldc_id = l.id
-       WHERE p.id = $1`,
-      [req.params.id]
-    );
+    let queryText = `
+      SELECT p.*, l.ldc_id as ldc_code, l.name as ldc_name
+      FROM participants p
+      LEFT JOIN ldcs l ON p.ldc_id = l.id
+      WHERE p.id = $1
+    `;
+    const params = [req.params.id];
+
+    if (req.user.role === 'ldc_staff') {
+      queryText += ` AND p.ldc_id = $2`;
+      params.push(req.user.ldc_id);
+    }
+
+    const result = await query(queryText, params);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Participant not found' });
     }
@@ -472,10 +483,20 @@ router.post('/sync', verifyToken, requireSuperAdmin, async (req, res) => {
 // ── GET /api/participants/:id/profile ────────────────────────────
 router.get('/:id/profile', verifyToken, async (req, res) => {
   try {
-    const result = await query(
-      'SELECT * FROM participant_profiles WHERE participant_id = $1',
-      [req.params.id]
-    );
+    let queryText = `
+      SELECT pp.*
+      FROM participant_profiles pp
+      JOIN participants p ON pp.participant_id = p.id
+      WHERE pp.participant_id = $1
+    `;
+    const params = [req.params.id];
+
+    if (req.user.role === 'ldc_staff') {
+      queryText += ` AND p.ldc_id = $2`;
+      params.push(req.user.ldc_id);
+    }
+
+    const result = await query(queryText, params);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'No profile found' });
     }
@@ -489,12 +510,30 @@ router.get('/:id/profile', verifyToken, async (req, res) => {
 router.post('/:id/profile', verifyToken, async (req, res) => {
   try {
     if (req.user.role === 'ldc_staff') {
-      const check = await query('SELECT is_exited FROM participants WHERE id = $1', [req.params.id]);
-      if (check.rows[0]?.is_exited) {
+      const participantLdcCheck = await query('SELECT ldc_id, is_exited FROM participants WHERE id = $1', [req.params.id]);
+      if (participantLdcCheck.rows.length === 0) {
+        return res.status(404).json({ error: 'Participant not found' });
+      }
+      if (participantLdcCheck.rows[0].ldc_id !== req.user.ldc_id) {
+        return res.status(403).json({ error: 'Access denied: Participant does not belong to your LDC.' });
+      }
+      if (participantLdcCheck.rows[0]?.is_exited) {
         return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
       }
     }
     const p = req.body;
+
+    // ── Enum validation ──────────────────────────────────────────
+    if (p.marital_status  && !VALID.maritalStatus.includes(p.marital_status))
+      return res.status(400).json({ error: `Invalid marital_status: ${p.marital_status}` });
+    if (p.ol_status       && !VALID.olStatus.includes(p.ol_status))
+      return res.status(400).json({ error: `Invalid ol_status: ${p.ol_status}` });
+    if (p.al_status       && !VALID.alStatus.includes(p.al_status))
+      return res.status(400).json({ error: `Invalid al_status: ${p.al_status}` });
+    if (p.current_status  && !VALID.currentStatus.includes(p.current_status))
+      return res.status(400).json({ error: `Invalid current_status: ${p.current_status}` });
+    if (p.outside_purpose && !VALID.outsidePurpose.includes(p.outside_purpose))
+      return res.status(400).json({ error: `Invalid outside_purpose: ${p.outside_purpose}` });
     const result = await query(
       `INSERT INTO participant_profiles (
         participant_id, marital_status, is_pregnant,
@@ -549,12 +588,31 @@ router.post('/:id/profile', verifyToken, async (req, res) => {
 router.put('/:id/profile', verifyToken, async (req, res) => {
   try {
     if (req.user.role === 'ldc_staff') {
-      const check = await query('SELECT is_exited FROM participants WHERE id = $1', [req.params.id]);
-      if (check.rows[0]?.is_exited) {
+      const participantLdcCheck = await query('SELECT ldc_id, is_exited FROM participants WHERE id = $1', [req.params.id]);
+      if (participantLdcCheck.rows.length === 0) {
+        return res.status(404).json({ error: 'Participant not found' });
+      }
+      if (participantLdcCheck.rows[0].ldc_id !== req.user.ldc_id) {
+        return res.status(403).json({ error: 'Access denied: Participant does not belong to your LDC.' });
+      }
+      if (participantLdcCheck.rows[0]?.is_exited) {
         return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
       }
     }
     const p = req.body;
+
+    // ── Enum validation ──────────────────────────────────────────
+    if (p.marital_status  && !VALID.maritalStatus.includes(p.marital_status))
+      return res.status(400).json({ error: `Invalid marital_status: ${p.marital_status}` });
+    if (p.ol_status       && !VALID.olStatus.includes(p.ol_status))
+      return res.status(400).json({ error: `Invalid ol_status: ${p.ol_status}` });
+    if (p.al_status       && !VALID.alStatus.includes(p.al_status))
+      return res.status(400).json({ error: `Invalid al_status: ${p.al_status}` });
+    if (p.current_status  && !VALID.currentStatus.includes(p.current_status))
+      return res.status(400).json({ error: `Invalid current_status: ${p.current_status}` });
+    if (p.outside_purpose && !VALID.outsidePurpose.includes(p.outside_purpose))
+      return res.status(400).json({ error: `Invalid outside_purpose: ${p.outside_purpose}` });
+
     const result = await query(
       `UPDATE participant_profiles SET
         marital_status      = $1,
@@ -622,14 +680,25 @@ router.put('/:id/profile', verifyToken, async (req, res) => {
 // ── GET /api/participants/:id/status-history ─────────────────────
 router.get('/:id/status-history', verifyToken, async (req, res) => {
   try {
-    const result = await query(
-      `SELECT h.*, u.full_name as recorded_by_name
-       FROM participant_status_history h
-       LEFT JOIN users u ON h.recorded_by = u.id
-       WHERE h.participant_id = $1
-       ORDER BY h.recorded_at DESC`,
-      [req.params.id]
-    );
+    let queryText = `
+      SELECT h.*, u.full_name as recorded_by_name
+      FROM participant_status_history h
+      JOIN participants p ON h.participant_id = p.id
+      LEFT JOIN users u ON h.recorded_by = u.id
+      WHERE h.participant_id = $1
+    `;
+    const params = [req.params.id];
+
+    if (req.user.role === 'ldc_staff') {
+      queryText += ` AND p.ldc_id = $2`;
+      params.push(req.user.ldc_id);
+    }
+    queryText += ` ORDER BY h.recorded_at DESC`;
+
+    const result = await query(queryText, params);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Status history not found or access denied' });
+    }
     res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: 'Failed to get status history' });
@@ -640,9 +709,15 @@ router.get('/:id/status-history', verifyToken, async (req, res) => {
 router.post('/:id/status-history', verifyToken, async (req, res) => {
   try {
     if (req.user.role === 'ldc_staff') {
-      const check = await query('SELECT is_exited FROM participants WHERE id = $1', [req.params.id]);
-      if (check.rows[0]?.is_exited) {
-        return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
+      const participantLdcCheck = await query('SELECT ldc_id, is_exited FROM participants WHERE id = $1', [req.params.id]);
+      if (participantLdcCheck.rows.length === 0) {
+        return res.status(404).json({ error: 'Participant not found' });
+      }
+      if (participantLdcCheck.rows[0].ldc_id !== req.user.ldc_id) {
+        return res.status(403).json({ error: 'Access denied: Participant does not belong to your LDC.' });
+      }
+      if (participantLdcCheck.rows[0]?.is_exited) {
+        return res.status(403).json({ error: 'This participant has exited the program. Status history is locked.' });
       }
     }
     const { status, institution, course, year_level, notes } = req.body;

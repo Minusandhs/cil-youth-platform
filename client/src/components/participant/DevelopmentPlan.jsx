@@ -1,23 +1,10 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { PLAN_GOALS } from '../../lib/constants';
+import { useConstants } from '../../lib/useConstants';
 
 const CURRENT_YEAR = new Date().getFullYear();
-
-const STATUS_OPTIONS = [
-  { value: 'not_started', label: 'Not Started', color: '#a09080', bg: '#f0ece2' },
-  { value: 'in_progress', label: 'In Progress', color: '#1a4068', bg: '#dce9f5' },
-  { value: 'completed',   label: 'Completed',   color: '#2d6a4f', bg: '#d8ede4' },
-  { value: 'on_hold',     label: 'On Hold',     color: '#b85c00', bg: '#fdecd8' },
-];
-
-const GOALS = [
-  { key: 'spiritual_goal',  label: 'Spiritual Goal',           placeholder: 'e.g. Attend church regularly, join youth group'    },
-  { key: 'academic_goal',   label: 'Academic Goal',            placeholder: 'e.g. Complete A/L with 3 passes'                   },
-  { key: 'social_goal',     label: 'Social / Community Goal',  placeholder: 'e.g. Participate in community service'             },
-  { key: 'vocational_goal', label: 'Vocational / Career Goal', placeholder: 'e.g. Complete NVQ Level 3 course'                  },
-  { key: 'health_goal',     label: 'Health Goal',              placeholder: 'e.g. Maintain healthy lifestyle'                   },
-];
 
 function ProgressBar({ value, onChange, readonly }) {
   const segments = 10;
@@ -49,6 +36,7 @@ function ProgressBar({ value, onChange, readonly }) {
 }
 
 export default function DevelopmentPlan({ participantId, participant, readOnly = false }) {
+  const options = useConstants();
   const { user } = useAuth();
   const isLDCStaff = user?.role === 'ldc_staff';
   const [plans,       setPlans      ] = useState([]);
@@ -156,7 +144,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
   }
 
   function detectChanges() {
-    const goalsChanged = GOALS.some(
+    const goalsChanged = PLAN_GOALS.some(
       g => form[g.key] !== (origGoals[g.key] || '')
     );
     const progressChanged =
@@ -249,7 +237,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
     );
   }
 
-  const statusInfo = STATUS_OPTIONS.find(
+  const statusInfo = options.planStatuses.find(
     s => s.value === (plan?.progress_status || 'not_started')
   );
   const planYears   = plans.map(p => p.plan_year);
@@ -376,7 +364,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
           <div style={sectionStyle}>
             <div style={secTitle}>Development Goals</div>
             <div style={{display:'grid', gap:'14px'}}>
-              {GOALS.map(g => (
+              {PLAN_GOALS.map(g => (
                 <div key={g.key}>
                   <label style={labelStyle}>{g.label}</label>
                   <textarea style={{...inputStyle, minHeight:'70px'}}
@@ -490,7 +478,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                   <select style={inputStyle}
                     value={form.progress_status}
                     onChange={e => setForm({...form, progress_status:e.target.value})}>
-                    {STATUS_OPTIONS.map(s => (
+                    {options.planStatuses.map(s => (
                       <option key={s.value} value={s.value}>{s.label}</option>
                     ))}
                   </select>
@@ -593,10 +581,10 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
           {/* Goals */}
           <div style={sectionStyle}>
             <div style={secTitle}>Development Goals</div>
-            {GOALS.map(g => (
+            {PLAN_GOALS.map(g => (
               <ViewField key={g.key} label={g.label} value={plan[g.key]} />
             ))}
-            {!GOALS.some(g => plan[g.key]) && (
+            {!PLAN_GOALS.some(g => plan[g.key]) && (
               <div style={{color:'#a09080', fontSize:'13px'}}>
                 No goals recorded yet.
               </div>
@@ -683,16 +671,16 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                       </div>
                       {changeTypeBadge(h.change_type)}
                       <span style={{
-                        background: STATUS_OPTIONS.find(
+                        background: options.planStatuses.find(
                           s => s.value === h.progress_status
                         )?.bg || '#f0ece2',
-                        color: STATUS_OPTIONS.find(
+                        color: options.planStatuses.find(
                           s => s.value === h.progress_status
                         )?.color || '#6b5e4a',
                         padding:'1px 7px', borderRadius:'8px',
                         fontSize:'10px', fontWeight:'700'
                       }}>
-                        {STATUS_OPTIONS.find(
+                        {options.planStatuses.find(
                           s => s.value === h.progress_status
                         )?.label}
                       </span>
@@ -740,7 +728,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                             background:'#f5edd8',
                             border:'1px solid #e8d4a0', borderRadius:'6px'
                           }}>
-                            {GOALS.map(g => h[g.key] ? (
+                            {PLAN_GOALS.map(g => h[g.key] ? (
                               <div key={g.key} style={{marginBottom:'8px'}}>
                                 <div style={{
                                   fontSize:'10px', fontWeight:'700',

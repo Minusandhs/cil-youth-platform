@@ -1,39 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
-
-// ── Label maps ────────────────────────────────────────────────────
-const STATUS_LABELS = {
-  studying_school    : 'Studying — School',
-  studying_tertiary  : 'Studying — Tertiary',
-  studying_vocational: 'Studying — Vocational',
-  employed_full      : 'Employed — Full Time',
-  employed_part      : 'Employed — Part Time',
-  self_employed      : 'Self Employed',
-  unemployed_seeking : 'Unemployed — Seeking',
-  unemployed_not     : 'Unemployed — Not Seeking',
-  other              : 'Other',
-  no_profile         : 'No Profile Recorded',
-};
-
-const STATUS_COLORS = {
-  studying_school    : '#1a4068',
-  studying_tertiary  : '#2d6a4f',
-  studying_vocational: '#5a3e8a',
-  employed_full      : '#c49a3c',
-  employed_part      : '#9b6e2a',
-  self_employed      : '#6b5e4a',
-  unemployed_seeking : '#9b2335',
-  unemployed_not     : '#7a1a2a',
-  other              : '#a09080',
-  no_profile         : '#d4c9b0',
-};
-
-const INST_LABELS = {
-  university: 'University',
-  college   : 'College',
-  vocational: 'Vocational / TVET',
-  other     : 'Other',
-};
+import { statusLabel, statusColor, instLabel } from '../../lib/constants';
 
 function fmt(n) {
   if (n === null || n === undefined) return '—';
@@ -154,7 +121,7 @@ export default function AdminOverview() {
         'Gender'               : p.gender || '',
         'Planned Completion'   : fmtDate(p.planned_completion),
         'Active'               : p.is_active ? 'Yes' : 'No',
-        'Current Status'       : STATUS_LABELS[p.current_status] || p.current_status || '',
+        'Current Status'       : statusLabel(p.current_status),
         'Marital Status'       : p.marital_status || '',
         'No of Children'       : p.number_of_children ?? '',
         'Pregnant'             : p.is_pregnant ? 'Yes' : 'No',
@@ -274,7 +241,7 @@ export default function AdminOverview() {
         'LDC'              : h.ldc_code,
         'Batch'            : h.batch_name,
         'Institution'      : h.institution_name || '',
-        'Institution Type' : INST_LABELS[h.institution_type] || h.institution_type || '',
+        'Institution Type' : instLabel(h.institution_type),
         'Course'           : h.course_name || '',
         'Duration (Years)' : h.course_duration ?? '',
         'Course Year'      : h.course_year ?? '',
@@ -419,13 +386,13 @@ export default function AdminOverview() {
                 ) : (
                   overview.status_breakdown.map(row => {
                     const pct = Math.round((row.count / totalStatus) * 100);
-                    const color = STATUS_COLORS[row.status] || '#a09080';
+                    const color = statusColor(row.status);
                     return (
                       <div key={row.status} style={{ marginBottom:'10px' }}>
                         <div style={{ display:'flex', justifyContent:'space-between',
                           fontSize:'12px', marginBottom:'4px' }}>
                           <span style={{ color:'#3d3528', fontWeight:'600' }}>
-                            {STATUS_LABELS[row.status] || row.status}
+                            {statusLabel(row.status)}
                           </span>
                           <span style={{ color:'#6b5e4a', fontWeight:'700' }}>
                             {fmt(row.count)} <span style={{ color:'#a09080', fontWeight:'400' }}>({pct}%)</span>
@@ -465,7 +432,7 @@ export default function AdminOverview() {
                           alignItems:'center', padding:'6px 0',
                           borderBottom:'1px solid #f0ece2', fontSize:'12px' }}>
                           <span style={{ color:'#3d3528', fontWeight:'600' }}>
-                            {INST_LABELS[type]}
+                            {instLabel(type)}
                           </span>
                           <span style={{ background: count > 0 ? '#dce9f5' : '#f0ece2',
                             color: count > 0 ? '#1a4068' : '#a09080',

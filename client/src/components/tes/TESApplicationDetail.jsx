@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 import TESApplicationForm from './TESApplicationForm';
-
-const LANG_LEVELS = ['beginner', 'intermediate', 'advanced', 'proficient'];
+import { useConstants } from '../../lib/useConstants';
 
 export default function TESApplicationDetail({
   application, batch, isAdmin, readOnly = false, onBack, onUpdate
 }) {
+  const options = useConstants();
   const [editing,        setEditing       ] = useState(false);
   const [savingOfficial, setSavingOfficial] = useState(false);
   const [error,          setError         ] = useState('');
@@ -264,13 +264,13 @@ export default function TESApplicationDetail({
                   textTransform:'uppercase', color:'#3d3528',
                   borderBottom:'1px solid #d4c9b0', width:'100px'
                 }}>Language</th>
-                {LANG_LEVELS.map(l => (
-                  <th key={l} style={{
+                {options.langLevels.map(l => (
+                  <th key={l.value} style={{
                     padding:'7px 12px', textAlign:'center',
                     fontSize:'10px', fontWeight:'700',
                     textTransform:'uppercase', color:'#3d3528',
                     borderBottom:'1px solid #d4c9b0'
-                  }}>{l.charAt(0).toUpperCase()+l.slice(1)}</th>
+                  }}>{l.label}</th>
                 ))}
               </tr>
             </thead>
@@ -284,17 +284,17 @@ export default function TESApplicationDetail({
                   <td style={{padding:'8px 12px', fontWeight:'600'}}>
                     {lang.label}
                   </td>
-                  {LANG_LEVELS.map(level => (
-                    <td key={level} style={{
+                  {options.langLevels.map(level => (
+                    <td key={level.value} style={{
                       padding:'8px 12px', textAlign:'center'
                     }}>
-                      {application[lang.key] === level ? (
+                      {application[lang.key] === level.value ? (
                         <span style={{
                           background:'#c49a3c', color:'#fff',
                           padding:'2px 10px', borderRadius:'8px',
                           fontSize:'11px', fontWeight:'700'
                         }}>
-                          {level.charAt(0).toUpperCase()+level.slice(1)}
+                          {level.label}
                         </span>
                       ) : (
                         <span style={{color:'#e8e0d0', fontSize:'16px'}}>○</span>

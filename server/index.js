@@ -20,6 +20,8 @@ const ldcRoutes          = require('./routes/ldcs');
 const subjectRoutes      = require('./routes/subjects');
 const gradeRoutes        = require('./routes/grades');
 const certificationRoutes = require('./routes/certifications');
+const constantsRoutes    = require('./routes/constants');
+const { verifyConnection } = require('./config/email');
 
 // ── Initialize App ───────────────────────────────────────────────
 const app  = express();
@@ -80,6 +82,7 @@ app.get('/health', (req, res) => {
 // ── API Routes ───────────────────────────────────────────────────
 app.use('/api/auth/login',            loginLimiter);
 app.use('/api/participants/sync',     syncLimiter);
+app.use('/api/constants',             constantsRoutes);
 app.use('/api/auth',                  authRoutes);
 app.use('/api/participants',          participantRoutes);
 app.use('/api/academic',     academicRoutes);
@@ -116,6 +119,9 @@ async function startServer() {
   try {
     // Test database connection before starting
     await testConnection();
+
+    // Verify Email service
+    verifyConnection();
 
     app.listen(PORT, () => {
       console.log('================================================');

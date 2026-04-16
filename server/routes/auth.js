@@ -108,7 +108,7 @@ router.get('/me', verifyToken, async (req, res) => {
 router.get('/users', verifyToken, requireSuperAdmin, async (req, res) => {
   try {
     const result = await query(
-      `SELECT u.id, u.username, u.full_name, u.role,
+      `SELECT u.id, u.username, u.full_name, u.email, u.role,
               u.is_active, u.last_login, u.created_at,
               u.ldc_id,
               l.ldc_id as ldc_code, l.name as ldc_name
@@ -126,12 +126,12 @@ router.get('/users', verifyToken, requireSuperAdmin, async (req, res) => {
 // Super admin only — create new user
 router.post('/users', verifyToken, requireSuperAdmin, async (req, res) => {
   try {
-    const { username, password, full_name, role, ldc_id } = req.body;
+    const { username, password, full_name, email, role, ldc_id } = req.body;
 
     // Validate
-    if (!username || !password || !full_name || !role) {
+    if (!username || !password || !full_name || !email || !role) {
       return res.status(400).json({
-        error: 'Username, password, full name and role are required'
+        error: 'Username, password, full name, email and role are required'
       });
     }
 
@@ -147,13 +147,14 @@ router.post('/users', verifyToken, requireSuperAdmin, async (req, res) => {
     // Create user
     const result = await query(
       `INSERT INTO users
-        (username, password_hash, full_name, role, ldc_id, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING id, username, full_name, role, ldc_id, created_at`,
+        (username, password_hash, full_name, email, role, ldc_id, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id, username, full_name, email, role, ldc_id, created_at`,
       [
         username.toLowerCase().trim(),
         password_hash,
         full_name,
+        email.toLowerCase().trim(),
         role,
         ldc_id || null,
         req.user.id
@@ -164,7 +165,8 @@ router.post('/users', verifyToken, requireSuperAdmin, async (req, res) => {
 
   } catch (error) {
     if (error.code === '23505') {
-      return res.status(400).json({ error: 'Username already exists' });
+      const field = error.detail.includes('username') ? 'Username' : 'Email';
+      return res.status(400).json({ error: `${field} already exists` });
     }
     res.status(500).json({ error: 'Failed to create user' });
   }
@@ -174,16 +176,19 @@ router.post('/users', verifyToken, requireSuperAdmin, async (req, res) => {
 // Super admin only — update user
 router.put('/users/:id', verifyToken, requireSuperAdmin, async (req, res) => {
   try {
-    const { full_name, is_active, ldc_id } = req.body;
+    const { full_name, email, is_active, ldc_id } = req.body;
     const result = await query(
       `UPDATE users
-       SET full_name = $1, is_active = $2, ldc_id = $3, updated_at = NOW()
-       WHERE id = $4
-       RETURNING id, username, full_name, role, is_active, ldc_id`,
-      [full_name, is_active, ldc_id || null, req.params.id]
+       SET full_name = $1, email = $2, is_active = $3, ldc_id = $4, updated_at = NOW()
+       WHERE id = $5
+       RETURNING id, username, full_name, email, role, is_active, ldc_id`,
+      [full_name, email, is_active, ldc_id || null, req.params.id]
     );
     res.json(result.rows[0]);
   } catch (error) {
+    if (error.code === '23505') {
+      return res.status(400).json({ error: 'Email already exists' });
+    }
     res.status(500).json({ error: 'Failed to update user' });
   }
 });

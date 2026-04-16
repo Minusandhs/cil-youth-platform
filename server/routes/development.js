@@ -4,6 +4,7 @@
 const express = require('express');
 const { query, transaction } = require('../config/database');
 const { verifyToken } = require('../middleware/auth');
+const { VALID } = require('../constants');
 
 const router = express.Router();
 
@@ -173,6 +174,10 @@ router.put('/:id', verifyToken, async (req, res) => {
       last_reviewed, next_review,
       notes, goals_changed, progress_changed
     } = req.body;
+
+    // ── Enum validation ──────────────────────────────────────────
+    if (progress_status && !VALID.planStatus.includes(progress_status))
+      return res.status(400).json({ error: `Invalid progress_status: ${progress_status}` });
 
     if (req.user.role === 'ldc_staff') {
       const check = await query(

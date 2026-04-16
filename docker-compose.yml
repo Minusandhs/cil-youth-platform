@@ -33,6 +33,10 @@ services:
       DATABASE_URL: postgres://cil_admin:cil2025@db:5432/cil_platform
       JWT_SECRET: cil_jwt_secret_change_in_production
       JWT_EXPIRES_IN: 8h
+      EMAIL_USER: ${EMAIL_USER}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_REFRESH_TOKEN: ${GOOGLE_REFRESH_TOKEN}
     ports:
       - "5000:5000"                       # Backend runs on port 5000
     volumes:

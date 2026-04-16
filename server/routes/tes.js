@@ -5,6 +5,8 @@ const express = require('express');
 const { query, transaction } = require('../config/database');
 const { verifyToken } = require('../middleware/auth');
 const { requireSuperAdmin } = require('../middleware/roleCheck');
+const { VALID } = require('../constants');
+const { sendTESRejectionEmail } = require('../utils/notifications');
 
 const router = express.Router();
 
@@ -245,6 +247,16 @@ router.post('/applications', verifyToken, async (req, res) => {
       });
     }
 
+    // ── Enum validation ──────────────────────────────────────────
+    if (lang_english    && !VALID.langLevel.includes(lang_english))
+      return res.status(400).json({ error: `Invalid lang_english: ${lang_english}` });
+    if (lang_sinhala    && !VALID.langLevel.includes(lang_sinhala))
+      return res.status(400).json({ error: `Invalid lang_sinhala: ${lang_sinhala}` });
+    if (lang_tamil      && !VALID.langLevel.includes(lang_tamil))
+      return res.status(400).json({ error: `Invalid lang_tamil: ${lang_tamil}` });
+    if (institution_type && !VALID.instType.includes(institution_type))
+      return res.status(400).json({ error: `Invalid institution_type: ${institution_type}` });
+
     const partResult = await query(
       'SELECT ldc_id FROM participants WHERE id = $1',
       [participant_id]
@@ -322,6 +334,16 @@ router.put('/applications/:id', verifyToken, async (req, res) => {
       doc_nic, doc_recommendation, commitment_confirmed,
       amount_approved, official_notes
     } = req.body;
+
+    // ── Enum validation ──────────────────────────────────────────
+    if (lang_english    && !VALID.langLevel.includes(lang_english))
+      return res.status(400).json({ error: `Invalid lang_english: ${lang_english}` });
+    if (lang_sinhala    && !VALID.langLevel.includes(lang_sinhala))
+      return res.status(400).json({ error: `Invalid lang_sinhala: ${lang_sinhala}` });
+    if (lang_tamil      && !VALID.langLevel.includes(lang_tamil))
+      return res.status(400).json({ error: `Invalid lang_tamil: ${lang_tamil}` });
+    if (institution_type && !VALID.instType.includes(institution_type))
+      return res.status(400).json({ error: `Invalid institution_type: ${institution_type}` });
 
     // Fetch application + batch status
     const current = await query(
@@ -401,24 +423,53 @@ router.put('/applications/:id', verifyToken, async (req, res) => {
 router.put('/applications/:id/official', verifyToken, requireSuperAdmin,
   async (req, res) => {
   try {
-    const { approval_status, official_notes } = req.body;
+    const { approval_status, admin_notes } = req.body;
+    
+    // Fetch participant info and current notes before update
+    const currentApp = await query(
+      `SELECT a.official_notes, a.ldc_id, p.full_name, p.participant_id
+       FROM tes_applications a
+       JOIN participants p ON a.participant_id = p.id
+       WHERE a.id = $1`,
+      [req.params.id]
+    );
+
+    if (currentApp.rows.length === 0) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
+
+    const app = currentApp.rows[0];
+
     const result = await query(
       `UPDATE tes_applications SET
         approval_status = $1,
-        official_notes  = $2,
+        admin_notes     = $2,
         reviewed_by     = $3,
         reviewed_at     = NOW(),
         updated_at      = NOW()
        WHERE id = $4 RETURNING *`,
       [
         approval_status || 'pending',
-        official_notes  || null,
+        admin_notes     || null,
         req.user.id,
         req.params.id
       ]
     );
+
+    // ── Trigger Rejection Email ──────────────────────────────────
+    if (approval_status === 'rejected') {
+      // Run in background (don't await to keep API responsive)
+      sendTESRejectionEmail(
+        app.full_name,
+        app.participant_id,
+        app.ldc_id,
+        admin_notes
+      );
+    }
+
     res.json(result.rows[0]);
   } catch (error) {
+    console.error('Decision update error:', error);
     res.status(500).json({ error: 'Failed to update official decision' });
   }
 });
