@@ -1,8 +1,9 @@
-const { gmail } = require('../config/email');
+const { sesClient } = require('../config/email');
+const { SendEmailCommand } = require("@aws-sdk/client-ses");
 const { query } = require('../config/database');
 
 /**
- * Sends a rejection notification using Gmail REST API
+ * Sends a rejection notification using Amazon SES API
  */
 async function sendTESRejectionEmail(participantName, participantId, ldcId, reason) {
   try {
@@ -15,7 +16,7 @@ async function sendTESRejectionEmail(participantName, participantId, ldcId, reas
     const staffMembers = staffResult.rows.filter(s => s.email);
     if (staffMembers.length === 0) return;
 
-    const recipientEmails = staffMembers.map(s => s.email).join(', ');
+    const recipientEmails = staffMembers.map(s => s.email);
 
     // 2. Prepare Email Content
     const subject = `Action Required: TES Application Rejected - ${participantName}`;
@@ -44,34 +45,26 @@ async function sendTESRejectionEmail(participantName, participantId, ldcId, reas
       </div>
     `;
 
-    // 3. Create RFC822 Message (required for Gmail API)
-    const message = [
-      `Content-Type: text/html; charset="UTF-8"\r\n`,
-      `MIME-Version: 1.0\r\n`,
-      `To: ${recipientEmails}\r\n`,
-      `From: "CIL Youth Platform" <${process.env.EMAIL_USER}>\r\n`,
-      `Subject: ${subject}\r\n\r\n`,
-      htmlBody
-    ].join('');
-
-    const encodedMessage = Buffer.from(message)
-      .toString('base64')
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '');
-
-    // 4. Send via REST API (Port 443)
-    await gmail.users.messages.send({
-      userId: 'me',
-      requestBody: {
-        raw: encodedMessage
-      }
+    // 3. Create SES Command
+    const command = new SendEmailCommand({
+      Destination: {
+        ToAddresses: recipientEmails,
+      },
+      Message: {
+        Body: {
+          Html: { Data: htmlBody },
+        },
+        Subject: { Data: subject },
+      },
+      Source: `"CIL Youth Platform" <${process.env.EMAIL_FROM}>`,
     });
 
-    console.log(`📧 Rejection email sent via API for ${participantId} to: ${recipientEmails}`);
+    // 4. Send via SES SDK
+    await sesClient.send(command);
+    console.log(`📧 Rejection email sent via AWS SES for ${participantId} to: ${recipientEmails.join(', ')}`);
     
   } catch (error) {
-    console.error('❌ Failed to send rejection email via API:', error.message);
+    console.error('❌ Failed to send rejection email via AWS SES:', error.message);
   }
 }
 

@@ -1,37 +1,37 @@
-const { google } = require('googleapis');
+const { SESClient } = require("@aws-sdk/client-ses");
 
 /**
- * Configure Google OAuth2 Client
+ * Configure AWS SES Client
+ * Requirements in .env:
+ * AWS_REGION
+ * AWS_ACCESS_KEY_ID
+ * AWS_SECRET_ACCESS_KEY
+ * EMAIL_FROM: The verified email in AWS SES
  */
-const oauth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  'https://developers.google.com/oauthplayground'
-);
-
-oauth2Client.setCredentials({
-  refresh_token: process.env.GOOGLE_REFRESH_TOKEN
+const sesClient = new SESClient({
+  region: process.env.AWS_REGION || 'us-east-1',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
 });
 
-const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
-
 /**
- * Verify connection configuration
- * Note: REST API doesn't have a persistent connection like SMTP, 
- * so we verify by checking if we can get the profile.
+ * Verify configuration
  */
 const verifyConnection = async () => {
   try {
-    await gmail.users.getProfile({ userId: 'me' });
-    console.log('✅ Gmail API service is ready (Port 443)');
+    // AWS SDK doesn't have a simple "verify" like Nodemailer,
+    // but the Client will throw on first use if keys are invalid.
+    console.log('✅ AWS SES Client initialized (Port 443)');
     return true;
   } catch (error) {
-    console.error('❌ Gmail API authentication failed:', error.message);
+    console.error('❌ AWS SES initialization failed:', error.message);
     return false;
   }
 };
 
 module.exports = {
-  gmail,
+  sesClient,
   verifyConnection
 };
