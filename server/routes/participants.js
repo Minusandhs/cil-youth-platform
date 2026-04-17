@@ -388,6 +388,7 @@ router.post('/sync', verifyToken, requireSuperAdmin, async (req, res) => {
         );
 
         if (ldcResult.rows.length === 0) {
+          console.warn(`LDC not found for ID: ${p.ldc_id}. Skipping participant ${p.participant_id}`);
           errors++;
           continue; // Skip if LDC not found
         }
