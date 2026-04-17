@@ -5,7 +5,7 @@ Full-stack web application for Compassion International Lanka (CIL) to manage
 participant progress tracking and TES scholarship applications.
 
 - **GitHub:** https://github.com/Minusandhs/cil-youth-platform
-- **Live:** https://cilyouth.org (v1.0.1 — production)
+- **Live:** https://cilyouth.org (v1.0.4 — production)
 - **Stack:** React + Vite + Tailwind (frontend) | Node.js + Express (backend) | PostgreSQL 16 | Docker + nginx + Let's Encrypt
 - **Local dev:** `docker compose up` → http://localhost:3000
 - **Deploy:** `./deploy.sh` (one command)
@@ -33,6 +33,23 @@ participant progress tracking and TES scholarship applications.
 ---
 
 ## Version History
+
+### v1.0.4 — 2026-04-17 — AWS SES Migration & Core UX Fixes
+**Status: Pending deployment...**
+
+#### Backend & Infrastructure
+- **Email Migration:** Switched from Google OAuth2/Nodemailer to AWS SES SDK (Port 443)
+- **Region:** eu-north-1 (Stockholm)
+- **Domain Verification:** Verified `cilyouth.org` with DKIM (3 CNAME records)
+- **Sender:** Updated to `notifications@cilyouth.org` for DKIM-signed inbox delivery
+- **Startup:** Added SES connectivity verification on server boot
+- **Clean-up:** Removed obsolete Google OAuth2 variables and Nodemailer dependency
+
+#### Bug Fixes & Improvements
+- **Login Redirect:** Fixed loop allowing authenticated users to see the login page
+- **National Admin:** Fixed dashboard blank page and corrected role-based routing in `PrivateRoute`
+- **TES Admin UX:** Added View/Edit toggle for "Admin Decision" section with a clean read-only state
+- **Codebase:** Consolidated all 14 database migrations into `server/migrations/`
 
 ### v1.0.1 — 2026-04-15 — Mobile Responsive Overhaul & UX Polish
 **Status: Deployed to production ✓**

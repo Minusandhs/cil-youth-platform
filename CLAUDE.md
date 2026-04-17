@@ -1,5 +1,14 @@
 # CIL Youth Platform — Claude Instructions
 
+## Project Protocols (MANDATORY)
+- **Git Protocol:** **ALWAYS** ask for explicit confirmation before committing any changes to git.
+- **Deployment:** Deployment (`./deploy.sh`) is **PROHIBITED** unless explicit permission is granted for a specific turn.
+- **Email Service:** Using **Amazon SES** via SDK (Port 443).
+  - Region: `eu-north-1` (Stockholm).
+  - Identities: Verified domain `cilyouth.org`.
+  - Sending: From `notifications@cilyouth.org`.
+- **Database:** Migrations are unified in `server/migrations/` (001-014).
+
 ## Stack
 - **Frontend:** React (Vite), plain inline styles (no Tailwind utilities in components)
 - **Backend:** Node.js / Express

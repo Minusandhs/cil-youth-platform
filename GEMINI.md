@@ -17,21 +17,15 @@ This file serves as the primary context for Gemini CLI's involvement in the proj
 - **Styling:** **NO Tailwind utilities in components.** Use inline styles for layout and `var()` for colors.
 - **Architecture:** Multi-tenant. LDC staff manage records; Super Admins review/approve/reject.
 
-## 🎯 Active Task: Record-Rejection Notification System
-**Goal:** Automatically trigger an email notification to LDC staff when an admin rejects a participant record.
-
-### Required Architectural Details (To Investigate)
-1.  **Email Service:** Identify current email configuration (Nodemailer, SendGrid, etc.) or choose one for the containerized environment.
-2.  **Rejection Logic:** Locate the API endpoint/controller where record rejection occurs (`server/routes/participants.js`?).
-3.  **LDC Staff Mapping:** Ensure we can efficiently map a participant record back to the specific LDC staff email(s).
-4.  **Database:** Check if rejection reasons or notification status need to be persisted in the DB (e.g., `participant_status_history`).
+## 🎯 Active Task: Done ✅
+**Goal:** Successfully implemented the Record-Rejection Notification System using AWS SES.
 
 ## 📁 Key Locations
 - `server/`: Backend logic and API routes.
 - `client/`: Frontend React application.
-- `server/migrations/`: Database schema updates.
+- `server/migrations/`: Unified database schema updates (001-014).
 - `CLAUDE.md`: Claude's core instructions.
-- `DOCUMENTATION.md`: Full system documentation.
+- `PROGRESS.md`: Full system documentation and progress log.
 
 ## 📜 Audit Log (Gemini CLI)
 - **2026-04-16:** Initialized `GEMINI.md`. Analyzed codebase and synced with `CLAUDE.md`.
@@ -46,3 +40,14 @@ This file serves as the primary context for Gemini CLI's involvement in the proj
     - Switched from SMTP/Nodemailer to `@aws-sdk/client-ses` for firewall bypass.
     - Updated `email.js` and `notifications.js` to use SES SendEmail commands.
     - Updated `docker-compose.yml` (dev/prod) and `.env.example` with AWS credentials.
+- **2026-04-17:** Finalized AWS SES Integration & Structural Refactor.
+    - Migrated SES region to `eu-north-1` (Stockholm) and verified `cilyouth.org` domain.
+    - Updated `EMAIL_FROM` to `notifications@cilyouth.org` for DKIM-signed delivery.
+    - Added professional HTML email templates in `notifications.js`.
+    - Added SES connectivity verification on server startup.
+    - Fixed Login Page: Added authenticated user redirect (fixed `useEffect` import).
+    - Fixed National Admin: Restored dashboard access and fixed `PrivateRoute` role checks.
+    - Consolidated all database migrations (001-014) into `server/migrations/`.
+    - Cleaned up obsolete Google OAuth2 and `nodemailer` code.
+    - Improved TES UX: Added View/Edit toggle for Admin Decision section.
+    - Updated Project Protocol: Explicit Git/Deployment authorization required.

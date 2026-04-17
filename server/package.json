@@ -1,6 +1,6 @@
 {
   "name": "cil-youth-platform-server",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "CIL Youth Development Platform — Backend API",
   "main": "index.js",
   "scripts": {
