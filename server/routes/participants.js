@@ -152,7 +152,7 @@ router.get('/export/participants', verifyToken, async (req, res) => {
          pp.number_of_children, pp.is_pregnant,
          pp.living_outside_ldc, pp.outside_purpose, pp.outside_location,
          pp.family_income, pp.no_of_dependants, pp.other_assistance,
-         pp.ol_status, pp.al_status,
+         pp.current_exam_type,
          pp.short_term_plan, pp.long_term_plan, pp.career_goal,
          (SELECT string_agg(
             'OL ' || r.exam_year || ': ' ||
@@ -527,20 +527,17 @@ router.post('/:id/profile', verifyToken, async (req, res) => {
     // ── Enum validation ──────────────────────────────────────────
     if (p.marital_status  && !VALID.maritalStatus.includes(p.marital_status))
       return res.status(400).json({ error: `Invalid marital_status: ${p.marital_status}` });
-    if (p.ol_status       && !VALID.olStatus.includes(p.ol_status))
-      return res.status(400).json({ error: `Invalid ol_status: ${p.ol_status}` });
-    if (p.al_status       && !VALID.alStatus.includes(p.al_status))
-      return res.status(400).json({ error: `Invalid al_status: ${p.al_status}` });
     if (p.current_status  && !VALID.currentStatus.includes(p.current_status))
       return res.status(400).json({ error: `Invalid current_status: ${p.current_status}` });
     if (p.outside_purpose && !VALID.outsidePurpose.includes(p.outside_purpose))
       return res.status(400).json({ error: `Invalid outside_purpose: ${p.outside_purpose}` });
+
     const result = await query(
       `INSERT INTO participant_profiles (
         participant_id, marital_status, is_pregnant,
-        number_of_children, ol_status, ol_completion_year,
-        al_status, al_completion_year, current_status,
+        number_of_children, current_status,
         current_institution, current_course, current_year,
+        current_exam_type,
         monthly_income, short_term_plan, long_term_plan,
         career_goal, further_education, education_details,
         family_income, no_of_dependants, other_assistance,
@@ -548,21 +545,18 @@ router.post('/:id/profile', verifyToken, async (req, res) => {
         last_updated_by
         ) VALUES (
           $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,
-          $13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25
+          $13,$14,$15,$16,$17,$18,$19,$20,$21,$22
         ) RETURNING *`,
       [
         req.params.id,
         p.marital_status     || null,
         p.is_pregnant        || false,
         p.number_of_children || 0,
-        p.ol_status          || null,
-        p.ol_completion_year || null,
-        p.al_status          || null,
-        p.al_completion_year || null,
         p.current_status     || null,
         p.current_institution|| null,
         p.current_course     || null,
         p.current_year       || null,
+        p.current_exam_type  || null,
         p.monthly_income     || null,
         p.short_term_plan    || null,
         p.long_term_plan     || null,
@@ -570,7 +564,7 @@ router.post('/:id/profile', verifyToken, async (req, res) => {
         p.further_education  || false,
         p.education_details  || null,
         p.family_income      || null,
-        p.no_of_dependants   || null,
+        p.no_of_dependants   || 0,
         p.other_assistance   || null,
         p.living_outside_ldc || false,
         p.outside_purpose    || null,
@@ -605,10 +599,6 @@ router.put('/:id/profile', verifyToken, async (req, res) => {
     // ── Enum validation ──────────────────────────────────────────
     if (p.marital_status  && !VALID.maritalStatus.includes(p.marital_status))
       return res.status(400).json({ error: `Invalid marital_status: ${p.marital_status}` });
-    if (p.ol_status       && !VALID.olStatus.includes(p.ol_status))
-      return res.status(400).json({ error: `Invalid ol_status: ${p.ol_status}` });
-    if (p.al_status       && !VALID.alStatus.includes(p.al_status))
-      return res.status(400).json({ error: `Invalid al_status: ${p.al_status}` });
     if (p.current_status  && !VALID.currentStatus.includes(p.current_status))
       return res.status(400).json({ error: `Invalid current_status: ${p.current_status}` });
     if (p.outside_purpose && !VALID.outsidePurpose.includes(p.outside_purpose))
@@ -619,42 +609,36 @@ router.put('/:id/profile', verifyToken, async (req, res) => {
         marital_status      = $1,
         is_pregnant         = $2,
         number_of_children  = $3,
-        ol_status           = $4,
-        ol_completion_year  = $5,
-        al_status           = $6,
-        al_completion_year  = $7,
-        current_status      = $8,
-        current_institution = $9,
-        current_course      = $10,
-        current_year        = $11,
-        monthly_income      = $12,
-        short_term_plan     = $13,
-        long_term_plan      = $14,
-        career_goal         = $15,
-        further_education   = $16,
-        education_details   = $17,
-        family_income       = $18,
-        no_of_dependants    = $19,
-        other_assistance    = $20,
-        living_outside_ldc  = $21,
-        outside_purpose     = $22,
-        outside_location    = $23,
-        last_updated_by     = $24,
+        current_status      = $4,
+        current_institution = $5,
+        current_course      = $6,
+        current_year        = $7,
+        current_exam_type   = $8,
+        monthly_income      = $9,
+        short_term_plan     = $10,
+        long_term_plan     = $11,
+        career_goal         = $12,
+        further_education   = $13,
+        education_details   = $14,
+        family_income       = $15,
+        no_of_dependants    = $16,
+        other_assistance    = $17,
+        living_outside_ldc  = $18,
+        outside_purpose     = $19,
+        outside_location    = $20,
+        last_updated_by     = $21,
         updated_at          = NOW()
-        WHERE participant_id = $25
+        WHERE participant_id = $22
        RETURNING *`,
       [
         p.marital_status     || null,
         p.is_pregnant        || false,
         p.number_of_children || 0,
-        p.ol_status          || null,
-        p.ol_completion_year || null,
-        p.al_status          || null,
-        p.al_completion_year || null,
         p.current_status     || null,
         p.current_institution|| null,
         p.current_course     || null,
         p.current_year       || null,
+        p.current_exam_type  || null,
         p.monthly_income     || null,
         p.short_term_plan    || null,
         p.long_term_plan     || null,
@@ -662,7 +646,7 @@ router.put('/:id/profile', verifyToken, async (req, res) => {
         p.further_education  || false,
         p.education_details  || null,
         p.family_income      || null,
-        p.no_of_dependants   || null,
+        p.no_of_dependants   || 0,
         p.other_assistance   || null,
         p.living_outside_ldc || false,
         p.outside_purpose    || null,

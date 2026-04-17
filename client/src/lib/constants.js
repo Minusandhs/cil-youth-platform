@@ -63,6 +63,24 @@ export const CURRENT_STATUS = {
       { key: 'current_year',        label: 'Duration',    placeholder: 'e.g. 6 months'                 },
     ],
   },
+  studying_completed_exam: {
+    label : 'Studying — Completed Examination',
+    color : 'var(--color-info)',
+    fields: [
+      { key: 'current_institution', label: 'Institution', placeholder: 'e.g. School name' },
+      { key: 'current_exam_type',   label: 'Exam Type',  placeholder: 'e.g. A/L, O/L', type: 'exam_type_select' },
+      { key: 'current_year',        label: 'Exam Year',  placeholder: 'e.g. 2024' },
+    ],
+  },
+  studying_waiting_result: {
+    label : 'Studying — Waiting For the Result',
+    color : 'var(--color-warning)',
+    fields: [
+      { key: 'current_institution', label: 'Institution', placeholder: 'e.g. School name' },
+      { key: 'current_exam_type',   label: 'Exam Type',  placeholder: 'e.g. A/L, O/L', type: 'exam_type_select' },
+      { key: 'current_year',        label: 'Exam Year',  placeholder: 'e.g. 2024' },
+    ],
+  },
   employed_full: {
     label : 'Employed — Full Time',
     color : 'var(--color-brand-accent)',
@@ -132,27 +150,30 @@ export const MARITAL_STATUS = [
 ];
 
 
-// ── O/L Exam Status ──────────────────────────────────────────────
-// Used in: PersonalInfo
-// show_year: true → render a year input when this option is selected
-export const OL_STATUS = [
-  { value: 'not_yet',          label: 'Not Yet',            show_year: false },
-  { value: 'awaiting_results', label: 'Awaiting Results',   show_year: true  },
-  { value: 'completed_passed', label: 'Completed — Passed', show_year: true  },
-  { value: 'completed_failed', label: 'Completed — Failed', show_year: true  },
-  { value: 'not_applicable',   label: 'Not Applicable',     show_year: false },
+// ── Academic Plans ──────────────────────────────────────────────
+export const PLAN_AFTER_OL_OPTIONS = [
+  'A/L Education',
+  'Technical & Vocational Training (TVET)',
+  'Apprenticeship',
+  'Employment',
+  'Entrepreneurship',
+  'Migration Preparation',
+  'Repeat O/L',
+  'No Idea',
+  'Other',
 ];
 
-
-// ── A/L Exam Status ──────────────────────────────────────────────
-// Used in: PersonalInfo
-export const AL_STATUS = [
-  { value: 'not_yet',          label: 'Not Yet',            show_year: false },
-  { value: 'awaiting_results', label: 'Awaiting Results',   show_year: true  },
-  { value: 'completed_passed', label: 'Completed — Passed', show_year: true  },
-  { value: 'completed_failed', label: 'Completed — Failed', show_year: true  },
-  { value: 'not_sitting',      label: 'Not Sitting',        show_year: false },
-  { value: 'not_applicable',   label: 'Not Applicable',     show_year: false },
+export const PLAN_AFTER_AL_OPTIONS = [
+  'University Education (State)',
+  'Private Higher Education',
+  'Technical / Higher Vocational Education',
+  'Professional Qualifications',
+  'Employment',
+  'Entrepreneurship',
+  'Foreign Education / Migration',
+  'Gap Year / Skill Development',
+  'NEET (Not in Education, Employment, or Training)',
+  'Other',
 ];
 
 
@@ -233,19 +254,4 @@ export function instLabel(value) {
 /** Returns the label for a marital status value */
 export function maritalLabel(value) {
   return MARITAL_STATUS.find(s => s.value === value)?.label || value || '—';
-}
-
-/** Returns the label for an OL status value */
-export function olLabel(value) {
-  return OL_STATUS.find(s => s.value === value)?.label || value || '—';
-}
-
-/** Returns the label for an AL status value */
-export function alLabel(value) {
-  return AL_STATUS.find(s => s.value === value)?.label || value || '—';
-}
-
-/** Returns true if this OL or AL status value should reveal a year input */
-export function examStatusShowYear(list, value) {
-  return list.find(s => s.value === value)?.show_year ?? false;
 }

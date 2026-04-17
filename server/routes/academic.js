@@ -40,8 +40,8 @@ router.post('/ol', verifyToken, async (req, res) => {
   try {
     const {
       participant_id, exam_year, index_number,
-      school_name, no_of_passes, results_verified,
-      notes, subjects
+      school_name, no_of_passes, passed, plan_after,
+      results_verified, notes, subjects
     } = req.body;
 
     if (req.user.role === 'ldc_staff') {
@@ -55,13 +55,14 @@ router.post('/ol', verifyToken, async (req, res) => {
       const resultRow = await client.query(
         `INSERT INTO ol_results
           (participant_id, exam_year, index_number,
-           school_name, no_of_passes, results_verified,
-           notes, created_by)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+           school_name, no_of_passes, passed, plan_after,
+           results_verified, notes, created_by)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
          RETURNING *`,
         [
           participant_id, exam_year, index_number || null,
           school_name || null, no_of_passes || null,
+          passed || false, JSON.stringify(plan_after || []),
           results_verified || false, notes || null,
           req.user.id
         ]
@@ -102,7 +103,8 @@ router.put('/ol/:id', verifyToken, async (req, res) => {
   try {
     const {
       exam_year, index_number, school_name,
-      no_of_passes, results_verified, notes, subjects
+      no_of_passes, passed, plan_after,
+      results_verified, notes, subjects
     } = req.body;
 
     if (req.user.role === 'ldc_staff') {
@@ -123,13 +125,16 @@ router.put('/ol/:id', verifyToken, async (req, res) => {
           index_number     = $2,
           school_name      = $3,
           no_of_passes     = $4,
-          results_verified = $5,
-          notes            = $6,
+          passed           = $5,
+          plan_after       = $6,
+          results_verified = $7,
+          notes            = $8,
           updated_at       = NOW()
-         WHERE id = $7`,
+         WHERE id = $9`,
         [
           exam_year, index_number || null,
           school_name || null, no_of_passes || null,
+          passed || false, JSON.stringify(plan_after || []),
           results_verified || false, notes || null,
           req.params.id
         ]
@@ -196,6 +201,7 @@ router.post('/al', verifyToken, async (req, res) => {
     const {
       participant_id, exam_year, index_number,
       school_name, stream, medium, z_score,
+      passed, plan_after,
       district_rank, island_rank, university_selected,
       university_name, course_selected,
       results_verified, notes, subjects
@@ -219,15 +225,17 @@ router.post('/al', verifyToken, async (req, res) => {
         `INSERT INTO al_results
           (participant_id, exam_year, index_number,
            school_name, stream, medium, z_score,
+           passed, plan_after,
            district_rank, island_rank, university_selected,
            university_name, course_selected,
            results_verified, notes, created_by)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
          RETURNING *`,
         [
           participant_id, exam_year, index_number || null,
           school_name || null, stream || null, medium || null,
-          z_score || null, district_rank || null,
+          z_score || null, passed || false, JSON.stringify(plan_after || []),
+          district_rank || null,
           island_rank || null, university_selected || false,
           university_name || null, course_selected || null,
           results_verified || false, notes || null,
@@ -271,9 +279,10 @@ router.put('/al/:id', verifyToken, async (req, res) => {
   try {
     const {
       exam_year, index_number, school_name,
-      stream, medium, z_score, district_rank,
-      island_rank, university_selected, university_name,
-      course_selected, results_verified, notes, subjects
+      stream, medium, z_score, passed, plan_after,
+      district_rank, island_rank, university_selected,
+      university_name, course_selected, results_verified,
+      notes, subjects
     } = req.body;
 
     // ── Enum validation ──────────────────────────────────────────
@@ -302,19 +311,22 @@ router.put('/al/:id', verifyToken, async (req, res) => {
           stream             = $4,
           medium             = $5,
           z_score            = $6,
-          district_rank      = $7,
-          island_rank        = $8,
-          university_selected= $9,
-          university_name    = $10,
-          course_selected    = $11,
-          results_verified   = $12,
-          notes              = $13,
+          passed             = $7,
+          plan_after         = $8,
+          district_rank      = $9,
+          island_rank        = $10,
+          university_selected= $11,
+          university_name    = $12,
+          course_selected    = $13,
+          results_verified   = $14,
+          notes              = $15,
           updated_at         = NOW()
-         WHERE id = $14`,
+         WHERE id = $16`,
         [
           exam_year, index_number || null,
           school_name || null, stream || null,
           medium || null, z_score || null,
+          passed || false, JSON.stringify(plan_after || []),
           district_rank || null, island_rank || null,
           university_selected || false,
           university_name || null, course_selected || null,

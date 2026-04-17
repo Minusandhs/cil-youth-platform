@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 import {
   CURRENT_STATUS,
-  statusLabel, maritalLabel, olLabel, alLabel, examStatusShowYear,
-  OL_STATUS, AL_STATUS,
+  statusLabel, maritalLabel,
 } from '../../lib/constants';
 import { useConstants } from '../../lib/useConstants';
 
@@ -24,14 +23,11 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
     outside_location   : '',
     is_pregnant        : false,
     number_of_children : 0,
-    ol_status          : '',
-    ol_completion_year : '',
-    al_status          : '',
-    al_completion_year : '',
     current_status     : '',
     current_institution: '',
     current_course     : '',
     current_year       : '',
+    current_exam_type  : '',
     short_term_plan    : '',
     long_term_plan     : '',
     career_goal        : '',
@@ -61,14 +57,11 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           outside_location   : profileRes.data.outside_location    || '',
           is_pregnant        : profileRes.data.is_pregnant         || false,
           number_of_children : profileRes.data.number_of_children  || 0,
-          ol_status          : profileRes.data.ol_status           || '',
-          ol_completion_year : profileRes.data.ol_completion_year  || '',
-          al_status          : profileRes.data.al_status           || '',
-          al_completion_year : profileRes.data.al_completion_year  || '',
           current_status     : profileRes.data.current_status      || '',
           current_institution: profileRes.data.current_institution || '',
           current_course     : profileRes.data.current_course      || '',
           current_year       : profileRes.data.current_year        || '',
+          current_exam_type  : profileRes.data.current_exam_type   || '',
           short_term_plan    : profileRes.data.short_term_plan     || '',
           long_term_plan     : profileRes.data.long_term_plan      || '',
           career_goal        : profileRes.data.career_goal         || '',
@@ -96,8 +89,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
     // ── Mandatory field validation ───────────────────────────────
     const missing = [];
     if (!form.marital_status)   missing.push('Marital Status');
-    if (!form.ol_status)        missing.push('O/L Status');
-    if (!form.al_status)        missing.push('A/L Status');
     if (!form.current_status)   missing.push('Current Status');
     if (form.current_status && CURRENT_STATUS[form.current_status]) {
       for (const f of CURRENT_STATUS[form.current_status].fields) {
@@ -115,36 +106,10 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
       return;
     }
 
-    // ── O/L results check ────────────────────────────────────────
-    if (form.ol_status === 'completed_passed') {
-      try {
-        const olRes = await api.get(`/api/academic/ol/${participant.id}`);
-        if (!olRes.data || olRes.data.length === 0) {
-          setError('O/L status is set to Completed — Passed, but no O/L results have been entered. Please add O/L results in the Academic Records tab first.');
-          return;
-        }
-      } catch { /* ignore — don't block save if check fails */ }
-    }
-
-    // ── A/L results check ────────────────────────────────────────
-    if (form.al_status === 'completed_passed') {
-      try {
-        const alRes = await api.get(`/api/academic/al/${participant.id}`);
-        if (!alRes.data || alRes.data.length === 0) {
-          setError('A/L status is set to Completed — Passed, but no A/L results have been entered. Please add A/L results in the Academic Records tab first.');
-          return;
-        }
-      } catch { /* ignore */ }
-    }
-
     setSaving(true);
     try {
       // Save profile
-      if (profile) {
-        await api.put(`/api/participants/${participant.id}/profile`, form);
-      } else {
-        await api.post(`/api/participants/${participant.id}/profile`, form);
-      }
+      await api.put(`/api/participants/${participant.id}/profile`, form);
 
       // Save status history if status changed
       if (form.current_status) {
@@ -177,8 +142,8 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
       setForm({
         marital_status:'', living_outside_ldc:false, outside_purpose:'',
         outside_location:'', is_pregnant:false, number_of_children:0,
-        ol_status:'', ol_completion_year:'', al_status:'', al_completion_year:'',
         current_status:'', current_institution:'', current_course:'', current_year:'',
+        current_exam_type:'',
         short_term_plan:'', long_term_plan:'', career_goal:'',
         further_education:false, education_details:'',
         family_income:'', no_of_dependants:'',
@@ -194,14 +159,11 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
         outside_location   : profile.outside_location    || '',
         is_pregnant        : profile.is_pregnant         || false,
         number_of_children : profile.number_of_children  || 0,
-        ol_status          : profile.ol_status           || '',
-        ol_completion_year : profile.ol_completion_year  || '',
-        al_status          : profile.al_status           || '',
-        al_completion_year : profile.al_completion_year  || '',
         current_status     : profile.current_status      || '',
         current_institution: profile.current_institution || '',
         current_course     : profile.current_course      || '',
         current_year       : profile.current_year        || '',
+        current_exam_type  : profile.current_exam_type   || '',
         short_term_plan    : profile.short_term_plan     || '',
         long_term_plan     : profile.long_term_plan      || '',
         career_goal        : profile.career_goal         || '',
@@ -332,29 +294,14 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
             </div>
           </div>
 
-          {/* School Level */}
-          <div style={sectionStyle}>
-            <div style={sectionTitleStyle}>School Level Status</div>
-            <div>
-              <ViewField inline label="O/L Status" value={olLabel(form.ol_status)} />
-              {examStatusShowYear(OL_STATUS, form.ol_status) && (
-                <ViewField inline label="O/L Year" value={form.ol_completion_year} />
-              )}
-              <ViewField inline label="A/L Status" value={alLabel(form.al_status)} />
-              {examStatusShowYear(AL_STATUS, form.al_status) && (
-                <ViewField inline label="A/L Year" value={form.al_completion_year} />
-              )}
-            </div>
-          </div>
-
           {/* Current Status */}
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>Current Status</div>
             <div style={{marginBottom:'12px'}}>
               <span style={{
-                background:'#dce9f5', color:'#1a4068',
-                padding:'4px 12px', borderRadius:'12px',
-                fontSize:'12px', fontWeight:'700'
+                background: 'var(--color-brand-primary)',
+                color:'white', padding:'4px 10px', borderRadius:'12px',
+                fontSize:'12px', fontWeight:'600'
               }}>
                 {statusLabel(form.current_status)}
               </span>
@@ -532,49 +479,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
             </div>
           </div>
 
-          {/* School Level */}
-          <div style={sectionStyle}>
-            <div style={sectionTitleStyle}>School Level Status</div>
-            <div className="rsp-grid-2" style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'}}>
-              <div>
-                <label style={labelStyle}>O/L Status</label>
-                <select style={inputStyle(false)} value={form.ol_status}
-                  onChange={e => setForm({...form, ol_status:e.target.value, ol_completion_year:''})}>
-                  <option value="">— Select —</option>
-                  {options.olStatuses.map(s => (
-                    <option key={s.value} value={s.value}>{s.label}</option>
-                  ))}
-                </select>
-                {examStatusShowYear(OL_STATUS, form.ol_status) && (
-                  <div style={{marginTop:'10px'}}>
-                    <label style={labelStyle}>O/L Year</label>
-                    <input style={inputStyle(false)} type="number" placeholder="e.g. 2022"
-                      value={form.ol_completion_year}
-                      onChange={e => setForm({...form, ol_completion_year:e.target.value})} />
-                  </div>
-                )}
-              </div>
-              <div>
-                <label style={labelStyle}>A/L Status</label>
-                <select style={inputStyle(false)} value={form.al_status}
-                  onChange={e => setForm({...form, al_status:e.target.value, al_completion_year:''})}>
-                  <option value="">— Select —</option>
-                  {options.alStatuses.map(s => (
-                    <option key={s.value} value={s.value}>{s.label}</option>
-                  ))}
-                </select>
-                {examStatusShowYear(AL_STATUS, form.al_status) && (
-                  <div style={{marginTop:'10px'}}>
-                    <label style={labelStyle}>A/L Year</label>
-                    <input style={inputStyle(false)} type="number" placeholder="e.g. 2024"
-                      value={form.al_completion_year}
-                      onChange={e => setForm({...form, al_completion_year:e.target.value})} />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
           {/* Current Status — Dynamic */}
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>Current Status</div>
@@ -586,7 +490,8 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                   current_status     : e.target.value,
                   current_institution: '',
                   current_course     : '',
-                  current_year       : ''
+                  current_year       : '',
+                  current_exam_type  : ''
                 })}>
                 <option value="">— Select Status —</option>
                 {options.currentStatuses.map(s => (
@@ -615,6 +520,29 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                           <option key={g.id} value={g.grade_label}>{g.grade_label}</option>
                         ))}
                       </select>
+                    ) : f.type === 'exam_type_select' ? (
+                      <div>
+                        <select style={inputStyle(false)}
+                          value={['A/L', 'O/L'].includes(form[f.key]) ? form[f.key] : (form[f.key] ? 'Other' : '')}
+                          required
+                          onChange={e => {
+                            const val = e.target.value;
+                            if (val === 'Other') setForm({...form, [f.key]: ''});
+                            else setForm({...form, [f.key]: val});
+                          }}>
+                          <option value="">— Select Exam —</option>
+                          <option value="A/L">A/L</option>
+                          <option value="O/L">O/L</option>
+                          <option value="Other">Other (Manual Entry)</option>
+                        </select>
+                        {!['A/L', 'O/L'].includes(form[f.key]) && (form[f.key] || form[f.key] === '') && (
+                          <input style={{...inputStyle(false), marginTop:'8px'}}
+                            value={form[f.key]}
+                            required
+                            placeholder="Enter exam type..."
+                            onChange={e => setForm({...form, [f.key]:e.target.value})} />
+                        )}
+                      </div>
                     ) : (
                       <input style={inputStyle(false)}
                         value={form[f.key]}

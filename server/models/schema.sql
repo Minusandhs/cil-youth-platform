@@ -86,6 +86,8 @@ CREATE TABLE IF NOT EXISTS ol_results (
     index_number        VARCHAR(20),                 -- Exam index number
     school_name         VARCHAR(150),
     no_of_passes        INTEGER,                     -- Number of subjects passed
+    passed              BOOLEAN DEFAULT false,       -- Overall pass
+    plan_after          JSONB DEFAULT '[]'::jsonb,    -- Multi-select plans
     results_verified    BOOLEAN DEFAULT false,       -- Verified by LDC staff
     notes               TEXT,
     created_by          UUID REFERENCES users(id),
@@ -135,6 +137,8 @@ CREATE TABLE IF NOT EXISTS al_results (
     medium              VARCHAR(20)                  -- Exam medium
                         CHECK (medium IN ('Sinhala', 'Tamil', 'English')),
     z_score             DECIMAL(6,4),                -- e.g. 1.2345
+    passed              BOOLEAN DEFAULT false,       -- Overall pass
+    plan_after          JSONB DEFAULT '[]'::jsonb,    -- Multi-select plans
     district_rank       INTEGER,
     island_rank         INTEGER,
     university_selected BOOLEAN DEFAULT false,       -- Selected for university
@@ -220,34 +224,14 @@ CREATE TABLE IF NOT EXISTS participant_profiles (
     is_pregnant         BOOLEAN DEFAULT false,       -- Current pregnancy status
     number_of_children  INTEGER DEFAULT 0,           -- Number of children
 
-    -- ── SCHOOL LEVEL STATUS ───────────────────────────────────
-    ol_status           VARCHAR(30)                  -- O/Level status
-                        CHECK (ol_status IN (
-                            'not_yet',               -- Yet to sit OL
-                            'awaiting_results',      -- Sat but results pending
-                            'completed_passed',      -- Passed OL
-                            'completed_failed',      -- Did not pass OL
-                            'not_applicable'         -- e.g. dropped out before OL
-                        )),
-    ol_completion_year  INTEGER,                     -- Year OL was completed
-
-    al_status           VARCHAR(30)                  -- A/Level status
-                        CHECK (al_status IN (
-                            'not_yet',               -- Yet to sit AL
-                            'awaiting_results',      -- Sat but results pending
-                            'completed_passed',      -- Passed AL
-                            'completed_failed',      -- Did not pass AL
-                            'not_sitting',           -- Chose not to sit AL
-                            'not_applicable'
-                        )),
-    al_completion_year  INTEGER,                     -- Year AL was completed
-
-    -- ── CURRENT STATUS ────────────────────────────────────────
+    -- ── CURRENT STATUS & EDUCATION ────────────────────────────
     current_status      VARCHAR(50)
                         CHECK (current_status IN (
                             'studying_school',       -- Still in school
                             'studying_tertiary',     -- University/college
                             'studying_vocational',   -- Vocational training
+                            'studying_completed_exam',-- Completed exam
+                            'studying_waiting_result',-- Waiting for result
                             'employed_full',         -- Full time employment
                             'employed_part',         -- Part time employment
                             'self_employed',         -- Self employed
@@ -257,7 +241,8 @@ CREATE TABLE IF NOT EXISTS participant_profiles (
                         )),
     current_institution VARCHAR(150),                -- School/university/employer
     current_course      VARCHAR(150),                -- Course/job title
-    current_year        VARCHAR(20),                 -- Year of study or years employed
+    current_year        VARCHAR(50),                 -- Year level or duration
+    current_exam_type   VARCHAR(100),                -- Exam Type (A/L, O/L, etc.)
     monthly_income      DECIMAL(10,2),               -- If employed (LKR)
 
     -- ── FUTURE PLANS ──────────────────────────────────────────
