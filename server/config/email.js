@@ -1,43 +1,49 @@
-const { SESClient, GetSendQuotaCommand } = require("@aws-sdk/client-ses");
+const { google } = require('googleapis');
 
 /**
- * Configure AWS SES Client
+ * Configure Google OAuth2 Client
  */
-const sesClient = new SESClient({
-  region: process.env.AWS_REGION || 'us-east-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  },
-});
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  "https://developers.google.com/oauthplayground"
+);
+
+if (process.env.GOOGLE_REFRESH_TOKEN) {
+  oauth2Client.setCredentials({
+    refresh_token: process.env.GOOGLE_REFRESH_TOKEN,
+  });
+}
+
+const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
 
 /**
  * Verify configuration
  */
 const verifyConnection = async () => {
   try {
-    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
-      console.error('❌ AWS SES: Missing credentials in environment.');
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !process.env.GOOGLE_REFRESH_TOKEN) {
+      console.error('❌ Google API: Missing OAuth2 credentials in environment.');
       return false;
     }
     
     if (!process.env.EMAIL_FROM) {
-      console.warn('⚠️ AWS SES: EMAIL_FROM is not set. Emails may fail.');
+      console.warn('⚠️ Google API: EMAIL_FROM is not set. Emails may fail.');
     }
 
-    // Try to get quota as a lightweight connectivity test
-    const command = new GetSendQuotaCommand({});
-    await sesClient.send(command);
+    // Since we only requested gmail.send scope, getProfile will throw an error. 
+    // We just verify credentials exist and oauth2Client is configured.
+    await oauth2Client.getAccessToken();
     
-    console.log('✅ AWS SES Connectivity verified (Port 443)');
+    console.log('✅ Google API Connectivity verified (Port 443)');
     return true;
   } catch (error) {
-    console.error('❌ AWS SES Connectivity failed:', error.message);
+    console.error('❌ Google API Connectivity failed:', error.message);
     return false;
   }
 };
 
 module.exports = {
-  sesClient,
+  gmail,
   verifyConnection
 };

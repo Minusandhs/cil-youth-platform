@@ -34,9 +34,9 @@ services:
       JWT_SECRET: cil_jwt_secret_change_in_production
       JWT_EXPIRES_IN: 8h
       EMAIL_FROM: ${EMAIL_FROM}
-      AWS_REGION: ${AWS_REGION}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_REFRESH_TOKEN: ${GOOGLE_REFRESH_TOKEN}
     ports:
       - "5000:5000"                       # Backend runs on port 5000
     volumes:

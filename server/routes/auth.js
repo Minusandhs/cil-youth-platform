@@ -2,9 +2,9 @@
 // CIL Youth Development Platform — Auth Routes
 // Handles login, logout, user management
 // ================================================================
-const express  = require('express');
-const bcrypt   = require('bcryptjs');
-const jwt      = require('jsonwebtoken');
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { query } = require('../config/database');
 const { verifyToken } = require('../middleware/auth');
 const { requireSuperAdmin } = require('../middleware/roleCheck');
@@ -57,10 +57,10 @@ router.post('/login', async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       {
-        id       : user.id,
-        username : user.username,
-        role     : user.role,
-        ldc_id   : user.ldc_id,
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        ldc_id: user.ldc_id,
       },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
@@ -70,13 +70,13 @@ router.post('/login', async (req, res) => {
     res.json({
       token,
       user: {
-        id        : user.id,
-        username  : user.username,
-        full_name : user.full_name,
-        role      : user.role,
-        ldc_id    : user.ldc_id,
-        ldc_code  : user.ldc_code,
-        ldc_name  : user.ldc_name,
+        id: user.id,
+        username: user.username,
+        full_name: user.full_name,
+        role: user.role,
+        ldc_id: user.ldc_id,
+        ldc_code: user.ldc_code,
+        ldc_name: user.ldc_name,
       }
     });
 
@@ -243,10 +243,10 @@ router.get('/stats', verifyToken, async (req, res) => {
   try {
     const isLDC = req.user.role === 'ldc_staff';
     const ldcId = isLDC ? req.user.ldc_id : null;
-    const ldcWhere      = ldcId ? 'AND p.ldc_id = $1'  : '';
-    const ldcWhereOnly  = ldcId ? 'AND ldc_id = $1'    : '';
-    const ldcWhereApp   = ldcId ? 'AND a.ldc_id = $1'  : '';
-    const ldcWhereHist  = ldcId ? 'AND p.ldc_id = $1'  : '';
+    const ldcWhere = ldcId ? 'AND p.ldc_id = $1' : '';
+    const ldcWhereOnly = ldcId ? 'AND ldc_id = $1' : '';
+    const ldcWhereApp = ldcId ? 'AND a.ldc_id = $1' : '';
+    const ldcWhereHist = ldcId ? 'AND p.ldc_id = $1' : '';
     const p = ldcId ? [ldcId] : [];
 
     const queries = [
@@ -286,22 +286,22 @@ router.get('/stats', verifyToken, async (req, res) => {
 
     const results = await Promise.all(queries);
     const [participants, tesApproved, tesPending, tesRejected, tesAmount,
-           inactiveParticipants, activeMale, activeFemale] = results;
+      inactiveParticipants, activeMale, activeFemale] = results;
 
     const out = {
-      participants          : parseInt(participants.rows[0].count),
-      tes_approved          : parseInt(tesApproved.rows[0].count),
-      tes_pending           : parseInt(tesPending.rows[0].count),
-      tes_rejected          : parseInt(tesRejected.rows[0].count),
-      tes_amount            : parseFloat(tesAmount.rows[0].total),
-      inactive_participants : parseInt(inactiveParticipants.rows[0].count),
-      active_male           : parseInt(activeMale.rows[0].count),
-      active_female         : parseInt(activeFemale.rows[0].count),
+      participants: parseInt(participants.rows[0].count),
+      tes_approved: parseInt(tesApproved.rows[0].count),
+      tes_pending: parseInt(tesPending.rows[0].count),
+      tes_rejected: parseInt(tesRejected.rows[0].count),
+      tes_amount: parseFloat(tesAmount.rows[0].total),
+      inactive_participants: parseInt(inactiveParticipants.rows[0].count),
+      active_male: parseInt(activeMale.rows[0].count),
+      active_female: parseInt(activeFemale.rows[0].count),
     };
 
     if (!isLDC) {
       out.users = parseInt(results[8].rows[0].count);
-      out.ldcs  = parseInt(results[9].rows[0].count);
+      out.ldcs = parseInt(results[9].rows[0].count);
     }
 
     res.json(out);
