@@ -20,7 +20,7 @@ async function sendTESRejectionEmail(participantName, participantId, ldcId, reas
 
     const recipientEmails = staffMembers.map(s => s.email);
     const portalUrl = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',')[0] : 'https://cilyouth.org';
-    const linkUrl = numericId ? `${portalUrl}/participant/${numericId}?tab=tes` : `${portalUrl}/ldc`;
+    const linkUrl = numericId ? `${portalUrl}/participant/${numericId}` : `${portalUrl}/ldc`;
 
     // 2. Prepare Email Content
     const subject = `Action Required: TES Application Rejected - ${participantName}`;

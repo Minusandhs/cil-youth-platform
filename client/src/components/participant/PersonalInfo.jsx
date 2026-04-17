@@ -29,7 +29,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
     current_course: '',
     current_year: '',
     current_exam_type: '',
-    short_term_plan: '',
     long_term_plan: '',
     career_goal: '',
     further_education: false,
@@ -63,7 +62,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           current_course: profileRes.data.current_course || '',
           current_year: profileRes.data.current_year || '',
           current_exam_type: profileRes.data.current_exam_type || '',
-          short_term_plan: profileRes.data.short_term_plan || '',
           long_term_plan: profileRes.data.long_term_plan || '',
           career_goal: profileRes.data.career_goal || '',
           further_education: profileRes.data.further_education || false,
@@ -99,7 +97,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
     if (!form.family_income) missing.push('Family Monthly Income');
     if (form.no_of_dependants === '' || form.no_of_dependants === null || form.no_of_dependants === undefined)
       missing.push('Number of Dependants');
-    if (!form.short_term_plan) missing.push('Short Term Plan');
     if (!form.long_term_plan) missing.push('Long Term Plan');
     if (!form.career_goal) missing.push('Career Goal');
     if (missing.length > 0) {
@@ -159,7 +156,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
         outside_location: '', is_pregnant: false, number_of_children: 0,
         current_status: '', current_institution: '', current_course: '', current_year: '',
         current_exam_type: '',
-        short_term_plan: '', long_term_plan: '', career_goal: '',
+        long_term_plan: '', career_goal: '',
         further_education: false, education_details: '',
         family_income: '', no_of_dependants: '',
       });
@@ -179,7 +176,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
         current_course: profile.current_course || '',
         current_year: profile.current_year || '',
         current_exam_type: profile.current_exam_type || '',
-        short_term_plan: profile.short_term_plan || '',
         long_term_plan: profile.long_term_plan || '',
         career_goal: profile.career_goal || '',
         further_education: profile.further_education || false,
@@ -334,7 +330,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>Future Plans</div>
             <div style={{ display: 'grid', gap: '16px' }}>
-              <ViewField label="Short Term Plan (1 year)" value={form.short_term_plan} />
               <ViewField label="Long Term Plan (5 years)" value={form.long_term_plan} />
               <ViewField label="Career Goal" value={form.career_goal} />
               {form.further_education && (
@@ -593,12 +588,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>Future Plans</div>
             <div style={{ display: 'grid', gap: '14px' }}>
-              <div>
-                <label style={labelStyle}>Short Term Plan (within 1 year)</label>
-                <textarea style={{ ...inputStyle(false), minHeight: '70px' }}
-                  value={form.short_term_plan}
-                  onChange={e => setForm({ ...form, short_term_plan: e.target.value })} />
-              </div>
               <div>
                 <label style={labelStyle}>Long Term Plan (within 5 years)</label>
                 <textarea style={{ ...inputStyle(false), minHeight: '70px' }}

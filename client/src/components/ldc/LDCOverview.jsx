@@ -105,7 +105,7 @@ export default function LDCOverview() {
         'Family Income (LKR)' : p.family_income || '',
         'No of Dependants'    : p.no_of_dependants ?? '',
         'Other Assistance'    : p.other_assistance || '',
-        'Short Term Plan'     : p.short_term_plan || '',
+
         'Long Term Plan'      : p.long_term_plan || '',
         'Career Goal'         : p.career_goal || '',
         'OL Results'          : p.ol_results || '',

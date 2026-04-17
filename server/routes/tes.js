@@ -545,7 +545,7 @@ router.get('/batches/:id/export', verifyToken, async (req, res) => {
         pp.current_status, pp.current_institution,
         pp.current_course, pp.family_income,
         pp.no_of_dependants, pp.other_assistance,
-        pp.short_term_plan, pp.long_term_plan, pp.career_goal,
+        pp.long_term_plan, pp.career_goal,
         a.contact_number, a.email, a.nic_number, a.guardian_name,
         a.lang_english, a.lang_sinhala, a.lang_tamil,
         a.institution_name, a.institution_type, a.course_name,

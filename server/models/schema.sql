@@ -259,7 +259,6 @@ CREATE TABLE IF NOT EXISTS participant_profiles (
     monthly_income      DECIMAL(10,2),               -- If employed (LKR)
 
     -- ── FUTURE PLANS ──────────────────────────────────────────
-    short_term_plan     TEXT,                        -- Plans within 1 year
     long_term_plan      TEXT,                        -- Plans within 5 years
     career_goal         TEXT,                        -- Ultimate career aspiration
     further_education   BOOLEAN DEFAULT false,       -- Plans for further education

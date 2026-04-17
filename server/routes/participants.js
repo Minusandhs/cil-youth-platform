@@ -153,7 +153,7 @@ router.get('/export/participants', verifyToken, async (req, res) => {
          pp.living_outside_ldc, pp.outside_purpose, pp.outside_location,
          pp.family_income, pp.no_of_dependants, pp.other_assistance,
          pp.current_exam_type,
-         pp.short_term_plan, pp.long_term_plan, pp.career_goal,
+         pp.long_term_plan, pp.career_goal,
          (SELECT string_agg(
             'OL ' || r.exam_year || ': ' ||
             COALESCE((SELECT string_agg(s.subject_name || '-' || s.grade, ', ' ORDER BY s.is_core DESC)
@@ -538,14 +538,14 @@ router.post('/:id/profile', verifyToken, async (req, res) => {
         number_of_children, current_status,
         current_institution, current_course, current_year,
         current_exam_type,
-        monthly_income, short_term_plan, long_term_plan,
+        monthly_income, long_term_plan,
         career_goal, further_education, education_details,
         family_income, no_of_dependants, other_assistance,
         living_outside_ldc, outside_purpose, outside_location,
         last_updated_by
         ) VALUES (
-          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,
-          $13,$14,$15,$16,$17,$18,$19,$20,$21,$22
+          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,
+          $12,$13,$14,$15,$16,$17,$18,$19,$20,$21
         ) RETURNING *`,
       [
         req.params.id,
@@ -558,7 +558,6 @@ router.post('/:id/profile', verifyToken, async (req, res) => {
         p.current_year       || null,
         p.current_exam_type  || null,
         p.monthly_income     || null,
-        p.short_term_plan    || null,
         p.long_term_plan     || null,
         p.career_goal        || null,
         p.further_education  || false,
@@ -615,20 +614,19 @@ router.put('/:id/profile', verifyToken, async (req, res) => {
         current_year        = $7,
         current_exam_type   = $8,
         monthly_income      = $9,
-        short_term_plan     = $10,
-        long_term_plan     = $11,
-        career_goal         = $12,
-        further_education   = $13,
-        education_details   = $14,
-        family_income       = $15,
-        no_of_dependants    = $16,
-        other_assistance    = $17,
-        living_outside_ldc  = $18,
-        outside_purpose     = $19,
-        outside_location    = $20,
-        last_updated_by     = $21,
+        long_term_plan      = $10,
+        career_goal         = $11,
+        further_education   = $12,
+        education_details   = $13,
+        family_income       = $14,
+        no_of_dependants    = $15,
+        other_assistance    = $16,
+        living_outside_ldc  = $17,
+        outside_purpose     = $18,
+        outside_location    = $19,
+        last_updated_by     = $20,
         updated_at          = NOW()
-        WHERE participant_id = $22
+        WHERE participant_id = $21
        RETURNING *`,
       [
         p.marital_status     || null,
@@ -640,7 +638,6 @@ router.put('/:id/profile', verifyToken, async (req, res) => {
         p.current_year       || null,
         p.current_exam_type  || null,
         p.monthly_income     || null,
-        p.short_term_plan    || null,
         p.long_term_plan     || null,
         p.career_goal        || null,
         p.further_education  || false,

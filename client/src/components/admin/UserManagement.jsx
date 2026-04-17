@@ -135,18 +135,7 @@ export default function UserManagement({ readOnly = false }) {
     }
   }
 
-  async function handleTestEmail() {
-    setError(''); setSuccess('');
-    try {
-      setLoading(true);
-      const res = await api.post('/api/auth/test-email');
-      setSuccess(res.data.message);
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to send test email. Check server logs.');
-    } finally {
-      setLoading(false);
-    }
-  }
+
 
   const labelStyle = {
     display: 'block', fontSize: '11px', fontWeight: '700',
@@ -179,13 +168,7 @@ export default function UserManagement({ readOnly = false }) {
         </div>
         {!readOnly && (
           <div style={{display:'flex', gap:'10px'}}>
-            <button onClick={handleTestEmail} style={{
-              background:'transparent', color:'#6b5e4a', border:'1px solid #d4c9b0',
-              borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
-              fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
-            }}>
-              Send Test Email
-            </button>
+
             <button onClick={openCreate} style={{
               background:'#1a1610', color:'#c49a3c', border:'none',
               borderRadius:'6px', padding:'10px 18px', fontSize:'13px',

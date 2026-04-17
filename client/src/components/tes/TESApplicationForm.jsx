@@ -145,7 +145,6 @@ export default function TESApplicationForm({
       const missing = [];
       if (!profile.marital_status)  missing.push('Marital Status');
       if (!profile.current_status)  missing.push('Current Status');
-      if (!profile.short_term_plan) missing.push('Short Term Plan');
       if (!profile.long_term_plan)  missing.push('Long Term Plan');
       if (!profile.career_goal)     missing.push('Career Goal');
       if (!profile.family_income)   missing.push('Family Monthly Income');
@@ -403,18 +402,12 @@ export default function TESApplicationForm({
             </div>
 
             {/* Future Plans */}
-            {(profile?.short_term_plan || profile?.long_term_plan ||
+            {(profile?.long_term_plan ||
               profile?.career_goal) && (
               <div style={{
                 marginTop:'14px', display:'grid', gap:'10px'
               }}>
-                {profile?.short_term_plan && (
-                  <div>
-                    <label style={labelStyle}>Short Term Plan</label>
-                    <textarea style={{...readonlyStyle, minHeight:'50px'}}
-                      value={profile.short_term_plan} readOnly />
-                  </div>
-                )}
+
                 {profile?.long_term_plan && (
                   <div>
                     <label style={labelStyle}>Long Term Plan</label>

@@ -83,7 +83,7 @@ export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = fals
         'Family Income (LKR)'     : a.family_income || '',
         'No of Dependants'        : a.no_of_dependants || '',
         'Other Assistance'        : a.other_assistance || '',
-        'Short Term Plan'         : a.short_term_plan || '',
+
         'Long Term Plan'          : a.long_term_plan || '',
         'Career Goal'             : a.career_goal || '',
         'OL Results'              : a.ol_text || '',
