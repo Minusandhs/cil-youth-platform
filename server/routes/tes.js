@@ -427,7 +427,7 @@ router.put('/applications/:id/official', verifyToken, requireSuperAdmin,
     
     // Fetch participant info and current notes before update
     const currentApp = await query(
-      `SELECT a.official_notes, a.ldc_id, p.full_name, p.participant_id, b.batch_name
+      `SELECT a.official_notes, a.ldc_id, p.full_name, p.participant_id, b.batch_name, a.participant_id AS numeric_id, b.status AS batch_status
        FROM tes_applications a
        JOIN participants p ON a.participant_id = p.id
        JOIN tes_batches b ON a.batch_id = b.id
@@ -467,7 +467,8 @@ router.put('/applications/:id/official', verifyToken, requireSuperAdmin,
           app.participant_id,
           app.ldc_id,
           admin_notes,
-          app.batch_name
+          app.batch_name,
+          app.numeric_id
         );
       } catch (emailErr) {
         console.error('❌ Notification trigger failed:', emailErr.message);

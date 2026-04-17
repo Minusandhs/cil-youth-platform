@@ -21,22 +21,20 @@ export default function TESApplicationDetail({
             // silently fail — not critical
           }
         }
-  const [isEditingOfficial, setIsEditingOfficial] = useState(false);
   const [official, setOfficial] = useState({
     approval_status: application.approval_status || 'pending',
     admin_notes    : application.admin_notes     || '',
   });
 
-  async function saveOfficial(e) {
-    e.preventDefault();
+  async function saveOfficialWithStatus(newStatus) {
     setSavingOfficial(true); setError(''); setSuccess('');
     try {
       await api.put(`/api/tes/applications/${application.id}/official`, {
-        approval_status: official.approval_status,
+        approval_status: newStatus,
         admin_notes    : official.admin_notes,
       });
-      setSuccess('Decision saved successfully');
-      setIsEditingOfficial(false);
+      setOfficial({ ...official, approval_status: newStatus });
+      setSuccess(`Application marked as ${newStatus}`);
       onUpdate();
     } catch {
       setError('Failed to save decision');
@@ -569,111 +567,97 @@ export default function TESApplicationDetail({
             </div>
           )}
 
-          {(!isEditingOfficial && (official.approval_status !== 'pending' || readOnly)) ? (
-            <div>
-              <div style={{
-                display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', marginBottom:'16px'
-              }}>
-                <div>
-                  <div style={{fontSize:'10px', color:'#a09080', textTransform:'uppercase', marginBottom:'4px', letterSpacing:'0.5px'}}>
-                    Current Status
-                  </div>
-                  <div style={{display:'inline-block'}}>
-                    {statusBadge(official.approval_status)}
-                  </div>
-                </div>
-                {official.admin_notes && (
-                  <div>
-                    <div style={{fontSize:'10px', color:'#a09080', textTransform:'uppercase', marginBottom:'4px', letterSpacing:'0.5px'}}>
-                      Admin Notes
-                    </div>
-                    <div style={{fontSize:'13px', color:'#e8d4a0', lineHeight:'1.5'}}>
-                      {official.admin_notes}
-                    </div>
-                  </div>
-                )}
+          <div style={{marginTop:'20px'}}>
+            <h3 style={{
+              fontSize:'13px', fontWeight:'700', color:'#d4c9b0', 
+              borderBottom:'1px solid #4a4234', paddingBottom:'8px', marginBottom:'14px'
+            }}>
+              Official Decision
+            </h3>
+            
+            <div style={{marginBottom:'16px'}}>
+              <div style={{fontSize:'10px', color:'#a09080', textTransform:'uppercase', marginBottom:'4px', letterSpacing:'0.5px'}}>
+                Current Status
               </div>
-              
-              {!readOnly && (
-                <button 
-                  onClick={() => setIsEditingOfficial(true)}
-                  style={{
-                    background:'transparent', color:'#c49a3c', 
-                    border:'1px solid #4a4234', borderRadius:'6px',
-                    padding:'6px 16px', fontSize:'12px', fontWeight:'600',
-                    cursor:'pointer', fontFamily:'inherit'
-                  }}
-                >
-                  Edit Decision
-                </button>
-              )}
+              <div style={{display:'inline-block'}}>
+                {statusBadge(official.approval_status)}
+              </div>
             </div>
-          ) : (
-            <form onSubmit={saveOfficial}>
-              <div style={{
-                display:'grid', gridTemplateColumns:'1fr 1fr',
-                gap:'14px', marginBottom:'14px'
-              }}>
-                <div>
-                  <label style={{...labelStyle, color:'#a09080'}}>
-                    Approval Status
-                  </label>
-                  <select style={{
-                    ...inputStyle, background:'#2e2a22',
-                    border:'1px solid #4a4234', color:'#f5edd8'
-                  }}
-                  value={official.approval_status}
-                  onChange={e => setOfficial({
-                    ...official, approval_status:e.target.value
-                  })}>
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approved</option>
-                    <option value="rejected">Rejected</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{...labelStyle, color:'#a09080'}}>
+
+            {(!isAdmin || readOnly) ? (
+              official.admin_notes && (
+                <div style={{marginBottom:'16px'}}>
+                  <div style={{fontSize:'10px', color:'#a09080', textTransform:'uppercase', marginBottom:'4px', letterSpacing:'0.5px'}}>
                     Admin Notes
+                  </div>
+                  <div style={{fontSize:'13px', color:'#e8d4a0', lineHeight:'1.5', background:'#2e2a22', padding:'10px', borderRadius:'6px', border:'1px solid #4a4234'}}>
+                    {official.admin_notes}
+                  </div>
+                </div>
+              )
+            ) : (
+              <div>
+                <div style={{marginBottom:'16px'}}>
+                  <label style={{display:'block', fontSize:'11px', fontWeight:'600', color:'#a09080', marginBottom:'6px', textTransform:'uppercase'}}>
+                    Admin Notes (Required for Rejection)
                   </label>
                   <textarea style={{
-                    ...inputStyle, background:'#2e2a22',
-                    border:'1px solid #4a4234', color:'#f5edd8',
-                    minHeight:'60px', resize:'vertical'
+                    width:'100%', boxSizing:'border-box', background:'#2e2a22',
+                    border:'1px solid #4a4234', color:'#f5edd8', borderRadius:'6px',
+                    padding:'10px 12px', fontSize:'13px', minHeight:'80px', resize:'vertical', fontFamily:'inherit'
                   }}
-                  placeholder="Enter rejection reason or internal comments..."
+                  placeholder="Enter notes or rejection reason..."
                   value={official.admin_notes}
-                  onChange={e => setOfficial({
-                    ...official, admin_notes:e.target.value
-                  })} />
+                  onChange={e => setOfficial({...official, admin_notes:e.target.value})} />
+                </div>
+                
+                <div style={{display:'flex', gap:'10px', flexWrap:'wrap'}}>
+                  <button 
+                    type="button" 
+                    disabled={savingOfficial}
+                    onClick={() => saveOfficialWithStatus('approved')}
+                    style={{
+                      background: savingOfficial ? '#555' : '#2d6a4f',
+                      color:'#fff', border:'none', borderRadius:'6px',
+                      padding:'10px 20px', fontSize:'13px', fontWeight:'700',
+                      cursor: savingOfficial ? 'not-allowed' : 'pointer', fontFamily:'inherit'
+                    }}>
+                    Approve
+                  </button>
+                  <button 
+                    type="button" 
+                    disabled={savingOfficial}
+                    onClick={() => {
+                      if (!official.admin_notes.trim()) {
+                        alert('Please provide Admin Notes before rejecting so the LDC knows what to fix.');
+                        return;
+                      }
+                      saveOfficialWithStatus('rejected');
+                    }}
+                    style={{
+                      background: savingOfficial ? '#555' : '#9b2335',
+                      color:'#fff', border:'none', borderRadius:'6px',
+                      padding:'10px 20px', fontSize:'13px', fontWeight:'700',
+                      cursor: savingOfficial ? 'not-allowed' : 'pointer', fontFamily:'inherit'
+                    }}>
+                    Reject
+                  </button>
+                  <button 
+                    type="button" 
+                    disabled={savingOfficial}
+                    onClick={() => saveOfficialWithStatus('pending')}
+                    style={{
+                      background: 'transparent',
+                      color:'#a09080', border:'1px solid #4a4234', borderRadius:'6px',
+                      padding:'10px 20px', fontSize:'13px', fontWeight:'600',
+                      cursor: savingOfficial ? 'not-allowed' : 'pointer', fontFamily:'inherit'
+                    }}>
+                    Set to Pending
+                  </button>
                 </div>
               </div>
-              <div style={{display:'flex', gap:'10px'}}>
-                <button type="submit" disabled={savingOfficial} style={{
-                  background: savingOfficial ? '#555' : '#c49a3c',
-                  color:'#1a1610', border:'none', borderRadius:'6px',
-                  padding:'10px 24px', fontSize:'13px', fontWeight:'700',
-                  cursor: savingOfficial ? 'not-allowed' : 'pointer',
-                  fontFamily:'inherit'
-                }}>
-                  {savingOfficial ? 'Saving...' : 'Save Decision'}
-                </button>
-                {isEditingOfficial && (
-                  <button 
-                    type="button"
-                    onClick={() => setIsEditingOfficial(false)}
-                    style={{
-                      background:'transparent', color:'#a09080', 
-                      border:'1px solid #4a4234', borderRadius:'6px',
-                      padding:'10px 20px', fontSize:'13px', fontWeight:'600',
-                      cursor:'pointer', fontFamily:'inherit'
-                    }}
-                  >
-                    Cancel
-                  </button>
-                )}
-              </div>
-            </form>
-          )}
+            )}
+          </div>
         </div>
       )}
     </div>

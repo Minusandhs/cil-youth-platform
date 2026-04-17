@@ -5,7 +5,7 @@ const { query } = require('../config/database');
 /**
  * Sends a rejection notification using Amazon SES API
  */
-async function sendTESRejectionEmail(participantName, participantId, ldcId, reason, batchName = 'Unknown') {
+async function sendTESRejectionEmail(participantName, participantId, ldcId, reason, batchName = 'Unknown', numericId) {
   try {
     // 1. Fetch all active staff for this LDC
     const staffResult = await query(
@@ -21,6 +21,7 @@ async function sendTESRejectionEmail(participantName, participantId, ldcId, reas
 
     const recipientEmails = staffMembers.map(s => s.email);
     const portalUrl = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',')[0] : 'https://cilyouth.org';
+    const linkUrl = numericId ? `${portalUrl}/participant/${numericId}?tab=tes` : `${portalUrl}/ldc`;
 
     // 2. Prepare Email Content
     const subject = `Action Required: TES Application Rejected - ${participantName}`;
@@ -59,7 +60,7 @@ async function sendTESRejectionEmail(participantName, participantId, ldcId, reas
           </div>
 
           <div style="text-align: center; margin-bottom: 30px;">
-            <a href="${portalUrl}" style="background-color: #3d3528; color: #f0ece2; padding: 12px 30px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 15px; display: inline-block;">
+            <a href="${linkUrl}" style="background-color: #3d3528; color: #f0ece2; padding: 12px 30px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 15px; display: inline-block;">
               View Application in Portal
             </a>
           </div>

@@ -400,34 +400,6 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                   </div>
                 </div>
 
-                {/* Plan After O/L */}
-                <div style={{marginBottom:'20px'}}>
-                  <label style={labelStyle}>Plan after O/L (Multiple Option)</label>
-                  <div style={{
-                    display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))',
-                    gap:'10px', background:'#f5edd8', padding:'14px', borderRadius:'6px'
-                  }}>
-                    {PLAN_AFTER_OL_OPTIONS.map(opt => (
-                      <div key={opt} style={{display:'flex', alignItems:'center', gap:'8px'}}>
-                        <input type="checkbox" id={`ol_plan_${opt}`}
-                          checked={olForm.plan_after.includes(opt)}
-                          onChange={() => togglePlan('ol', opt)}
-                          style={{accentColor:'#c49a3c'}} />
-                        <label htmlFor={`ol_plan_${opt}`} style={{fontSize:'12px', cursor:'pointer'}}>{opt}</label>
-                      </div>
-                    ))}
-                  </div>
-                  {olForm.plan_after.includes('Other') && (
-                    <div style={{marginTop:'10px'}}>
-                      <label style={labelStyle}>Other Plan Details</label>
-                      <input style={inputStyle} required
-                        placeholder="Please specify..."
-                        value={olForm.plan_after_other}
-                        onChange={e => setOlForm({...olForm, plan_after_other:e.target.value})} />
-                    </div>
-                  )}
-                </div>
-
                 {/* Subjects */}
                 <div style={{marginBottom:'20px'}}>
                   <div style={{
@@ -479,6 +451,34 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                       }}>✕</button>
                     </div>
                   ))}
+                </div>
+
+                {/* Plan After O/L */}
+                <div style={{marginBottom:'20px'}}>
+                  <label style={labelStyle}>Plan after O/L (Multiple Option)</label>
+                  <div style={{
+                    display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))',
+                    gap:'10px', background:'#f5edd8', padding:'14px', borderRadius:'6px'
+                  }}>
+                    {PLAN_AFTER_OL_OPTIONS.map(opt => (
+                      <div key={opt} style={{display:'flex', alignItems:'center', gap:'8px'}}>
+                        <input type="checkbox" id={`ol_plan_${opt}`}
+                          checked={olForm.plan_after.includes(opt)}
+                          onChange={() => togglePlan('ol', opt)}
+                          style={{accentColor:'#c49a3c'}} />
+                        <label htmlFor={`ol_plan_${opt}`} style={{fontSize:'12px', cursor:'pointer'}}>{opt}</label>
+                      </div>
+                    ))}
+                  </div>
+                  {olForm.plan_after.includes('Other') && (
+                    <div style={{marginTop:'10px'}}>
+                      <label style={labelStyle}>Other Plan Details</label>
+                      <input style={inputStyle} required
+                        placeholder="Please specify..."
+                        value={olForm.plan_after_other}
+                        onChange={e => setOlForm({...olForm, plan_after_other:e.target.value})} />
+                    </div>
+                  )}
                 </div>
 
                 <div style={{display:'flex', alignItems:'center', gap:'10px', marginBottom:'16px'}}>
@@ -625,6 +625,52 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                   </div>
                 </div>
 
+                {/* Main Subjects */}
+                <div style={{marginBottom:'16px'}}>
+                  <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'10px'}}>
+                    <label style={labelStyle}>Main Subjects</label>
+                    <button type="button" onClick={() => addALSubject('main')} style={{background:'transparent', color:'#c49a3c', border:'1px dashed #c49a3c', borderRadius:'4px', padding:'4px 12px', fontSize:'11px', fontWeight:'600', cursor:'pointer', fontFamily:'inherit'}}>+ Add Main Subject</button>
+                  </div>
+                  {alForm.subjects.map((s, i) => s.subject_type !== 'main' ? null : (
+                    <div key={i} style={{display:'grid', gridTemplateColumns:'2fr 1fr auto', gap:'10px', marginBottom:'8px', alignItems:'center'}}>
+                      <select style={inputStyle} value={s.subject_name} onChange={e => updateALSubject(i, 'subject_name', e.target.value)} required>
+                        <option value="">— Select Subject —</option>
+                        {alSubjects.map(sub => (
+                          <option key={sub.id} value={sub.subject_name}>{sub.subject_name}</option>
+                        ))}
+                      </select>
+                      <select style={inputStyle} value={s.grade} onChange={e => updateALSubject(i, 'grade', e.target.value)} required>
+                        <option value="">Grade</option>
+                        {alGrades.map(g => <option key={g.id} value={g.grade_name}>{g.grade_name} — {g.description}</option>)}
+                      </select>
+                      <button type="button" onClick={() => removeALSubject(i)} style={{background:'#f5e0e3', color:'#9b2335', border:'none', borderRadius:'4px', padding:'8px 12px', fontSize:'13px', cursor:'pointer', fontFamily:'inherit'}}>✕</button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* General Subjects */}
+                <div style={{marginBottom:'16px'}}>
+                  <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'10px'}}>
+                    <label style={labelStyle}>General Subjects</label>
+                    <button type="button" onClick={() => addALSubject('general')} style={{background:'transparent', color:'#c49a3c', border:'1px dashed #c49a3c', borderRadius:'4px', padding:'4px 12px', fontSize:'11px', fontWeight:'600', cursor:'pointer', fontFamily:'inherit'}}>+ Add General Subject</button>
+                  </div>
+                  {alForm.subjects.map((s, i) => s.subject_type !== 'general' ? null : (
+                    <div key={i} style={{display:'grid', gridTemplateColumns:'2fr 1fr auto', gap:'10px', marginBottom:'8px', alignItems:'center'}}>
+                      <select style={inputStyle} value={s.subject_name} onChange={e => updateALSubject(i, 'subject_name', e.target.value)} required>
+                        <option value="">— Select Subject —</option>
+                        {alSubjects.map(sub => (
+                          <option key={sub.id} value={sub.subject_name}>{sub.subject_name}</option>
+                        ))}
+                      </select>
+                      <select style={inputStyle} value={s.grade} onChange={e => updateALSubject(i, 'grade', e.target.value)} required>
+                        <option value="">Grade</option>
+                        {alGrades.map(g => <option key={g.id} value={g.grade_name}>{g.grade_name} — {g.description}</option>)}
+                      </select>
+                      <button type="button" onClick={() => removeALSubject(i)} style={{background:'#f5e0e3', color:'#9b2335', border:'none', borderRadius:'4px', padding:'8px 12px', fontSize:'13px', cursor:'pointer', fontFamily:'inherit'}}>✕</button>
+                    </div>
+                  ))}
+                </div>
+
                 {/* Plan After A/L */}
                 <div style={{marginBottom:'20px'}}>
                   <label style={labelStyle}>Plan after A/L (Multiple Option)</label>
@@ -653,6 +699,21 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                   )}
                 </div>
 
+                <div style={{display:'flex', alignItems:'center', gap:'10px', marginBottom:'16px'}}>
+                  <input type="checkbox" id="al_verified"
+                    checked={alForm.results_verified}
+                    onChange={e => setAlForm({...alForm, results_verified:e.target.checked})}
+                    style={{width:'16px', height:'16px', accentColor:'#c49a3c'}} />
+                  <label htmlFor="al_verified" style={{fontSize:'13px', fontWeight:'600', cursor:'pointer'}}>Results Verified</label>
+                </div>
+
+                <div style={{marginBottom:'16px'}}>
+                  <label style={labelStyle}>Notes</label>
+                  <textarea style={{...inputStyle, minHeight:'60px'}}
+                    value={alForm.notes}
+                    onChange={e => setAlForm({...alForm, notes:e.target.value})} />
+                </div>
+
                 {/* University Selection */}
                 <div style={{background:'#f5edd8', border:'1px solid #e8d4a0', borderRadius:'6px', padding:'14px', marginBottom:'16px'}}>
                   <div style={{display:'flex', alignItems:'center', gap:'10px', marginBottom: alForm.university_selected ? '12px' : '0'}}>
@@ -671,27 +732,6 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                       </div>
                     </div>
                   )}
-                </div>
-
-                {/* Main Subjects */}
-                <div style={{marginBottom:'16px'}}>
-                  <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'10px'}}>
-                    <label style={labelStyle}>Main Subjects (3)</label>
-                    <button type="button" onClick={() => addALSubject('main')} style={{background:'transparent', color:'#c49a3c', border:'1px dashed #c49a3c', borderRadius:'4px', padding:'4px 12px', fontSize:'11px', fontWeight:'600', cursor:'pointer', fontFamily:'inherit'}}>+ Add Main Subject</button>
-                  </div>
-                  {alForm.subjects.map((s, i) => s.subject_type !== 'main' ? null : (
-                    <div key={i} style={{display:'grid', gridTemplateColumns:'2fr 1fr auto', gap:'10px', marginBottom:'8px', alignItems:'center'}}>
-                      <select style={inputStyle} value={s.subject_name} onChange={e => updateALSubject(i, 'subject_name', e.target.value)} required>
-                        <option value="">— Select Subject —</option>
-                        {alSubjects.filter(sub => !sub.is_core).map(sub => <option key={sub.id} value={sub.subject_name}>{sub.subject_name}</option>)}
-                      </select>
-                      <select style={inputStyle} value={s.grade} onChange={e => updateALSubject(i, 'grade', e.target.value)} required>
-                        <option value="">Grade</option>
-                        {alGrades.map(g => <option key={g.id} value={g.grade_name}>{g.grade_name} — {g.description}</option>)}
-                      </select>
-                      <button type="button" onClick={() => removeALSubject(i)} style={{background:'#f5e0e3', color:'#9b2335', border:'none', borderRadius:'4px', padding:'8px 12px', fontSize:'13px', cursor:'pointer', fontFamily:'inherit'}}>✕</button>
-                    </div>
-                  ))}
                 </div>
 
                 <div style={{display:'flex', gap:'10px'}}>

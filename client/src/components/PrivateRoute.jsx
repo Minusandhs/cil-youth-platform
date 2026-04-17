@@ -1,10 +1,12 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function PrivateRoute({ children, requiredRole }) {
   const { user } = useAuth();
+  const location = useLocation();
+
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
   // 'any' means any authenticated user can access
   if (requiredRole && requiredRole !== 'any') {

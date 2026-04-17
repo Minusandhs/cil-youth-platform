@@ -144,8 +144,6 @@ export default function TESApplicationForm({
     if (profile) {
       const missing = [];
       if (!profile.marital_status)  missing.push('Marital Status');
-      if (!profile.ol_status)       missing.push('O/L Status');
-      if (!profile.al_status)       missing.push('A/L Status');
       if (!profile.current_status)  missing.push('Current Status');
       if (!profile.short_term_plan) missing.push('Short Term Plan');
       if (!profile.long_term_plan)  missing.push('Long Term Plan');
@@ -168,24 +166,6 @@ export default function TESApplicationForm({
         setError(
           `Cannot submit: the participant's profile is incomplete. ` +
           `Please update their Personal Info tab first.\n\nMissing: ${missing.join(', ')}`
-        );
-        return;
-      }
-
-      // O/L results check
-      if (['completed_passed', 'completed_failed'].includes(profile.ol_status) && !olResult) {
-        setError(
-          `Cannot submit: O/L Status is "${profile.ol_status === 'completed_passed' ? 'Completed — Passed' : 'Completed — Failed'}" ` +
-          `but no O/L results have been entered. Please add O/L results in Academic Records first.`
-        );
-        return;
-      }
-
-      // A/L results check
-      if (['completed_passed', 'completed_failed'].includes(profile.al_status) && !alResult) {
-        setError(
-          `Cannot submit: A/L Status is "${profile.al_status === 'completed_passed' ? 'Completed — Passed' : 'Completed — Failed'}" ` +
-          `but no A/L results have been entered. Please add A/L results in Academic Records first.`
         );
         return;
       }

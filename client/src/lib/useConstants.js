@@ -20,8 +20,7 @@ const STATIC_DEFAULTS = {
   currentStatuses : [
     { value: 'studying_school',         label: 'Studying — School' },
     { value: 'studying_tertiary',       label: 'Studying — Tertiary' },
-    { value: 'studying_vocational',     label: 'Studying — Vocational' },
-    { value: 'studying_completed_exam', label: 'Studying — Completed Examination' },
+    { value: 'studying_vocational',label: 'Studying — Vocational' },
     { value: 'studying_waiting_result', label: 'Studying — Waiting For the Result' },
     { value: 'employed_full',           label: 'Employed — Full Time' },
     { value: 'employed_part',           label: 'Employed — Part Time' },

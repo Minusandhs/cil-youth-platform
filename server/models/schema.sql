@@ -230,7 +230,6 @@ CREATE TABLE IF NOT EXISTS participant_profiles (
                             'studying_school',       -- Still in school
                             'studying_tertiary',     -- University/college
                             'studying_vocational',   -- Vocational training
-                            'studying_completed_exam',-- Completed exam
                             'studying_waiting_result',-- Waiting for result
                             'employed_full',         -- Full time employment
                             'employed_part',         -- Part time employment

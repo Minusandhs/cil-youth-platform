@@ -20,6 +20,7 @@ const ldcRoutes          = require('./routes/ldcs');
 const subjectRoutes      = require('./routes/subjects');
 const gradeRoutes        = require('./routes/grades');
 const certificationRoutes = require('./routes/certifications');
+const schoolGradeRoutes  = require('./routes/schoolGrades');
 const constantsRoutes    = require('./routes/constants');
 const { verifyConnection } = require('./config/email');
 
@@ -92,6 +93,7 @@ app.use('/api/tes',          tesRoutes);
 app.use('/api/ldcs',         ldcRoutes);
 app.use('/api/subjects',     subjectRoutes);
 app.use('/api/grades',        gradeRoutes);
+app.use('/api/school-grades', schoolGradeRoutes);
 app.use('/api/certifications', certificationRoutes);
 
 // ── 404 Handler ──────────────────────────────────────────────────

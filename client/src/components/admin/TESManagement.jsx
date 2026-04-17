@@ -375,7 +375,7 @@ export default function TESManagement({ readOnly = false }) {
                   {/* Stop Applications — only when open */}
                   {!readOnly && batch.status === 'open' && (
                     <button onClick={() => updateStatus(batch, 'reviewing')} style={{
-                      background:'#f0ece2', color:'#6b5e4a', border:'none',
+                      background:'#f5e0e3', color:'#9b2335', border:'none',
                       borderRadius:'5px', padding:'6px 14px', fontSize:'12px',
                       fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
                     }}>Stop Applications</button>

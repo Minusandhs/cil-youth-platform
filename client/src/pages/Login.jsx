@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Login() {
@@ -10,17 +10,23 @@ export default function Login() {
 
   const { login, user } = useAuth();
   const navigate  = useNavigate();
+  const location  = useLocation();
+
+  const intendedFrom = location.state?.from?.pathname + (location.state?.from?.search || '');
+  const from = intendedFrom === '/' ? null : (location.state?.from ? intendedFrom : null);
 
   // ── Redirect if already logged in ──────────────────────────────
   useEffect(() => {
     if (user) {
-      if (user.role === 'super_admin' || user.role === 'national_admin') {
-        navigate('/admin');
+      if (from) {
+        navigate(from, { replace: true });
+      } else if (user.role === 'super_admin' || user.role === 'national_admin') {
+        navigate('/admin', { replace: true });
       } else {
-        navigate('/ldc');
+        navigate('/ldc', { replace: true });
       }
     }
-  }, [user, navigate]);
+  }, [user, navigate, from]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -29,10 +35,12 @@ export default function Login() {
 
     try {
       const user = await login(username, password);
-      if (user.role === 'super_admin' || user.role === 'national_admin') {
-        navigate('/admin');
+      if (from) {
+        navigate(from, { replace: true });
+      } else if (user.role === 'super_admin' || user.role === 'national_admin') {
+        navigate('/admin', { replace: true });
       } else {
-        navigate('/ldc');
+        navigate('/ldc', { replace: true });
       }
     } catch (err) {
       setError('Invalid username or password');
