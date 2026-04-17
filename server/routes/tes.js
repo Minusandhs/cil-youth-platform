@@ -427,9 +427,10 @@ router.put('/applications/:id/official', verifyToken, requireSuperAdmin,
     
     // Fetch participant info and current notes before update
     const currentApp = await query(
-      `SELECT a.official_notes, a.ldc_id, p.full_name, p.participant_id
+      `SELECT a.official_notes, a.ldc_id, p.full_name, p.participant_id, b.batch_name
        FROM tes_applications a
        JOIN participants p ON a.participant_id = p.id
+       JOIN tes_batches b ON a.batch_id = b.id
        WHERE a.id = $1`,
       [req.params.id]
     );
@@ -458,13 +459,19 @@ router.put('/applications/:id/official', verifyToken, requireSuperAdmin,
 
     // ── Trigger Rejection Email ──────────────────────────────────
     if (approval_status === 'rejected') {
-      // Run in background (don't await to keep API responsive)
-      sendTESRejectionEmail(
-        app.full_name,
-        app.participant_id,
-        app.ldc_id,
-        admin_notes
-      );
+      // Await so we catch any immediate config/credential errors, 
+      // but wrap in try/catch to not block the API response
+      try {
+        await sendTESRejectionEmail(
+          app.full_name,
+          app.participant_id,
+          app.ldc_id,
+          admin_notes,
+          app.batch_name
+        );
+      } catch (emailErr) {
+        console.error('❌ Notification trigger failed:', emailErr.message);
+      }
     }
 
     res.json(result.rows[0]);

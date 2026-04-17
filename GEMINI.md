@@ -6,6 +6,8 @@ This file serves as the primary context for Gemini CLI's involvement in the proj
 ## 🤝 Collaboration Principles
 - **Sync with Claude:** Always respect the logic and conventions established in `CLAUDE.md` and the existing codebase.
 - **Vibe Coding:** Focus on efficient, modular, and functional snippets. Prioritize high-signal technical rationale over filler.
+- **Git Protocol:** **ALWAYS** ask for explicit confirmation before committing any changes to git.
+- **Deployment:** Deployment (`./deploy.sh`) is **PROHIBITED** unless explicit permission is granted by the user for a specific turn.
 - **Environment:** Code must be compatible with a containerized Node.js (server) and Vite (client) environment.
 - **Logic-First:** Explain the logic/strategy before implementing to ensure alignment.
 

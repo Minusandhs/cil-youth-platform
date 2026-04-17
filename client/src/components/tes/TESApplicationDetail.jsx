@@ -21,6 +21,7 @@ export default function TESApplicationDetail({
             // silently fail — not critical
           }
         }
+  const [isEditingOfficial, setIsEditingOfficial] = useState(false);
   const [official, setOfficial] = useState({
     approval_status: application.approval_status || 'pending',
     admin_notes    : application.admin_notes     || '',
@@ -35,6 +36,7 @@ export default function TESApplicationDetail({
         admin_notes    : official.admin_notes,
       });
       setSuccess('Decision saved successfully');
+      setIsEditingOfficial(false);
       onUpdate();
     } catch {
       setError('Failed to save decision');
@@ -567,27 +569,43 @@ export default function TESApplicationDetail({
             </div>
           )}
 
-          {readOnly ? (
-            <div style={{
-              display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'
-            }}>
-              <div>
-                <div style={{fontSize:'10px', color:'#a09080', textTransform:'uppercase', marginBottom:'4px'}}>
-                  Approval Status
-                </div>
-                <div style={{fontSize:'13px', color:'#e8d4a0', fontWeight:'600'}}>
-                  {official.approval_status.charAt(0).toUpperCase() + official.approval_status.slice(1)}
-                </div>
-              </div>
-              {official.admin_notes && (
+          {(!isEditingOfficial && (official.approval_status !== 'pending' || readOnly)) ? (
+            <div>
+              <div style={{
+                display:'grid', gridTemplateColumns:'1fr 1fr', gap:'20px', marginBottom:'16px'
+              }}>
                 <div>
-                  <div style={{fontSize:'10px', color:'#a09080', textTransform:'uppercase', marginBottom:'4px'}}>
-                    Admin Notes
+                  <div style={{fontSize:'10px', color:'#a09080', textTransform:'uppercase', marginBottom:'4px', letterSpacing:'0.5px'}}>
+                    Current Status
                   </div>
-                  <div style={{fontSize:'13px', color:'#e8d4a0'}}>
-                    {official.admin_notes}
+                  <div style={{display:'inline-block'}}>
+                    {statusBadge(official.approval_status)}
                   </div>
                 </div>
+                {official.admin_notes && (
+                  <div>
+                    <div style={{fontSize:'10px', color:'#a09080', textTransform:'uppercase', marginBottom:'4px', letterSpacing:'0.5px'}}>
+                      Admin Notes
+                    </div>
+                    <div style={{fontSize:'13px', color:'#e8d4a0', lineHeight:'1.5'}}>
+                      {official.admin_notes}
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {!readOnly && (
+                <button 
+                  onClick={() => setIsEditingOfficial(true)}
+                  style={{
+                    background:'transparent', color:'#c49a3c', 
+                    border:'1px solid #4a4234', borderRadius:'6px',
+                    padding:'6px 16px', fontSize:'12px', fontWeight:'600',
+                    cursor:'pointer', fontFamily:'inherit'
+                  }}
+                >
+                  Edit Decision
+                </button>
               )}
             </div>
           ) : (
@@ -622,21 +640,38 @@ export default function TESApplicationDetail({
                     border:'1px solid #4a4234', color:'#f5edd8',
                     minHeight:'60px', resize:'vertical'
                   }}
+                  placeholder="Enter rejection reason or internal comments..."
                   value={official.admin_notes}
                   onChange={e => setOfficial({
                     ...official, admin_notes:e.target.value
                   })} />
                 </div>
               </div>
-              <button type="submit" disabled={savingOfficial} style={{
-                background: savingOfficial ? '#555' : '#c49a3c',
-                color:'#1a1610', border:'none', borderRadius:'6px',
-                padding:'10px 24px', fontSize:'13px', fontWeight:'700',
-                cursor: savingOfficial ? 'not-allowed' : 'pointer',
-                fontFamily:'inherit'
-              }}>
-                {savingOfficial ? 'Saving...' : 'Save Decision'}
-              </button>
+              <div style={{display:'flex', gap:'10px'}}>
+                <button type="submit" disabled={savingOfficial} style={{
+                  background: savingOfficial ? '#555' : '#c49a3c',
+                  color:'#1a1610', border:'none', borderRadius:'6px',
+                  padding:'10px 24px', fontSize:'13px', fontWeight:'700',
+                  cursor: savingOfficial ? 'not-allowed' : 'pointer',
+                  fontFamily:'inherit'
+                }}>
+                  {savingOfficial ? 'Saving...' : 'Save Decision'}
+                </button>
+                {isEditingOfficial && (
+                  <button 
+                    type="button"
+                    onClick={() => setIsEditingOfficial(false)}
+                    style={{
+                      background:'transparent', color:'#a09080', 
+                      border:'1px solid #4a4234', borderRadius:'6px',
+                      padding:'10px 20px', fontSize:'13px', fontWeight:'600',
+                      cursor:'pointer', fontFamily:'inherit'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
             </form>
           )}
         </div>

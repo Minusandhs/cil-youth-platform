@@ -1,12 +1,7 @@
-const { SESClient } = require("@aws-sdk/client-ses");
+const { SESClient, GetSendQuotaCommand } = require("@aws-sdk/client-ses");
 
 /**
  * Configure AWS SES Client
- * Requirements in .env:
- * AWS_REGION
- * AWS_ACCESS_KEY_ID
- * AWS_SECRET_ACCESS_KEY
- * EMAIL_FROM: The verified email in AWS SES
  */
 const sesClient = new SESClient({
   region: process.env.AWS_REGION || 'us-east-1',
@@ -21,12 +16,23 @@ const sesClient = new SESClient({
  */
 const verifyConnection = async () => {
   try {
-    // AWS SDK doesn't have a simple "verify" like Nodemailer,
-    // but the Client will throw on first use if keys are invalid.
-    console.log('✅ AWS SES Client initialized (Port 443)');
+    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+      console.error('❌ AWS SES: Missing credentials in environment.');
+      return false;
+    }
+    
+    if (!process.env.EMAIL_FROM) {
+      console.warn('⚠️ AWS SES: EMAIL_FROM is not set. Emails may fail.');
+    }
+
+    // Try to get quota as a lightweight connectivity test
+    const command = new GetSendQuotaCommand({});
+    await sesClient.send(command);
+    
+    console.log('✅ AWS SES Connectivity verified (Port 443)');
     return true;
   } catch (error) {
-    console.error('❌ AWS SES initialization failed:', error.message);
+    console.error('❌ AWS SES Connectivity failed:', error.message);
     return false;
   }
 };

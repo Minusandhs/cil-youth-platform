@@ -7,9 +7,12 @@ export default function PrivateRoute({ children, requiredRole }) {
     return <Navigate to="/login" replace />;
   }
   // 'any' means any authenticated user can access
-  if (requiredRole && requiredRole !== 'any' && user.role !== requiredRole) {
-    const redirect = user.role === 'super_admin' ? '/admin' : '/ldc';
-    return <Navigate to={redirect} replace />;
+  if (requiredRole && requiredRole !== 'any') {
+    const roles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+    if (!roles.includes(user.role)) {
+      const redirect = user.role === 'super_admin' || user.role === 'national_admin' ? '/admin' : '/ldc';
+      return <Navigate to={redirect} replace />;
+    }
   }
   return children;
 }

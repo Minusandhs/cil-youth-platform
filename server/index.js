@@ -121,7 +121,7 @@ async function startServer() {
     await testConnection();
 
     // Verify Email service
-    verifyConnection();
+    await verifyConnection();
 
     app.listen(PORT, () => {
       console.log('================================================');

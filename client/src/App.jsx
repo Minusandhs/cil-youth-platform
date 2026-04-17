@@ -25,7 +25,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/admin/*" element={
-            <PrivateRoute requiredRole="super_admin">
+            <PrivateRoute requiredRole={['super_admin', 'national_admin']}>
               <AdminDashboard />
             </PrivateRoute>
           }/>
