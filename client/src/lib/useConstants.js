@@ -10,33 +10,27 @@
 import { useState, useEffect } from 'react';
 import api from './api';
 import {
-  MARITAL_STATUS, OL_STATUS, AL_STATUS,
+  MARITAL_STATUS,
   LANG_LEVELS, INST_TYPES, PLAN_STATUSES,
   AL_STREAMS, AL_MEDIUMS,
 } from './constants';
 
 // Static values used as initial state so components render instantly
 const STATIC_DEFAULTS = {
-  currentStatuses : Object.entries(
-    // Build from CURRENT_STATUS — filter out synthetic 'no_profile'
-    (() => {
-      // Inline import to avoid circular dep — mirrors server option list
-      return {
-        studying_school    : 'Studying — School',
-        studying_tertiary  : 'Studying — Tertiary',
-        studying_vocational: 'Studying — Vocational',
-        employed_full      : 'Employed — Full Time',
-        employed_part      : 'Employed — Part Time',
-        self_employed      : 'Self Employed',
-        unemployed_seeking : 'Unemployed — Seeking',
-        unemployed_not     : 'NEET - Not in Education, Employment and Training',
-        other              : 'Other',
-      };
-    })()
-  ).map(([value, label]) => ({ value, label })),
+  currentStatuses : [
+    { value: 'studying_school',         label: 'Studying — School' },
+    { value: 'studying_tertiary',       label: 'Studying — Tertiary' },
+    { value: 'studying_vocational',     label: 'Studying — Vocational' },
+    { value: 'studying_completed_exam', label: 'Studying — Completed Examination' },
+    { value: 'studying_waiting_result', label: 'Studying — Waiting For the Result' },
+    { value: 'employed_full',           label: 'Employed — Full Time' },
+    { value: 'employed_part',           label: 'Employed — Part Time' },
+    { value: 'self_employed',           label: 'Self Employed' },
+    { value: 'unemployed_seeking',      label: 'Unemployed — Seeking' },
+    { value: 'unemployed_not',          label: 'NEET - Not in Education, Employment and Training' },
+    { value: 'other',                   label: 'Other' },
+  ],
   maritalStatuses  : MARITAL_STATUS,
-  olStatuses       : OL_STATUS,
-  alStatuses       : AL_STATUS,
   outsidePurposes  : [
     { value: 'Study',           label: 'Study'           },
     { value: 'Work / Business', label: 'Work / Business' },

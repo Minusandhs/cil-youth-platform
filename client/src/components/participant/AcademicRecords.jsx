@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
+import { useConstants } from '../../lib/useConstants';
 import { 
-  useConstants, 
   PLAN_AFTER_OL_OPTIONS, 
   PLAN_AFTER_AL_OPTIONS 
 } from '../../lib/constants';
