@@ -110,6 +110,76 @@ async function sendTESRejectionEmail(participantName, participantId, ldcId, reas
   }
 }
 
+async function sendPasswordResetEmail(recipientEmail, userName, resetLink) {
+  try {
+    const subject = `Reset Your Password - CIL Youth Development Platform`;
+    const htmlBody = `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; line-height: 1.6; color: #3d3528; background-color: #fdfcf9; border: 1px solid #e8e2d6; border-radius: 12px; overflow: hidden; margin: 0 auto;">
+        <!-- Header -->
+        <div style="background-color: #3d3528; padding: 25px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600;">Password Reset Request</h1>
+        </div>
+        
+        <!-- Content -->
+        <div style="padding: 30px;">
+          <p style="font-size: 16px; margin-top: 0;">Hello ${userName},</p>
+          <p style="font-size: 15px;">We received a request to reset the password for your account on the CIL Youth Development Platform. If you didn't make this request, you can safely ignore this email.</p>
+          
+          <div style="text-align: center; margin: 35px 0;">
+            <a href="${resetLink}" style="background-color: #9b2335; color: #ffffff; padding: 14px 35px; text-decoration: none; border-radius: 50px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+              Reset Password
+            </a>
+          </div>
+
+          <p style="font-size: 14px; color: #6b5e4a; margin-bottom: 5px;">This link will expire in <strong>1 hour</strong>.</p>
+          <p style="font-size: 14px; color: #6b5e4a;">If the button above doesn't work, copy and paste this URL into your browser:</p>
+          <p style="font-size: 12px; color: #9b2335; word-break: break-all;">${resetLink}</p>
+        </div>
+        
+        <!-- Footer -->
+        <div style="background-color: #f0ece2; padding: 20px; text-align: center; border-top: 1px solid #e8e2d6;">
+          <p style="font-size: 12px; color: #6b5e4a; margin: 0;">
+            This is an automated notification from the <strong>CIL Youth Development Platform</strong>.
+          </p>
+        </div>
+      </div>
+    `;
+
+    // Create raw email message
+    const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
+    const messageParts = [
+      `From: ${process.env.EMAIL_FROM || 'notifications@cilyouth.org'}`,
+      `To: ${recipientEmail}`,
+      'Content-Type: text/html; charset=utf-8',
+      'MIME-Version: 1.0',
+      `Subject: ${utf8Subject}`,
+      '',
+      htmlBody
+    ];
+    const message = messageParts.join('\n');
+
+    const encodedMessage = Buffer.from(message)
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+
+    // Send via Gmail API
+    await gmail.users.messages.send({
+      userId: 'me',
+      requestBody: {
+        raw: encodedMessage,
+      },
+    });
+
+    console.log(`📧 Password reset email sent to: ${recipientEmail}`);
+
+  } catch (error) {
+    console.error('❌ Failed to send password reset email:', error.message);
+  }
+}
+
 module.exports = {
-  sendTESRejectionEmail
+  sendTESRejectionEmail,
+  sendPasswordResetEmail
 };

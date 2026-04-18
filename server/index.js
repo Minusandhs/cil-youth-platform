@@ -123,6 +123,10 @@ async function startServer() {
     // Test database connection before starting
     await testConnection();
 
+    // Run automated database migrations
+    const runMigrations = require('./utils/runMigrations');
+    await runMigrations();
+
     // Verify Email service
     await verifyConnection();
 

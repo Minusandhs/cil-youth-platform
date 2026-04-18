@@ -22,6 +22,13 @@ export function AuthProvider({ children }) {
       body: JSON.stringify({ username, password })
     });
     const data = await response.json();
+    
+    if (!response.ok) {
+      const error = new Error('Login failed');
+      error.response = { status: response.status, data };
+      throw error;
+    }
+
     localStorage.setItem('cil_token', data.token);
     localStorage.setItem('cil_user', JSON.stringify(data.user));
     setUser(data.user);

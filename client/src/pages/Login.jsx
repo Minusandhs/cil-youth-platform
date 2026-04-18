@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Login() {
@@ -28,6 +28,14 @@ export default function Login() {
     }
   }, [user, navigate, from]);
 
+  // ── Check for external errors ──────────────────────────────────
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('error') === 'ldc_deactivated') {
+      setError('Your LDC has been deactivated. Please contact the administrator.');
+    }
+  }, [location.search]);
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
@@ -43,7 +51,11 @@ export default function Login() {
         navigate('/ldc', { replace: true });
       }
     } catch (err) {
-      setError('Invalid username or password');
+      if (err.response?.status === 403) {
+        setError(err.response.data.error || 'Access denied');
+      } else {
+        setError('Invalid username or password');
+      }
     } finally {
       setLoading(false);
     }
@@ -172,24 +184,34 @@ export default function Login() {
               }}>
                 Password
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                style={{
-                  width:'100%',
-                  padding:'10px 12px',
-                  border:'1px solid #d4c9b0',
-                  borderRadius:'6px',
-                  fontSize:'14px',
-                  color:'#1a1610',
-                  background:'#faf8f3',
-                  outline:'none',
-                  fontFamily:'inherit'
-                }}
-              />
-            </div>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  style={{
+                    width:'100%',
+                    padding:'10px 12px',
+                    border:'1px solid #d4c9b0',
+                    borderRadius:'6px',
+                    fontSize:'14px',
+                    color:'#1a1610',
+                    background:'#faf8f3',
+                    outline:'none',
+                    fontFamily:'inherit'
+                  }}
+                />
+                <div style={{textAlign:'right', marginTop:'8px'}}>
+                  <Link to="/forgot-password" style={{
+                    fontSize:'12px',
+                    color:'#9b2335',
+                    textDecoration:'none',
+                    fontWeight:'600'
+                  }}>
+                    Forgot Password?
+                  </Link>
+                </div>
+              </div>
 
             {/* Submit Button */}
             <button

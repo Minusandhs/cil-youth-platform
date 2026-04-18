@@ -19,10 +19,14 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isAuthError = error.response?.status === 401;
+    const isDeactivatedError = error.response?.status === 403 && error.response?.data?.error === 'LDC_DEACTIVATED';
+
+    if (isAuthError || isDeactivatedError) {
       localStorage.removeItem('cil_token');
       localStorage.removeItem('cil_user');
-      window.location.href = '/login';
+      const redirectUrl = isDeactivatedError ? '/login?error=ldc_deactivated' : '/login';
+      window.location.href = redirectUrl;
     }
     return Promise.reject(error);
   }
