@@ -126,6 +126,13 @@ body {
 /* Search bar button group — gap on all screen sizes */
 .rsp-search-buttons { display: flex; gap: 10px; }
 
+/* Summary banner — flex row on desktop, stacked on mobile */
+.rsp-summary-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 /* ── Participant Summary Bar ────────────────────────── */
 .rsp-sumbar-identity { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
 .rsp-sumbar-stats    { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
@@ -260,6 +267,13 @@ body {
   .rsp-submit-row > button,
   .rsp-submit-row > div,
   .rsp-submit-row > select { width: 100% !important; }
+
+  /* Summary banner — stack on mobile */
+  .rsp-summary-banner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
 }
 
 /* ── Card tables on mobile ─────────────────────────── */

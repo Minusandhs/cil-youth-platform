@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 import TESApplicationForm from './TESApplicationForm';
 import TESApplicationDetail from './TESApplicationDetail';
+import TESBursementPlan from './TESBursementPlan';
 
-export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = false }) {
+export default function TESBatchDetail({ batch, onBack, onBatchUpdate, isAdmin, readOnly = false }) {
   const [applications,    setApplications   ] = useState([]);
   const [loading,         setLoading        ] = useState(true);
   const [showForm,        setShowForm       ] = useState(false);
@@ -11,9 +12,14 @@ export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = fals
   const [error,           setError          ] = useState('');
   const [success,         setSuccess        ] = useState('');
   const [exporting,       setExporting      ] = useState(false);
-  const [monitoringEdits, setMonitoringEdits] = useState({});
-  const [savingId,        setSavingId       ] = useState(null);
-  const [savedId,         setSavedId        ] = useState(null);
+  const [monitoringEdits,  setMonitoringEdits ] = useState({});
+  const [savingId,         setSavingId        ] = useState(null);
+  const [savedId,          setSavedId         ] = useState(null);
+  const [disbursementApp,  setDisbursementApp ] = useState(null);
+  const [batchStatus,      setBatchStatus     ] = useState(batch.status);
+  const [statusChanging,   setStatusChanging  ] = useState(false);
+  const [editingStatus,    setEditingStatus   ] = useState(false);
+  const [pendingStatus,    setPendingStatus   ] = useState(batch.status);
 
   useEffect(() => { loadApplications(); }, []);
 
@@ -23,10 +29,7 @@ export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = fals
       setApplications(res.data);
       const seed = {};
       for (const app of res.data) {
-        seed[app.id] = {
-          monitoring_status: app.monitoring_status || 'not_started',
-          disbursed_amount:  app.disbursed_amount  != null ? app.disbursed_amount : '',
-        };
+        seed[app.id] = { monitoring_status: app.monitoring_status || 'not_started' };
       }
       setMonitoringEdits(seed);
     } catch {
@@ -41,16 +44,8 @@ export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = fals
     setError('');
     try {
       const edit = monitoringEdits[appId];
-      const app  = applications.find(a => a.id === appId);
-      const disbursed = edit.disbursed_amount === '' ? null : parseFloat(edit.disbursed_amount);
-      if (disbursed != null && app?.amount_approved != null && disbursed > parseFloat(app.amount_approved)) {
-        setError(`Disbursed amount cannot exceed the approved amount (LKR ${parseFloat(app.amount_approved).toLocaleString()}).`);
-        setSavingId(null);
-        return;
-      }
       await api.patch(`/api/tes/applications/${appId}/monitoring`, {
         monitoring_status: edit.monitoring_status,
-        disbursed_amount:  disbursed,
       });
       setSavedId(appId);
       setTimeout(() => setSavedId(id => id === appId ? null : id), 2000);
@@ -58,6 +53,28 @@ export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = fals
       setError(err.response?.data?.error || 'Failed to save monitoring data');
     } finally {
       setSavingId(null);
+    }
+  }
+
+  async function handleStatusChange() {
+    setStatusChanging(true);
+    setError('');
+    try {
+      const res = await api.put(`/api/tes/batches/${batch.id}`, {
+        ...batch,
+        status: pendingStatus,
+        funded_date: pendingStatus === 'funded'
+          ? new Date().toISOString().split('T')[0]
+          : batch.funded_date,
+      });
+      setBatchStatus(pendingStatus);
+      setEditingStatus(false);
+      if (onBatchUpdate) onBatchUpdate(res.data);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to update status');
+      setPendingStatus(batchStatus);
+    } finally {
+      setStatusChanging(false);
     }
   }
 
@@ -167,16 +184,16 @@ export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = fals
     );
   }
 
+  const STATUS_MAP = {
+    open      : { bg:'#d8ede4', color:'#2d6a4f', label:'Open'      },
+    closed    : { bg:'#f0ece2', color:'#6b5e4a', label:'Closed'    },
+    funded    : { bg:'#fdecd8', color:'#b85c00', label:'Funded'    },
+    completed : { bg:'#1a1610', color:'#c49a3c', label:'Completed' },
+    rejected  : { bg:'#f5e0e3', color:'#9b2335', label:'Rejected'  },
+  };
+
   function batchStatusBadge(status) {
-    const map = {
-      open      : { bg:'#d8ede4', color:'#2d6a4f', label:'Open'      },
-      reviewing : { bg:'#f0ece2', color:'#6b5e4a', label:'Reviewing' },
-      approved  : { bg:'#dce9f5', color:'#1a4068', label:'Approved'  },
-      funded    : { bg:'#fdecd8', color:'#b85c00', label:'Funded'    },
-      completed : { bg:'#1a1610', color:'#c49a3c', label:'Completed' },
-      rejected  : { bg:'#f5e0e3', color:'#9b2335', label:'Rejected'  },
-    };
-    const s = map[status] || map.reviewing;
+    const s = STATUS_MAP[status] || STATUS_MAP.closed;
     return (
       <span style={{
         background:s.bg, color:s.color,
@@ -186,13 +203,13 @@ export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = fals
     );
   }
 
-  const isOpen = batch.status === 'open';
+  const isOpen = batchStatus === 'open';
   const deadlinePassed = new Date(batch.application_end_date) < new Date();
-  const isMonitoringView = ['funded', 'completed'].includes(batch.status);
+  const isMonitoringView = ['funded', 'completed'].includes(batchStatus);
 
   const totalDisbursed = applications
     .filter(a => a.approval_status === 'approved')
-    .reduce((sum, a) => sum + (parseFloat(monitoringEdits[a.id]?.disbursed_amount) || 0), 0);
+    .reduce((sum, a) => sum + (parseFloat(a.disbursed_amount) || 0), 0);
 
   // Show application form
   if (showForm) {
@@ -219,6 +236,18 @@ export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = fals
     );
   }
 
+  // Show disbursement plan
+  if (disbursementApp) {
+    return (
+      <TESBursementPlan
+        application={disbursementApp}
+        batch={batch}
+        readOnly={readOnly}
+        onBack={() => setDisbursementApp(null)}
+      />
+    );
+  }
+
   return (
     <div>
       {/* Header */}
@@ -232,24 +261,76 @@ export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = fals
           fontSize:'12px', cursor:'pointer', fontFamily:'inherit'
         }}>← Back</button>
         <div style={{flex:1}}>
-          <div style={{
-            display:'flex', alignItems:'center',
-            gap:'10px', flexWrap:'wrap'
-          }}>
-            <h2 style={{fontSize:'18px', fontWeight:'700'}}>
-              {batch.batch_name}
-            </h2>
-            {batchStatusBadge(batch.status)}
-          </div>
+          <h2 style={{fontSize:'18px', fontWeight:'700', marginBottom:'4px'}}>
+            {batch.batch_name}
+          </h2>
           <div style={{
             fontSize:'12px', color:'#6b5e4a',
-            marginTop:'2px', display:'flex', gap:'16px'
+            display:'flex', gap:'16px', flexWrap:'wrap', alignItems:'center'
           }}>
             <span>Deadline: {new Date(batch.application_end_date)
               .toLocaleDateString('en-GB')}</span>
             <span style={{fontWeight:'700', color:'#c49a3c'}}>
               {applications.length} Applications
             </span>
+          </div>
+          {/* Status row */}
+          <div style={{
+            marginTop:'8px', display:'flex', alignItems:'center',
+            gap:'8px', flexWrap:'wrap'
+          }}>
+            <span style={{
+              fontSize:'10px', fontWeight:'700', textTransform:'uppercase',
+              letterSpacing:'0.4px', color:'#a09080'
+            }}>Status</span>
+            {isAdmin && !readOnly ? (
+              editingStatus ? (
+                <>
+                  <select
+                    value={pendingStatus}
+                    onChange={e => setPendingStatus(e.target.value)}
+                    disabled={statusChanging}
+                    style={{
+                      padding:'4px 10px', fontSize:'11px', fontWeight:'700',
+                      fontFamily:'inherit', borderRadius:'10px', outline:'none',
+                      border:`1px solid ${STATUS_MAP[pendingStatus]?.color || '#6b5e4a'}`,
+                      background: STATUS_MAP[pendingStatus]?.bg || '#f0ece2',
+                      color: STATUS_MAP[pendingStatus]?.color || '#6b5e4a',
+                      cursor: statusChanging ? 'not-allowed' : 'pointer',
+                      opacity: statusChanging ? 0.7 : 1,
+                    }}
+                  >
+                    <option value="open">Open</option>
+                    <option value="closed">Closed</option>
+                    <option value="funded">Funded</option>
+                    <option value="completed">Completed</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                  <button onClick={handleStatusChange} disabled={statusChanging} style={{
+                    background:'#2d6a4f', color:'#fff', border:'none',
+                    borderRadius:'5px', padding:'4px 12px', fontSize:'11px',
+                    fontWeight:'700', cursor: statusChanging ? 'not-allowed' : 'pointer',
+                    fontFamily:'inherit', opacity: statusChanging ? 0.7 : 1
+                  }}>{statusChanging ? '...' : 'Save'}</button>
+                  <button onClick={() => { setEditingStatus(false); setPendingStatus(batchStatus); }} style={{
+                    background:'transparent', color:'#6b5e4a',
+                    border:'1px solid #d4c9b0', borderRadius:'5px',
+                    padding:'4px 10px', fontSize:'11px', cursor:'pointer', fontFamily:'inherit'
+                  }}>Cancel</button>
+                </>
+              ) : (
+                <>
+                  {batchStatusBadge(batchStatus)}
+                  <button onClick={() => setEditingStatus(true)} style={{
+                    background:'transparent', color:'#6b5e4a',
+                    border:'1px solid #d4c9b0', borderRadius:'5px',
+                    padding:'3px 10px', fontSize:'11px', cursor:'pointer', fontFamily:'inherit'
+                  }}>Edit</button>
+                </>
+              )
+            ) : (
+              batchStatusBadge(batchStatus)
+            )}
           </div>
         </div>
 
@@ -431,35 +512,16 @@ export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = fals
                         )}
                       </td>
                       <td data-label="Disbursed (LKR)" style={{
-                        padding:'10px 14px', textAlign:'center', verticalAlign:'middle'
+                        padding:'10px 14px', textAlign:'center', verticalAlign:'middle',
+                        fontWeight:'600',
+                        color: app.disbursed_amount ? 'var(--color-success)' : 'var(--color-text-muted)'
                       }}>
-                        {app.approval_status === 'approved' ? (
-                          <>
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              placeholder="0"
-                              max={app.amount_approved ?? undefined}
-                              value={monitoringEdits[app.id]?.disbursed_amount ?? ''}
-                              onChange={e => setMonitoringEdits(prev => ({
-                                ...prev,
-                                [app.id]: { ...prev[app.id], disbursed_amount: e.target.value }
-                              }))}
-                              disabled={readOnly}
-                              style={{
-                                width:'100px', padding:'5px 8px', fontSize:'11px',
-                                fontFamily:'inherit',
-                                border:'1px solid var(--color-border-subtle)',
-                                borderRadius:'4px', background:'var(--color-bg-page)',
-                                color:'var(--color-brand-primary)', outline:'none',
-                                textAlign:'center'
-                              }}
-                            />
-                          </>
-                        ) : (
-                          <span style={{color:'var(--color-text-muted)', fontSize:'11px'}}>—</span>
-                        )}
+                        {app.approval_status === 'approved'
+                          ? (app.disbursed_amount
+                              ? `LKR ${parseFloat(app.disbursed_amount).toLocaleString()}`
+                              : '—')
+                          : <span style={{color:'var(--color-text-muted)', fontSize:'11px'}}>—</span>
+                        }
                       </td>
                     </>
                   )}
@@ -475,6 +537,15 @@ export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = fals
                         fontWeight:'700', cursor:'pointer', fontFamily:'inherit',
                         width:'100%'
                       }}>View</button>
+                      {isMonitoringView && app.approval_status === 'approved' && (
+                        <button onClick={() => setDisbursementApp(app)} style={{
+                          background:'var(--color-tint-info)', color:'var(--color-info)',
+                          border:'1px solid var(--color-info)',
+                          borderRadius:'4px', padding:'6px 12px', fontSize:'11px',
+                          fontWeight:'700', cursor:'pointer', fontFamily:'inherit',
+                          width:'100%'
+                        }}>Plan</button>
+                      )}
                       {isMonitoringView && !readOnly && app.approval_status === 'approved' && (
                         <button
                           onClick={() => saveMonitoring(app.id)}

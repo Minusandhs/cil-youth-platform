@@ -74,31 +74,15 @@ export default function TESManagement({ readOnly = false }) {
     }
   }
 
-  async function updateStatus(batch, status) {
-    try {
-      await api.put(`/api/tes/batches/${batch.id}`, {
-        ...batch,
-        status,
-        funded_date: status === 'funded'
-          ? new Date().toISOString().split('T')[0]
-          : batch.funded_date
-      });
-      loadBatches();
-    } catch {
-      setError('Failed to update batch status');
-    }
-  }
-
   function statusBadge(status) {
     const map = {
-      open      : { bg:'#d8ede4', color:'#2d6a4f', label:'Open'       },
-      reviewing : { bg:'#f0ece2', color:'#6b5e4a', label:'Reviewing'  },
-      approved  : { bg:'#dce9f5', color:'#1a4068', label:'Approved'   },
-      funded    : { bg:'#fdecd8', color:'#b85c00', label:'Funded'     },
-      completed : { bg:'#1a1610', color:'#c49a3c', label:'Completed'  },
-      rejected  : { bg:'#f5e0e3', color:'#9b2335', label:'Rejected'   },
+      open      : { bg:'#d8ede4', color:'#2d6a4f', label:'Open'      },
+      closed    : { bg:'#f0ece2', color:'#6b5e4a', label:'Closed'    },
+      funded    : { bg:'#fdecd8', color:'#b85c00', label:'Funded'    },
+      completed : { bg:'#1a1610', color:'#c49a3c', label:'Completed' },
+      rejected  : { bg:'#f5e0e3', color:'#9b2335', label:'Rejected'  },
     };
-    const s = map[status] || map.reviewing;
+    const s = map[status] || map.closed;
     return (
       <span style={{
         background:s.bg, color:s.color,
@@ -125,10 +109,10 @@ export default function TESManagement({ readOnly = false }) {
     background:'#faf8f3', outline:'none', fontFamily:'inherit'
   };
 
-  // Active = open, reviewing, approved, funded
+  // Active = open, closed, funded
   // Old = completed, rejected
   const activeBatches = batches.filter(b =>
-    ['open','reviewing','approved','funded'].includes(b.status)
+    ['open','closed','funded'].includes(b.status)
   );
   const oldBatches = batches.filter(b =>
     ['completed','rejected'].includes(b.status)
@@ -144,6 +128,9 @@ export default function TESManagement({ readOnly = false }) {
       <TESBatchDetail
         batch={selBatch}
         onBack={() => { setSelBatch(null); loadBatches(); }}
+        onBatchUpdate={updated => setBatches(prev =>
+          prev.map(b => b.id === updated.id ? updated : b)
+        )}
         isAdmin={true}
         readOnly={readOnly}
       />
@@ -358,89 +345,18 @@ export default function TESManagement({ readOnly = false }) {
 
                 {/* Actions */}
                 <div className="rsp-submit-row" style={{display:'flex', gap:'6px', flexWrap:'wrap'}}>
-                    <button onClick={() => setSelBatch(batch)} style={{
-                      background:'#f0ece2', color:'#3d3528',
-                      border:'1px solid #d4c9b0',
-                      borderRadius:'5px', padding:'6px 14px', fontSize:'12px',
-                      fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                    }}>View</button>
-                    {!readOnly && (
+                  <button onClick={() => setSelBatch(batch)} style={{
+                    background:'#f0ece2', color:'#3d3528',
+                    border:'1px solid #d4c9b0',
+                    borderRadius:'5px', padding:'6px 14px', fontSize:'12px',
+                    fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
+                  }}>View</button>
+                  {!readOnly && (
                     <button onClick={() => openEdit(batch)} style={{
                       background:'#dce9f5', color:'#1a4068', border:'none',
                       borderRadius:'5px', padding:'6px 14px', fontSize:'12px',
                       fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
                     }}>Edit</button>
-                    )}
-
-                  {/* Stop Applications — only when open */}
-                  {!readOnly && batch.status === 'open' && (
-                    <button onClick={() => updateStatus(batch, 'reviewing')} style={{
-                      background:'#f5e0e3', color:'#9b2335', border:'none',
-                      borderRadius:'5px', padding:'6px 14px', fontSize:'12px',
-                      fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                    }}>Stop Applications</button>
-                  )}
-
-                  {/* Reopen — any stage except open and completed */}
-                  {!readOnly && !['open','completed'].includes(batch.status) && (
-                    <button onClick={() => {
-                      if (window.confirm(
-                        `Reopen "${batch.batch_name}"?\nThis will allow new applications again.`
-                      )) {
-                        updateStatus(batch, 'open');
-                      }
-                    }} style={{
-                      background:'#d8ede4', color:'#2d6a4f', border:'none',
-                      borderRadius:'5px', padding:'6px 14px', fontSize:'12px',
-                      fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                    }}>Reopen</button>
-                  )}
-
-                  {/* Approve + Reject — only when reviewing */}
-                  {!readOnly && batch.status === 'reviewing' && (
-                    <>
-                      <button onClick={() => updateStatus(batch, 'approved')} style={{
-                        background:'#dce9f5', color:'#1a4068', border:'none',
-                        borderRadius:'5px', padding:'6px 14px', fontSize:'12px',
-                        fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                      }}>Approve</button>
-                      <button onClick={() => updateStatus(batch, 'rejected')} style={{
-                        background:'#f5e0e3', color:'#9b2335', border:'none',
-                        borderRadius:'5px', padding:'6px 14px', fontSize:'12px',
-                        fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                      }}>Reject</button>
-                    </>
-                  )}
-
-                  {/* Mark Funded — only when approved */}
-                  {!readOnly && batch.status === 'approved' && (
-                    <button onClick={() => updateStatus(batch, 'funded')} style={{
-                      background:'#fdecd8', color:'#b85c00', border:'none',
-                      borderRadius:'5px', padding:'6px 14px', fontSize:'12px',
-                      fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                    }}>Mark Funded</button>
-                  )}
-
-                  {/* Revert Funded → Approved */}
-                  {!readOnly && batch.status === 'funded' && (
-                    <>
-                      <button onClick={() => updateStatus(batch, 'completed')} style={{
-                        background:'#1a1610', color:'#c49a3c', border:'none',
-                        borderRadius:'5px', padding:'6px 14px', fontSize:'12px',
-                        fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                      }}>Mark Completed</button>
-                      <button onClick={() => {
-                        if (window.confirm(
-                          'Revert this batch from Funded back to Approved?'
-                        )) {
-                          updateStatus(batch, 'approved');
-                        }
-                      }} style={{
-                        background:'#f5e0e3', color:'#9b2335', border:'none',
-                        borderRadius:'5px', padding:'6px 14px', fontSize:'12px',
-                        fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
-                      }}>Revert Funded</button>
-                    </>
                   )}
                 </div>
               </div>

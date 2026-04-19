@@ -1,16 +1,12 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
-import { statusLabel, statusColor, instLabel } from '../../lib/constants';
+import { statusLabel, statusColor } from '../../lib/constants';
 
 function fmt(n) {
   if (n === null || n === undefined) return '—';
   return Number(n).toLocaleString();
 }
 
-function fmtLKR(n) {
-  if (!n) return 'LKR 0';
-  return 'LKR ' + Number(n).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
 
 function fmtDate(d) {
   if (!d) return '';
@@ -233,26 +229,6 @@ export default function AdminOverview() {
     );
   }
 
-  function exportTESHistory() {
-    doExport('tes-history', '/api/participants/export/tes-history', data =>
-      data.map(h => ({
-        'Participant ID'   : h.participant_id,
-        'Full Name'        : h.full_name,
-        'LDC'              : h.ldc_code,
-        'Batch'            : h.batch_name,
-        'Institution'      : h.institution_name || '',
-        'Institution Type' : instLabel(h.institution_type),
-        'Course'           : h.course_name || '',
-        'Duration (Years)' : h.course_duration ?? '',
-        'Course Year'      : h.course_year ?? '',
-        'Amount (LKR)'     : h.amount_received ?? '',
-        'Status'           : h.status,
-        'Recorded Date'    : fmtDate(h.recorded_at),
-      })),
-      'TES_History'
-    );
-  }
-
   // ── Render helpers ──────────────────────────────────────────────
   function StatCard({ label, value, color, sub }) {
     return (
@@ -271,7 +247,6 @@ export default function AdminOverview() {
 
   // Compute total for bar widths
   const totalStatus = overview?.status_breakdown?.reduce((s,r) => s + r.count, 0) || 1;
-  const totalTESType = overview?.tes_type_breakdown?.reduce((s,r) => s + r.count, 0) || 0;
 
   const selectedLDCLabel = filterLDC
     ? ldcs.find(l => l.id === filterLDC)?.ldc_id || ''
@@ -301,29 +276,7 @@ export default function AdminOverview() {
         </div>
       </div>
 
-      {/* ── SECTION 2: TES Stats (global) ────────────────────────── */}
-      <div style={{ marginBottom:'32px' }}>
-        <div style={sectionTitle}>Tertiary Education Support</div>
-        <div className="rsp-grid-4" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'16px', marginBottom:'16px' }}>
-          <StatCard label="Approved / Completed" value={stats?.tes_approved} color="#2d6a4f" />
-          <StatCard label="Pending"               value={stats?.tes_pending}  color="#c49a3c" />
-          <StatCard label="Rejected"              value={stats?.tes_rejected} color="#9b2335" />
-          <div style={statCard('#1a4068')}>
-            <div style={{ fontSize:'20px', fontWeight:'700', color:'#1a4068', lineHeight:1 }}>
-              {loading ? '…' : fmtLKR(stats?.tes_amount)}
-            </div>
-            <div style={{ fontSize:'11px', color:'#6b5e4a', marginTop:'6px',
-              fontWeight:'600', textTransform:'uppercase', letterSpacing:'0.4px' }}>
-              Total Disbursed
-            </div>
-            <div style={{ fontSize:'11px', color:'#a09080', marginTop:'3px' }}>
-              Funded &amp; Completed batches
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── SECTION 3: Participant Info (filterable) ──────────────── */}
+      {/* ── SECTION 2: Participant Info (filterable) ──────────────── */}
       <div style={{ marginBottom:'32px' }}>
         {/* Header + LDC Filter */}
         <div className="rsp-section-header" style={{ display:'flex', justifyContent:'space-between',
@@ -408,46 +361,8 @@ export default function AdminOverview() {
                 )}
               </div>
 
-              {/* TES Institution Type + Personal Stats */}
-              <div style={{ display:'flex', flexDirection:'column', gap:'16px' }}>
-
-                {/* TES Type */}
-                <div style={card}>
-                  <div style={{ fontSize:'13px', fontWeight:'700', marginBottom:'14px', color:'#3d3528' }}>
-                    TES by Institution Type
-                    {totalTESType > 0 && (
-                      <span style={{ marginLeft:'8px', color:'#a09080', fontWeight:'400', fontSize:'12px' }}>
-                        ({fmt(totalTESType)} recipients)
-                      </span>
-                    )}
-                  </div>
-                  {overview.tes_type_breakdown.length === 0 ? (
-                    <div style={{ color:'#a09080', fontSize:'13px' }}>No TES history recorded yet</div>
-                  ) : (
-                    ['university','college','vocational','other'].map(type => {
-                      const row = overview.tes_type_breakdown.find(r => r.type === type);
-                      const count = row?.count || 0;
-                      return (
-                        <div key={type} style={{ display:'flex', justifyContent:'space-between',
-                          alignItems:'center', padding:'6px 0',
-                          borderBottom:'1px solid #f0ece2', fontSize:'12px' }}>
-                          <span style={{ color:'#3d3528', fontWeight:'600' }}>
-                            {instLabel(type)}
-                          </span>
-                          <span style={{ background: count > 0 ? '#dce9f5' : '#f0ece2',
-                            color: count > 0 ? '#1a4068' : '#a09080',
-                            padding:'2px 10px', borderRadius:'10px',
-                            fontWeight:'700', fontSize:'11px' }}>
-                            {fmt(count)}
-                          </span>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-
-                {/* Personal Stats grid */}
-                <div style={card}>
+              {/* Personal Stats */}
+              <div style={card}>
                   <div style={{ fontSize:'13px', fontWeight:'700', marginBottom:'14px', color:'#3d3528' }}>
                     Personal Information
                   </div>
@@ -473,18 +388,6 @@ export default function AdminOverview() {
                     ))}
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* TES Amount for filter */}
-            <div style={{ ...card, display:'flex', alignItems:'center',
-              justifyContent:'space-between', padding:'16px 20px' }}>
-              <div style={{ fontSize:'13px', fontWeight:'600', color:'#3d3528' }}>
-                Total TES Disbursed — {selectedLDCLabel}
-              </div>
-              <div style={{ fontSize:'22px', fontWeight:'700', color:'#1a4068' }}>
-                {fmtLKR(overview.tes_amount)}
-              </div>
             </div>
           </div>
         ) : null}
@@ -497,7 +400,6 @@ export default function AdminOverview() {
           { key: 'academic',       label: 'Academic Records',  fn: exportAcademic,       note: 'Full OL & AL subject detail' },
           { key: 'certifications', label: 'Certifications',    fn: exportCertifications, note: 'All certifications detail' },
           { key: 'development',    label: 'Development Plans', fn: exportDevelopment,    note: 'Goals, progress, mentors' },
-          { key: 'tes-history',    label: 'TES History',       fn: exportTESHistory,     note: 'Amounts received per batch' },
         ];
         const selected = EXPORT_OPTIONS.find(o => o.key === exportType);
         return (

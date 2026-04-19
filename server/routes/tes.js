@@ -150,7 +150,7 @@ router.put('/batches/:id', verifyToken, requireSuperAdmin, async (req, res) => {
     // ── Mark as reverted when batch goes back from funded ────────
     if (
       oldStatus === 'funded' &&
-      status === 'approved'
+      status === 'closed'
     ) {
       await query(
         `UPDATE participant_tes_history
@@ -755,6 +755,198 @@ router.get('/history/:participantId', verifyToken, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to get TES history' });
+  }
+});
+
+// ════════════════════════════════════════════════════════════════
+// DISBURSEMENT PLAN ROUTES
+// ════════════════════════════════════════════════════════════════
+
+// Shared helper — fetch application with ldc_id + batch status + amount_approved
+async function getAppForDisbursement(appId, userId, userRole, userLdcId) {
+  const res = await query(
+    `SELECT a.id, a.ldc_id, a.approval_status, a.amount_approved, b.status as batch_status
+     FROM tes_applications a
+     JOIN tes_batches b ON a.batch_id = b.id
+     WHERE a.id = $1`,
+    [appId]
+  );
+  if (!res.rows[0]) return { error: 'Application not found', status: 404 };
+  const app = res.rows[0];
+  if (app.approval_status !== 'approved')
+    return { error: 'Disbursement plan only available for approved applications', status: 403 };
+  if (userRole === 'ldc_staff') {
+    if (app.ldc_id !== userLdcId)
+      return { error: 'Access denied', status: 403 };
+    if (!['funded', 'completed'].includes(app.batch_status))
+      return { error: 'Disbursement plan only available for funded or completed batches', status: 403 };
+  }
+  return { app };
+}
+
+// ── GET /api/tes/applications/:id/disbursement ───────────────────
+router.get('/applications/:id/disbursement', verifyToken, async (req, res) => {
+  try {
+    const { app, error, status } = await getAppForDisbursement(
+      req.params.id, req.user.id, req.user.role, req.user.ldc_id
+    );
+    if (error) return res.status(status).json({ error });
+
+    const result = await query(
+      `SELECT t.*, u.full_name as created_by_name, upd.full_name as updated_by_name
+       FROM tes_disbursement_tranches t
+       LEFT JOIN users u   ON u.id   = t.created_by
+       LEFT JOIN users upd ON upd.id = t.updated_by
+       WHERE t.application_id = $1
+       ORDER BY t.tranche_number ASC, t.created_at ASC`,
+      [req.params.id]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to load disbursement plan' });
+  }
+});
+
+// ── POST /api/tes/applications/:id/disbursement ──────────────────
+router.post('/applications/:id/disbursement', verifyToken, async (req, res) => {
+  try {
+    const { app, error, status } = await getAppForDisbursement(
+      req.params.id, req.user.id, req.user.role, req.user.ldc_id
+    );
+    if (error) return res.status(status).json({ error });
+
+    const { label, planned_amount, planned_date, notes } = req.body;
+    if (!planned_amount || parseFloat(planned_amount) <= 0)
+      return res.status(400).json({ error: 'Planned amount must be greater than 0' });
+    if (!planned_date)
+      return res.status(400).json({ error: 'Planned date is required' });
+
+    // Check sum would not exceed amount_approved
+    const sumRes = await query(
+      `SELECT COALESCE(SUM(planned_amount), 0) as total
+       FROM tes_disbursement_tranches WHERE application_id = $1`,
+      [req.params.id]
+    );
+    const currentTotal = parseFloat(sumRes.rows[0].total);
+    const newTotal = currentTotal + parseFloat(planned_amount);
+    if (app.amount_approved != null && newTotal > parseFloat(app.amount_approved)) {
+      return res.status(400).json({
+        error: `Total planned amount (${newTotal}) would exceed the approved amount (${app.amount_approved})`
+      });
+    }
+
+    // Assign next tranche number
+    const numRes = await query(
+      `SELECT COALESCE(MAX(tranche_number), 0) + 1 as next_num
+       FROM tes_disbursement_tranches WHERE application_id = $1`,
+      [req.params.id]
+    );
+    const tranche_number = numRes.rows[0].next_num;
+
+    const result = await query(
+      `INSERT INTO tes_disbursement_tranches
+         (application_id, tranche_number, label, planned_amount, planned_date, notes, created_by, updated_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $7)
+       RETURNING *`,
+      [req.params.id, tranche_number, label || null, planned_amount, planned_date, notes || null, req.user.id]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to add installment' });
+  }
+});
+
+// ── PATCH /api/tes/disbursement/:trancheId ───────────────────────
+router.patch('/disbursement/:trancheId', verifyToken, async (req, res) => {
+  try {
+    const trancheRes = await query(
+      `SELECT t.*, a.ldc_id, a.approval_status, a.amount_approved, b.status as batch_status
+       FROM tes_disbursement_tranches t
+       JOIN tes_applications a ON a.id = t.application_id
+       JOIN tes_batches b ON b.id = a.batch_id
+       WHERE t.id = $1`,
+      [req.params.trancheId]
+    );
+    if (!trancheRes.rows[0]) return res.status(404).json({ error: 'Installment not found' });
+    const tranche = trancheRes.rows[0];
+
+    if (req.user.role === 'ldc_staff') {
+      if (tranche.ldc_id !== req.user.ldc_id) return res.status(403).json({ error: 'Access denied' });
+      if (!['funded', 'completed'].includes(tranche.batch_status))
+        return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const { label, planned_amount, planned_date, notes, status, disbursed_amount, disbursed_date } = req.body;
+
+    // Cannot change planned_amount once disbursed
+    if (planned_amount && tranche.status === 'disbursed')
+      return res.status(400).json({ error: 'Cannot change planned amount of a disbursed installment' });
+
+    const result = await query(
+      `UPDATE tes_disbursement_tranches SET
+         label            = COALESCE($1, label),
+         planned_amount   = COALESCE($2, planned_amount),
+         planned_date     = COALESCE($3, planned_date),
+         notes            = COALESCE($4, notes),
+         status           = COALESCE($5, status),
+         disbursed_amount = COALESCE($6, disbursed_amount),
+         disbursed_date   = COALESCE($7, disbursed_date),
+         updated_by       = $8,
+         updated_at       = NOW()
+       WHERE id = $9 RETURNING *`,
+      [
+        label || null, planned_amount || null, planned_date || null,
+        notes || null, status || null, disbursed_amount || null,
+        disbursed_date || null, req.user.id, req.params.trancheId
+      ]
+    );
+
+    // Auto-sync disbursed_amount on the application from sum of disbursed tranches
+    await query(
+      `UPDATE tes_applications SET
+         disbursed_amount = (
+           SELECT COALESCE(SUM(disbursed_amount), 0)
+           FROM tes_disbursement_tranches
+           WHERE application_id = $1 AND status = 'disbursed'
+         ),
+         updated_at = NOW()
+       WHERE id = $1`,
+      [tranche.application_id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update installment' });
+  }
+});
+
+// ── DELETE /api/tes/disbursement/:trancheId ──────────────────────
+router.delete('/disbursement/:trancheId', verifyToken, async (req, res) => {
+  try {
+    const trancheRes = await query(
+      `SELECT t.*, a.ldc_id, b.status as batch_status
+       FROM tes_disbursement_tranches t
+       JOIN tes_applications a ON a.id = t.application_id
+       JOIN tes_batches b ON b.id = a.batch_id
+       WHERE t.id = $1`,
+      [req.params.trancheId]
+    );
+    if (!trancheRes.rows[0]) return res.status(404).json({ error: 'Installment not found' });
+    const tranche = trancheRes.rows[0];
+
+    if (req.user.role === 'ldc_staff' && tranche.ldc_id !== req.user.ldc_id)
+      return res.status(403).json({ error: 'Access denied' });
+    if (tranche.status !== 'planned')
+      return res.status(400).json({ error: 'Only planned installments can be deleted' });
+
+    await query('DELETE FROM tes_disbursement_tranches WHERE id = $1', [req.params.trancheId]);
+    res.json({ message: 'Installment deleted' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete installment' });
   }
 });
 

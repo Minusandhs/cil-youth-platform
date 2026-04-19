@@ -71,7 +71,7 @@ router.get('/overview', verifyToken, async (req, res) => {
     const ldcWhere = ldc_id ? 'AND p.ldc_id = $1' : '';
     const ldcWhereOnly = ldc_id ? 'AND ldc_id = $1' : '';
 
-    const [statusRows, tesTypeRows, profileCounts, totalCount, tesAmount] = await Promise.all([
+    const [statusRows, profileCounts, totalCount] = await Promise.all([
       // Status breakdown
       query(
         `SELECT COALESCE(pp.current_status, 'no_profile') AS status, COUNT(*) AS count
@@ -80,15 +80,6 @@ router.get('/overview', verifyToken, async (req, res) => {
          WHERE p.is_active = true ${ldcWhere}
          GROUP BY COALESCE(pp.current_status, 'no_profile')
          ORDER BY count DESC`,
-        params
-      ),
-      // TES institution type breakdown (from history, non-reverted)
-      query(
-        `SELECT COALESCE(h.institution_type, 'other') AS type, COUNT(DISTINCT p.id) AS count
-         FROM participants p
-         JOIN participant_tes_history h ON h.participant_id = p.id
-         WHERE h.status != 'reverted' ${ldcWhere}
-         GROUP BY COALESCE(h.institution_type, 'other')`,
         params
       ),
       // Married / children / pregnant / outside LDC
@@ -108,26 +99,16 @@ router.get('/overview', verifyToken, async (req, res) => {
         `SELECT COUNT(*) FROM participants WHERE is_active = true ${ldcWhereOnly}`,
         params
       ),
-      // TES amount for filter
-      query(
-        `SELECT COALESCE(SUM(h.amount_received), 0) AS total
-         FROM participant_tes_history h
-         JOIN participants p ON h.participant_id = p.id
-         WHERE h.status != 'reverted' ${ldcWhere}`,
-        params
-      ),
     ]);
 
     const pc = profileCounts.rows[0];
     res.json({
       total_participants : parseInt(totalCount.rows[0].count),
       status_breakdown   : statusRows.rows.map(r => ({ status: r.status, count: parseInt(r.count) })),
-      tes_type_breakdown : tesTypeRows.rows.map(r => ({ type: r.type, count: parseInt(r.count) })),
       married            : parseInt(pc.married),
       has_children       : parseInt(pc.has_children),
       pregnant           : parseInt(pc.pregnant),
       outside_ldc        : parseInt(pc.outside_ldc),
-      tes_amount         : parseFloat(tesAmount.rows[0].total),
     });
   } catch (error) {
     console.error(error);
