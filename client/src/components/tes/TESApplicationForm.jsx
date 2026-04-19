@@ -546,35 +546,34 @@ export default function TESApplicationForm({
             </table>
             </div>
 
-            {/* Mobile: pill-style radio buttons per language */}
+            {/* Mobile: language name row + full-width dropdown below */}
             <div className="rsp-show-mobile-only" style={{display:'flex', flexDirection:'column', gap:'12px'}}>
               {[
                 { key:'lang_english', label:'English' },
                 { key:'lang_sinhala', label:'Sinhala' },
                 { key:'lang_tamil',   label:'Tamil'   },
               ].map(lang => (
-                <div key={lang.key} style={{paddingBottom:'12px', borderBottom:'1px solid #e8e0d0'}}>
-                  <div style={{fontSize:'13px', fontWeight:'700', marginBottom:'8px', color:'#1a1610'}}>
+                <div key={lang.key} style={{paddingBottom:'12px', borderBottom:'1px solid var(--color-divider)'}}>
+                  <div style={{
+                    fontSize:'12px', fontWeight:'700', color:'var(--color-text-heading)',
+                    textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:'6px'
+                  }}>
                     {lang.label}
                   </div>
-                  <div style={{display:'flex', gap:'6px', flexWrap:'wrap'}}>
-                    {options.langLevels.map(level => (
-                      <label key={level.value} style={{
-                        display:'flex', alignItems:'center',
-                        padding:'7px 14px', borderRadius:'20px', cursor:'pointer',
-                        fontSize:'12px', fontWeight:'600',
-                        border: form[lang.key] === level.value ? 'none' : '1px solid #d4c9b0',
-                        background: form[lang.key] === level.value ? '#1a1610' : '#faf8f3',
-                        color:      form[lang.key] === level.value ? '#c49a3c' : '#6b5e4a',
-                      }}>
-                        <input type="radio" name={`m_${lang.key}`} value={level.value}
-                          checked={form[lang.key] === level.value}
-                          onChange={() => setForm({...form, [lang.key]:level.value})}
-                          style={{display:'none'}} />
-                        {level.label}
-                      </label>
+                  <select
+                    value={form[lang.key] || ''}
+                    onChange={e => setForm({...form, [lang.key]: e.target.value || null})}
+                    style={{
+                      width:'100%', padding:'9px 11px',
+                      border:'1px solid var(--color-border-subtle)', borderRadius:'5px',
+                      fontSize:'13px', color:'var(--color-brand-primary)',
+                      background:'var(--color-bg-page)', fontFamily:'inherit'
+                    }}>
+                    <option value="">— None —</option>
+                    {options.langLevels.map(l => (
+                      <option key={l.value} value={l.value}>{l.label}</option>
                     ))}
-                  </div>
+                  </select>
                 </div>
               ))}
             </div>

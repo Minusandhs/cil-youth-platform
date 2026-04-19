@@ -327,7 +327,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
             <div className="rsp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px' }}>
               <ViewField inline label="Marital Status" value={maritalLabel(form.marital_status)} />
               <ViewField inline label="Number of Children" value={form.number_of_children} />
-              <ViewField inline label="Pregnant" value={form.is_pregnant ? 'Yes' : 'No'} />
+              <ViewField inline label="Pregnant / Spouse Pregnant" value={form.is_pregnant ? 'Yes' : 'No'} />
               <ViewField inline label="Family Income (LKR/month)" value={form.family_income} />
               <ViewField inline label="No of Dependants" value={form.no_of_dependants} />
               {form.living_outside_ldc && (
@@ -556,7 +556,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                   onChange={e => setForm({ ...form, is_pregnant: e.target.checked })}
                   style={{ width: '16px', height: '16px', accentColor: '#c49a3c' }} />
                 <label htmlFor="pregnant" style={{ fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-                  Currently Pregnant
+                  Pregnant / Spouse Pregnant
                 </label>
               </div>
               <div>

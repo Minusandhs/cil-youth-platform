@@ -308,24 +308,25 @@ export default function TESApplicationDetail({
           </div>
           </div>
 
-          {/* Mobile: language + selected level as simple rows */}
-          <div className="rsp-show-mobile-only">
+          {/* Mobile: language label row + badge below */}
+          <div className="rsp-show-mobile-only" style={{display:'flex', flexDirection:'column', gap:'12px'}}>
             {[
               { key:'lang_english', label:'English' },
               { key:'lang_sinhala', label:'Sinhala' },
               { key:'lang_tamil',   label:'Tamil'   },
             ].filter(lang => application[lang.key]).map((lang, i, arr) => (
               <div key={lang.key} style={{
-                display:'flex', alignItems:'center',
-                justifyContent:'space-between',
-                padding:'10px 0',
-                borderBottom: i < arr.length - 1 ? '1px solid #f0ece2' : 'none'
+                paddingBottom:'12px',
+                borderBottom: i < arr.length - 1 ? '1px solid var(--color-divider)' : 'none'
               }}>
-                <span style={{fontWeight:'600', fontSize:'13px'}}>{lang.label}</span>
+                <div style={{
+                  fontSize:'12px', fontWeight:'700', color:'var(--color-text-heading)',
+                  textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:'6px'
+                }}>{lang.label}</div>
                 <span style={{
-                  background:'#c49a3c', color:'#fff',
-                  padding:'3px 12px', borderRadius:'8px',
-                  fontSize:'11px', fontWeight:'700'
+                  background:'var(--color-brand-accent)', color:'var(--color-brand-primary)',
+                  padding:'4px 14px', borderRadius:'8px',
+                  fontSize:'12px', fontWeight:'700', display:'inline-block'
                 }}>
                   {application[lang.key].charAt(0).toUpperCase() +
                    application[lang.key].slice(1)}
