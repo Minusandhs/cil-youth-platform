@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { 
-  User, GraduationCap, Award, TrendingUp, 
-  FileText, Menu, ChevronLeft 
+import {
+  User, GraduationCap, Award, TrendingUp,
+  FileText, Menu, ChevronLeft
 } from 'lucide-react';
 import api from '../lib/api';
 import PersonalInfo     from '../components/participant/PersonalInfo';
@@ -67,11 +67,11 @@ export default function ParticipantProfile() {
   }
 
   const tabs = [
-    { id: 'personal',     label: 'Personal Info',    icon: User },
-    { id: 'academic',     label: 'Academic Records', icon: GraduationCap },
-    { id: 'certs',        label: 'Certifications',   icon: Award },
-    { id: 'development',  label: 'Development Plan', icon: TrendingUp },
-    { id:'tes',           label:'TES History',       icon: FileText },
+    { id: 'personal',    label: 'Personal Info',    icon: User },
+    { id: 'academic',    label: 'Academic Records', icon: GraduationCap },
+    { id: 'certs',       label: 'Certifications',   icon: Award },
+    { id: 'development', label: 'Development Plan', icon: TrendingUp },
+    { id: 'tes',         label: 'TES History',      icon: FileText },
   ];
 
   if (loading) return (
@@ -397,9 +397,9 @@ export default function ParticipantProfile() {
             readOnly={isNationalAdmin || (isLDCStaff && !participant?.is_active)}
           />
         )}
-          {activeTab === 'tes' && participant && (
-            <TESHistory participantId={participant.id} />
-          )}
+        {activeTab === 'tes' && participant && (
+          <TESHistory participantId={participant.id} />
+        )}
       </main>
     </div>
   );

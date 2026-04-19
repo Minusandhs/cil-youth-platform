@@ -202,25 +202,39 @@ export const AL_STREAMS = [
 export const AL_MEDIUMS = ['Sinhala', 'Tamil', 'English'];
 
 
-// ── Development Plan — Goal Status ──────────────────────────────
+// ── Development Plan — Plan Status ──────────────────────────────
 // Used in: DevelopmentPlan
 export const PLAN_STATUSES = [
-  { value: 'not_started', label: 'Not Started', color: '#a09080', bg: '#f0ece2' },
-  { value: 'in_progress', label: 'In Progress', color: '#1a4068', bg: '#dce9f5' },
-  { value: 'completed', label: 'Completed', color: '#2d6a4f', bg: '#d8ede4' },
-  { value: 'on_hold', label: 'On Hold', color: '#b85c00', bg: '#fdecd8' },
+  { value: 'not_started', label: 'Not Started', color: 'var(--color-text-muted)',    bg: 'var(--color-bg-stripe)' },
+  { value: 'in_progress', label: 'In Progress', color: 'var(--color-info)',          bg: 'var(--color-tint-info)' },
+  { value: 'completed',   label: 'Completed',   color: 'var(--color-success)',       bg: 'var(--color-tint-success)' },
+  { value: 'on_hold',     label: 'On Hold',     color: 'var(--color-warning)',       bg: 'var(--color-tint-warning)' },
 ];
-
 
 // ── Development Plan — Goal Fields ───────────────────────────────
 // Used in: DevelopmentPlan
-// To add a new goal area, add an entry here — the form and view render it automatically.
 export const PLAN_GOALS = [
-  { key: 'spiritual_goal', label: 'Spiritual Goal', placeholder: 'e.g. Attend church regularly, join youth group' },
-  { key: 'academic_goal', label: 'Academic Goal', placeholder: 'e.g. Complete A/L with 3 passes' },
-  { key: 'social_goal', label: 'Social / Community Goal', placeholder: 'e.g. Participate in community service' },
-  { key: 'vocational_goal', label: 'Vocational / Career Goal', placeholder: 'e.g. Complete NVQ Level 3 course' },
-  { key: 'health_goal', label: 'Health Goal', placeholder: 'e.g. Maintain healthy lifestyle' },
+  { key: 'spiritual_goal',  label: 'Spiritual Goal',          placeholder: 'e.g. Attend church regularly, join youth group' },
+  { key: 'academic_goal',   label: 'Academic Goal',           placeholder: 'e.g. Complete A/L with 3 passes' },
+  { key: 'social_goal',     label: 'Social / Community Goal', placeholder: 'e.g. Participate in community service' },
+  { key: 'vocational_goal', label: 'Vocational / Career Goal',placeholder: 'e.g. Complete NVQ Level 3 course' },
+  { key: 'health_goal',     label: 'Health Goal',             placeholder: 'e.g. Maintain healthy lifestyle' },
+];
+
+// ── Development Plan — Action Item Goal Types ─────────────────────
+export const ACTION_GOAL_TYPES = [
+  { value: 'action_plan', label: 'Action Plan' },
+  { value: 'academic',    label: 'Academic Goal' },
+  { value: 'social',      label: 'Social / Community Goal' },
+  { value: 'vocational',  label: 'Vocational / Career Goal' },
+  { value: 'health',      label: 'Health Goal' },
+];
+
+// ── Development Plan — Action Item Statuses ───────────────────────
+export const ACTION_STATUSES = [
+  { value: 'pending',   label: 'Pending',   color: 'var(--color-info)',    bg: 'var(--color-tint-info)' },
+  { value: 'completed', label: 'Completed', color: 'var(--color-success)', bg: 'var(--color-tint-success)' },
+  { value: 'cancelled', label: 'Cancelled', color: 'var(--color-text-muted)', bg: 'var(--color-bg-stripe)' },
 ];
 
 

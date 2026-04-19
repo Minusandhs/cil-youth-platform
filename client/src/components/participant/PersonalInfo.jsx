@@ -288,23 +288,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
             </div>
           )}
 
-          {/* Personal & Family */}
-          <div style={sectionStyle}>
-            <div style={sectionTitleStyle}>Personal & Family Status</div>
-            <div className="rsp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px' }}>
-              <ViewField inline label="Marital Status" value={maritalLabel(form.marital_status)} />
-              <ViewField inline label="Number of Children" value={form.number_of_children} />
-              <ViewField inline label="Pregnant" value={form.is_pregnant ? 'Yes' : 'No'} />
-              {form.living_outside_ldc && (
-                <>
-                  <ViewField inline label="Living Outside LDC" value="Yes" />
-                  <ViewField inline label="Purpose" value={form.outside_purpose} />
-                  <ViewField inline label="Location" value={form.outside_location} />
-                </>
-              )}
-            </div>
-          </div>
-
           {/* Current Status */}
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>Current Status</div>
@@ -338,12 +321,22 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
             </div>
           </div>
 
-          {/* Family Background */}
+          {/* Personal & Family Status (includes Family Background) */}
           <div style={sectionStyle}>
-            <div style={sectionTitleStyle}>Family Background</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <ViewField label="Family Income (LKR/month)" value={form.family_income} />
-              <ViewField label="No of Dependants" value={form.no_of_dependants} />
+            <div style={sectionTitleStyle}>Personal & Family Status</div>
+            <div className="rsp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px' }}>
+              <ViewField inline label="Marital Status" value={maritalLabel(form.marital_status)} />
+              <ViewField inline label="Number of Children" value={form.number_of_children} />
+              <ViewField inline label="Pregnant" value={form.is_pregnant ? 'Yes' : 'No'} />
+              <ViewField inline label="Family Income (LKR/month)" value={form.family_income} />
+              <ViewField inline label="No of Dependants" value={form.no_of_dependants} />
+              {form.living_outside_ldc && (
+                <>
+                  <ViewField inline label="Living Outside LDC" value="Yes" />
+                  <ViewField inline label="Purpose" value={form.outside_purpose} />
+                  <ViewField inline label="Location" value={form.outside_location} />
+                </>
+              )}
             </div>
           </div>
 
@@ -434,91 +427,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
       {/* ── EDIT MODE ─────────────────────────────────────────── */}
       {editMode && (
         <form onSubmit={handleSave}>
-
-          {/* Personal & Family */}
-          <div style={sectionStyle}>
-            <div style={sectionTitleStyle}>Personal & Family Status</div>
-            <div className="rsp-grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
-              <div>
-                <label style={labelStyle}>Marital Status</label>
-                <select style={inputStyle(false)} value={form.marital_status}
-                  onChange={e => setForm({ ...form, marital_status: e.target.value })}>
-                  <option value="">— Select —</option>
-                  {options.maritalStatuses.map(s => (
-                    <option key={s.value} value={s.value}>{s.label}</option>
-                  ))}
-                </select>
-              </div>
-              {/* Living Outside LDC */}
-              <div style={{ gridColumn: '1 / -1' }}>
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '10px',
-                  padding: '12px 14px',
-                  background: form.living_outside_ldc ? '#fdecd8' : '#faf8f3',
-                  border: `1px solid ${form.living_outside_ldc ? '#c49a3c' : '#d4c9b0'}`,
-                  borderRadius: '6px', marginBottom: form.living_outside_ldc ? '12px' : '0'
-                }}>
-                  <input type="checkbox" id="living_outside"
-                    checked={form.living_outside_ldc}
-                    onChange={e => setForm({
-                      ...form,
-                      living_outside_ldc: e.target.checked,
-                      outside_purpose: '',
-                      outside_location: ''
-                    })}
-                    style={{ width: '16px', height: '16px', accentColor: '#c49a3c' }} />
-                  <label htmlFor="living_outside" style={{
-                    fontSize: '13px', fontWeight: '400', cursor: 'pointer'
-                  }}>
-                    Participant is currently living outside the LDC area
-                  </label>
-                </div>
-
-                {form.living_outside_ldc && (
-                  <div style={{
-                    display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px'
-                  }}>
-                    <div>
-                      <label style={labelStyle}>Purpose *</label>
-                      <select style={inputStyle(false)} value={form.outside_purpose}
-                        onChange={e => setForm({ ...form, outside_purpose: e.target.value })}>
-                        <option value="">— Select Purpose —</option>
-                        {options.outsidePurposes.map(p => (
-                          <option key={p.value} value={p.value}>{p.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label style={labelStyle}>Where *</label>
-                      <input style={inputStyle(false)}
-                        value={form.outside_location}
-                        onChange={e => setForm({ ...form, outside_location: e.target.value })} />
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div>
-                <label style={labelStyle}>Number of Children</label>
-                <input style={inputStyle(false)} type="number" min="0"
-                  value={form.number_of_children}
-                  onChange={e => setForm({ ...form, number_of_children: e.target.value })} />
-              </div>
-              <div style={{
-                display: 'flex', alignItems: 'center',
-                gap: '10px', paddingTop: '20px'
-              }}>
-                <input type="checkbox" id="pregnant"
-                  checked={form.is_pregnant}
-                  onChange={e => setForm({ ...form, is_pregnant: e.target.checked })}
-                  style={{ width: '16px', height: '16px', accentColor: '#c49a3c' }} />
-                <label htmlFor="pregnant" style={{
-                  fontSize: '13px', fontWeight: '600', cursor: 'pointer'
-                }}>
-                  Currently Pregnant
-                </label>
-              </div>
-            </div>
-          </div>
 
           {/* Current Status — Dynamic */}
           <div style={sectionStyle}>
@@ -622,10 +530,35 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
             </div>
           </div>
 
-          {/* Family Background */}
+          {/* Personal & Family Status (includes Family Background fields) */}
           <div style={sectionStyle}>
-            <div style={sectionTitleStyle}>Family Background</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+            <div style={sectionTitleStyle}>Personal & Family Status</div>
+            <div className="rsp-grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
+              <div>
+                <label style={labelStyle}>Marital Status</label>
+                <select style={inputStyle(false)} value={form.marital_status}
+                  onChange={e => setForm({ ...form, marital_status: e.target.value })}>
+                  <option value="">— Select —</option>
+                  {options.maritalStatuses.map(s => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Number of Children</label>
+                <input style={inputStyle(false)} type="number" min="0"
+                  value={form.number_of_children}
+                  onChange={e => setForm({ ...form, number_of_children: e.target.value })} />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingTop: '20px' }}>
+                <input type="checkbox" id="pregnant"
+                  checked={form.is_pregnant}
+                  onChange={e => setForm({ ...form, is_pregnant: e.target.checked })}
+                  style={{ width: '16px', height: '16px', accentColor: '#c49a3c' }} />
+                <label htmlFor="pregnant" style={{ fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                  Currently Pregnant
+                </label>
+              </div>
               <div>
                 <label style={labelStyle}>Family Monthly Income (LKR) *</label>
                 <input style={inputStyle(false)} type="number"
@@ -637,6 +570,49 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                 <input style={inputStyle(false)} type="number" min="0"
                   value={form.no_of_dependants}
                   onChange={e => setForm({ ...form, no_of_dependants: e.target.value })} />
+              </div>
+              {/* Living Outside LDC */}
+              <div style={{ gridColumn: '1 / -1' }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  padding: '12px 14px',
+                  background: form.living_outside_ldc ? '#fdecd8' : '#faf8f3',
+                  border: `1px solid ${form.living_outside_ldc ? '#c49a3c' : '#d4c9b0'}`,
+                  borderRadius: '6px', marginBottom: form.living_outside_ldc ? '12px' : '0'
+                }}>
+                  <input type="checkbox" id="living_outside"
+                    checked={form.living_outside_ldc}
+                    onChange={e => setForm({
+                      ...form,
+                      living_outside_ldc: e.target.checked,
+                      outside_purpose: '',
+                      outside_location: ''
+                    })}
+                    style={{ width: '16px', height: '16px', accentColor: '#c49a3c' }} />
+                  <label htmlFor="living_outside" style={{ fontSize: '13px', fontWeight: '400', cursor: 'pointer' }}>
+                    Participant is currently living outside the LDC area
+                  </label>
+                </div>
+                {form.living_outside_ldc && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                    <div>
+                      <label style={labelStyle}>Purpose *</label>
+                      <select style={inputStyle(false)} value={form.outside_purpose}
+                        onChange={e => setForm({ ...form, outside_purpose: e.target.value })}>
+                        <option value="">— Select Purpose —</option>
+                        {options.outsidePurposes.map(p => (
+                          <option key={p.value} value={p.value}>{p.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Where *</label>
+                      <input style={inputStyle(false)}
+                        value={form.outside_location}
+                        onChange={e => setForm({ ...form, outside_location: e.target.value })} />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
