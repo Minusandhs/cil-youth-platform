@@ -482,6 +482,68 @@ router.put('/applications/:id/official', verifyToken, requireSuperAdmin,
   }
 });
 
+// ── PATCH /api/tes/applications/:id/monitoring ──────────────────
+// Update monitoring_status and disbursed_amount (LDC staff + admins)
+router.patch('/applications/:id/monitoring', verifyToken, async (req, res) => {
+  try {
+    const { monitoring_status, disbursed_amount } = req.body;
+
+    const VALID_MONITORING = ['not_started','continuing','stopped','temporarily_stopped','other'];
+    if (monitoring_status && !VALID_MONITORING.includes(monitoring_status)) {
+      return res.status(400).json({ error: 'Invalid monitoring_status' });
+    }
+
+    const appRes = await query(
+      `SELECT a.ldc_id, a.approval_status, a.amount_approved, b.status as batch_status
+       FROM tes_applications a
+       JOIN tes_batches b ON a.batch_id = b.id
+       WHERE a.id = $1`,
+      [req.params.id]
+    );
+    if (appRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
+
+    const { ldc_id, approval_status, amount_approved, batch_status } = appRes.rows[0];
+
+    if (approval_status !== 'approved') {
+      return res.status(403).json({ error: 'Monitoring can only be updated for approved applications' });
+    }
+
+    if (req.user.role === 'ldc_staff') {
+      if (ldc_id !== req.user.ldc_id) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+      if (!['funded', 'completed'].includes(batch_status)) {
+        return res.status(403).json({
+          error: 'Monitoring can only be updated for funded or completed batches'
+        });
+      }
+    }
+
+    if (disbursed_amount != null && amount_approved != null &&
+        parseFloat(disbursed_amount) > parseFloat(amount_approved)) {
+      return res.status(400).json({
+        error: `Disbursed amount cannot exceed the approved amount (${amount_approved})`
+      });
+    }
+
+    const result = await query(
+      `UPDATE tes_applications SET
+         monitoring_status = COALESCE($1, monitoring_status),
+         disbursed_amount  = $2,
+         updated_at        = NOW()
+       WHERE id = $3 RETURNING *`,
+      [monitoring_status || null, disbursed_amount ?? null, req.params.id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update monitoring data' });
+  }
+});
+
 // ── DELETE /api/tes/applications/:id ────────────────────────────
 router.delete('/applications/:id', verifyToken, async (req, res) => {
   try {

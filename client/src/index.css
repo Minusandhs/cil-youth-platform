@@ -409,7 +409,9 @@ body {
 /* ── TES application card layout on mobile ──────────
    Row 1: Participant name + sub-text (full width)
    Row 2: Status badge (1/2) | Approved amount (1/2)
-   Row 3: Action buttons                              */
+   Row 3: Action buttons
+   Monitoring mode adds Row 3: mon status | disbursed
+                        Row 4: Action buttons          */
 @media (max-width: 768px) {
   .rsp-tes-table td::before { display: none !important; }
 
@@ -422,6 +424,15 @@ body {
       "act  act" !important;
     padding: 12px !important;
     gap: 0 !important;
+  }
+
+  /* Monitoring mode — adds monitoring row above action */
+  .rsp-tes-monitoring tbody tr {
+    grid-template-areas:
+      "part part"
+      "stat amt"
+      "mon  dis"
+      "act  act" !important;
   }
 
   .rsp-tes-table td[data-label="Participant"] {
@@ -448,6 +459,47 @@ body {
     border-top: 1px solid #f0ece2 !important;
     font-weight: 700;
   }
+  .rsp-tes-table td[data-label="Monitoring Status"] {
+    grid-area: mon !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 8px 4px 8px 0 !important;
+    border: none !important;
+    border-top: 1px solid #f0ece2 !important;
+    font-size: 11px !important;
+  }
+  .rsp-tes-table td[data-label="Monitoring Status"]::before {
+    content: "Monitoring";
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.3px !important;
+    color: #6b5e4a !important;
+    margin-bottom: 4px !important;
+  }
+  .rsp-tes-table td[data-label="Disbursed (LKR)"] {
+    grid-area: dis !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    padding: 8px 0 8px 4px !important;
+    border: none !important;
+    border-top: 1px solid #f0ece2 !important;
+    font-size: 11px !important;
+  }
+  .rsp-tes-table td[data-label="Disbursed (LKR)"]::before {
+    content: "Disbursed";
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.3px !important;
+    color: #6b5e4a !important;
+    margin-bottom: 4px !important;
+  }
+  .rsp-tes-table td[data-label="Disbursed (LKR)"] input {
+    width: 90px !important;
+  }
   .rsp-tes-table td[data-label="Action"] {
     grid-area: act !important;
     display: block !important;
@@ -457,11 +509,11 @@ body {
   }
   .rsp-tes-table td[data-label="Action"] > div {
     display: flex !important;
-    flex-wrap: wrap !important;
+    flex-direction: column !important;
     gap: 6px !important;
   }
   .rsp-tes-table td[data-label="Action"] > div > button {
-    flex: 1 1 calc(50% - 3px) !important;
+    width: 100% !important;
     text-align: center !important;
   }
 

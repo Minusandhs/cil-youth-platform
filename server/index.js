@@ -22,6 +22,7 @@ const gradeRoutes        = require('./routes/grades');
 const certificationRoutes = require('./routes/certifications');
 const schoolGradeRoutes  = require('./routes/schoolGrades');
 const constantsRoutes    = require('./routes/constants');
+const needsRisksRoutes   = require('./routes/needsRisks');
 const { verifyConnection } = require('./config/email');
 
 // ── Initialize App ───────────────────────────────────────────────
@@ -95,6 +96,7 @@ app.use('/api/subjects',     subjectRoutes);
 app.use('/api/grades',        gradeRoutes);
 app.use('/api/school-grades', schoolGradeRoutes);
 app.use('/api/certifications', certificationRoutes);
+app.use('/api/needs-risks',   needsRisksRoutes);
 
 // ── 404 Handler ──────────────────────────────────────────────────
 // Catches any route that doesn't exist

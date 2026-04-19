@@ -3,14 +3,15 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import {
   User, GraduationCap, Award, TrendingUp,
-  FileText, Menu, ChevronLeft
+  FileText, Menu, ChevronLeft, AlertTriangle
 } from 'lucide-react';
 import api from '../lib/api';
 import PersonalInfo     from '../components/participant/PersonalInfo';
 import AcademicRecords  from '../components/participant/AcademicRecords';
 import Certifications   from '../components/participant/Certifications';
 import DevelopmentPlan  from '../components/participant/DevelopmentPlan';
-import TESHistory from '../components/participant/TESHistory';
+import TESHistory   from '../components/participant/TESHistory';
+import NeedsRisks  from '../components/participant/NeedsRisks';
 import MobileMenu from '../components/common/MobileMenu';
 
 export default function ParticipantProfile() {
@@ -72,6 +73,7 @@ export default function ParticipantProfile() {
     { id: 'certs',       label: 'Certifications',   icon: Award },
     { id: 'development', label: 'Development Plan', icon: TrendingUp },
     { id: 'tes',         label: 'TES History',      icon: FileText },
+    { id: 'needs_risks', label: 'Needs & Risks',    icon: AlertTriangle },
   ];
 
   if (loading) return (
@@ -399,6 +401,12 @@ export default function ParticipantProfile() {
         )}
         {activeTab === 'tes' && participant && (
           <TESHistory participantId={participant.id} />
+        )}
+        {activeTab === 'needs_risks' && participant && (
+          <NeedsRisks
+            participantId={participant.id}
+            readOnly={isNationalAdmin || (isLDCStaff && !participant?.is_active)}
+          />
         )}
       </main>
     </div>

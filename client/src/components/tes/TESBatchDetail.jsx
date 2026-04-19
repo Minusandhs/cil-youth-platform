@@ -4,13 +4,16 @@ import TESApplicationForm from './TESApplicationForm';
 import TESApplicationDetail from './TESApplicationDetail';
 
 export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = false }) {
-  const [applications, setApplications] = useState([]);
-  const [loading,      setLoading      ] = useState(true);
-  const [showForm,     setShowForm     ] = useState(false);
-  const [selApp,       setSelApp       ] = useState(null);
-  const [error,        setError        ] = useState('');
-  const [success,      setSuccess      ] = useState('');
-  const [exporting,    setExporting    ] = useState(false);
+  const [applications,    setApplications   ] = useState([]);
+  const [loading,         setLoading        ] = useState(true);
+  const [showForm,        setShowForm       ] = useState(false);
+  const [selApp,          setSelApp         ] = useState(null);
+  const [error,           setError          ] = useState('');
+  const [success,         setSuccess        ] = useState('');
+  const [exporting,       setExporting      ] = useState(false);
+  const [monitoringEdits, setMonitoringEdits] = useState({});
+  const [savingId,        setSavingId       ] = useState(null);
+  const [savedId,         setSavedId        ] = useState(null);
 
   useEffect(() => { loadApplications(); }, []);
 
@@ -18,10 +21,43 @@ export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = fals
     try {
       const res = await api.get(`/api/tes/batches/${batch.id}/applications`);
       setApplications(res.data);
+      const seed = {};
+      for (const app of res.data) {
+        seed[app.id] = {
+          monitoring_status: app.monitoring_status || 'not_started',
+          disbursed_amount:  app.disbursed_amount  != null ? app.disbursed_amount : '',
+        };
+      }
+      setMonitoringEdits(seed);
     } catch {
       setError('Failed to load applications');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function saveMonitoring(appId) {
+    setSavingId(appId);
+    setError('');
+    try {
+      const edit = monitoringEdits[appId];
+      const app  = applications.find(a => a.id === appId);
+      const disbursed = edit.disbursed_amount === '' ? null : parseFloat(edit.disbursed_amount);
+      if (disbursed != null && app?.amount_approved != null && disbursed > parseFloat(app.amount_approved)) {
+        setError(`Disbursed amount cannot exceed the approved amount (LKR ${parseFloat(app.amount_approved).toLocaleString()}).`);
+        setSavingId(null);
+        return;
+      }
+      await api.patch(`/api/tes/applications/${appId}/monitoring`, {
+        monitoring_status: edit.monitoring_status,
+        disbursed_amount:  disbursed,
+      });
+      setSavedId(appId);
+      setTimeout(() => setSavedId(id => id === appId ? null : id), 2000);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to save monitoring data');
+    } finally {
+      setSavingId(null);
     }
   }
 
@@ -152,6 +188,11 @@ export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = fals
 
   const isOpen = batch.status === 'open';
   const deadlinePassed = new Date(batch.application_end_date) < new Date();
+  const isMonitoringView = ['funded', 'completed'].includes(batch.status);
+
+  const totalDisbursed = applications
+    .filter(a => a.approval_status === 'approved')
+    .reduce((sum, a) => sum + (parseFloat(monitoringEdits[a.id]?.disbursed_amount) || 0), 0);
 
   // Show application form
   if (showForm) {
@@ -293,21 +334,27 @@ export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = fals
         </div>
       ) : (
         <div className="rsp-card-wrap">
-          <table className="rsp-card-table rsp-tes-table" style={{
+          <table className={`rsp-card-table rsp-tes-table${isMonitoringView ? ' rsp-tes-monitoring' : ''}`} style={{
             width:'100%', borderCollapse:'collapse', fontSize:'13px'
           }}>
             <thead>
               <tr style={{background:'#f0ece2'}}>
                 {[
-                  'Participant', 'LDC', 'Institution',
-                  'Course', 'Status', 'Amount (LKR)', 'Action'
+                  { label:'Participant' }, { label:'LDC' },
+                  { label:'Institution' }, { label:'Course' },
+                  { label:'Status' },     { label:'Amount (LKR)', center:true },
+                  ...(isMonitoringView
+                    ? [{ label:'Monitoring Status', center:true }, { label:'Disbursed (LKR)', center:true }]
+                    : []),
+                  { label:'Action' },
                 ].map(h => (
-                  <th key={h} style={{
-                    padding:'10px 14px', textAlign:'left',
+                  <th key={h.label} style={{
+                    padding:'10px 14px',
+                    textAlign: h.center ? 'center' : 'left',
                     fontSize:'10.5px', fontWeight:'700',
                     textTransform:'uppercase', letterSpacing:'0.4px',
                     color:'#3d3528', borderBottom:'1px solid #d4c9b0'
-                  }}>{h}</th>
+                  }}>{h.label}</th>
                 ))}
               </tr>
             </thead>
@@ -345,35 +392,147 @@ export default function TESBatchDetail({ batch, onBack, isAdmin, readOnly = fals
                     {statusBadge(app.approval_status)}
                   </td>
                   <td data-label="Amount" style={{
-                    padding:'10px 14px', fontWeight:'600',
+                    padding:'10px 14px', fontWeight:'600', textAlign:'center', verticalAlign:'middle',
                     color: app.amount_approved ? '#2d6a4f' : '#a09080'
                   }}>
                     {app.amount_approved
                       ? `LKR ${parseFloat(app.amount_approved).toLocaleString()}`
                       : '—'}
                   </td>
-                  <td data-label="Action" style={{padding:'10px 14px'}}>
-                    <div style={{display:'flex', gap:'6px'}}>
-                        <button onClick={() => setSelApp(app)} style={{
+                  {isMonitoringView && (
+                    <>
+                      <td data-label="Monitoring Status" style={{
+                        padding:'10px 14px', textAlign:'center', verticalAlign:'middle'
+                      }}>
+                        {app.approval_status === 'approved' ? (
+                          <select
+                            value={monitoringEdits[app.id]?.monitoring_status || 'not_started'}
+                            onChange={e => setMonitoringEdits(prev => ({
+                              ...prev,
+                              [app.id]: { ...prev[app.id], monitoring_status: e.target.value }
+                            }))}
+                            disabled={readOnly}
+                            style={{
+                              padding:'5px 8px', fontSize:'11px', fontFamily:'inherit',
+                              border:'1px solid var(--color-border-subtle)',
+                              borderRadius:'4px', background:'var(--color-bg-page)',
+                              color:'var(--color-brand-primary)', outline:'none',
+                              cursor: readOnly ? 'default' : 'pointer'
+                            }}
+                          >
+                            <option value="not_started">Not Started</option>
+                            <option value="continuing">Continuing</option>
+                            <option value="stopped">Stopped</option>
+                            <option value="temporarily_stopped">Temporarily Stopped</option>
+                            <option value="other">Other</option>
+                          </select>
+                        ) : (
+                          <span style={{color:'var(--color-text-muted)', fontSize:'11px'}}>—</span>
+                        )}
+                      </td>
+                      <td data-label="Disbursed (LKR)" style={{
+                        padding:'10px 14px', textAlign:'center', verticalAlign:'middle'
+                      }}>
+                        {app.approval_status === 'approved' ? (
+                          <>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              placeholder="0"
+                              max={app.amount_approved ?? undefined}
+                              value={monitoringEdits[app.id]?.disbursed_amount ?? ''}
+                              onChange={e => setMonitoringEdits(prev => ({
+                                ...prev,
+                                [app.id]: { ...prev[app.id], disbursed_amount: e.target.value }
+                              }))}
+                              disabled={readOnly}
+                              style={{
+                                width:'100px', padding:'5px 8px', fontSize:'11px',
+                                fontFamily:'inherit',
+                                border:'1px solid var(--color-border-subtle)',
+                                borderRadius:'4px', background:'var(--color-bg-page)',
+                                color:'var(--color-brand-primary)', outline:'none',
+                                textAlign:'center'
+                              }}
+                            />
+                          </>
+                        ) : (
+                          <span style={{color:'var(--color-text-muted)', fontSize:'11px'}}>—</span>
+                        )}
+                      </td>
+                    </>
+                  )}
+                  <td data-label="Action" style={{padding:'10px 14px', verticalAlign:'middle'}}>
+                    <div style={{
+                      display:'flex', flexDirection:'column',
+                      gap:'5px', minWidth:'70px'
+                    }}>
+                      <button onClick={() => setSelApp(app)} style={{
                         background:'#f0ece2', color:'#3d3528',
                         border:'1px solid #d4c9b0',
-                        borderRadius:'4px', padding:'5px 12px', fontSize:'11px',
-                        fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
-                        }}>View</button>
-                        {!isAdmin && isOpen &&
-                        app.approval_status === 'pending' && (
+                        borderRadius:'4px', padding:'6px 12px', fontSize:'11px',
+                        fontWeight:'700', cursor:'pointer', fontFamily:'inherit',
+                        width:'100%'
+                      }}>View</button>
+                      {isMonitoringView && !readOnly && app.approval_status === 'approved' && (
+                        <button
+                          onClick={() => saveMonitoring(app.id)}
+                          disabled={savingId === app.id}
+                          style={{
+                            background: savedId === app.id
+                              ? 'var(--color-success)' : 'var(--color-brand-primary)',
+                            color: savedId === app.id
+                              ? '#fff' : 'var(--color-brand-accent)',
+                            border:'none', borderRadius:'4px',
+                            padding:'6px 12px', fontSize:'11px',
+                            fontWeight:'700', cursor: savingId === app.id ? 'not-allowed' : 'pointer',
+                            fontFamily:'inherit',
+                            opacity: savingId === app.id ? 0.7 : 1,
+                            width:'100%'
+                          }}
+                        >
+                          {savingId === app.id ? '...' : savedId === app.id ? 'Saved ✓' : 'Save'}
+                        </button>
+                      )}
+                      {!isAdmin && isOpen && app.approval_status === 'pending' && (
                         <button onClick={() => handleRemove(app)} style={{
-                            background:'#f5e0e3', color:'#9b2335', border:'none',
-                            borderRadius:'4px', padding:'5px 10px', fontSize:'11px',
-                            fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
+                          background:'#f5e0e3', color:'#9b2335', border:'none',
+                          borderRadius:'4px', padding:'6px 12px', fontSize:'11px',
+                          fontWeight:'600', cursor:'pointer', fontFamily:'inherit',
+                          width:'100%'
                         }}>Remove</button>
-                        )}
+                      )}
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Total Distributed summary */}
+      {isMonitoringView && applications.length > 0 && (
+        <div style={{
+          display:'flex', alignItems:'center', gap:'16px', flexWrap:'wrap',
+          background:'var(--color-bg-card)',
+          border:'1px solid var(--color-border-subtle)',
+          borderRadius:'6px', padding:'12px 20px', marginTop:'12px'
+        }}>
+          <span style={{
+            fontSize:'11px', fontWeight:'700', textTransform:'uppercase',
+            letterSpacing:'0.5px', color:'var(--color-text-heading)'
+          }}>Total Disbursed</span>
+          <span style={{
+            fontSize:'16px', fontWeight:'700',
+            color: totalDisbursed > 0 ? 'var(--color-success)' : 'var(--color-text-muted)'
+          }}>
+            {totalDisbursed > 0
+              ? `LKR ${totalDisbursed.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`
+              : '—'
+            }
+          </span>
         </div>
       )}
     </div>
