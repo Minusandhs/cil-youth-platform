@@ -3,7 +3,7 @@
 // ================================================================
 const express = require('express');
 const { query, transaction } = require('../config/database');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, userOwnsParticipant } = require('../middleware/auth');
 const { VALID } = require('../constants');
 
 const router = express.Router();
@@ -11,6 +11,9 @@ const router = express.Router();
 // ── GET /api/academic/ol/:participantId ──────────────────────────
 router.get('/ol/:participantId', verifyToken, async (req, res) => {
   try {
+    if (!(await userOwnsParticipant(req, req.params.participantId))) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
     const results = await query(
       `SELECT r.*, 
         json_agg(
@@ -43,6 +46,10 @@ router.post('/ol', verifyToken, async (req, res) => {
       school_name, no_of_passes, passed, plan_after,
       results_verified, notes, subjects
     } = req.body;
+
+    if (!(await userOwnsParticipant(req, participant_id))) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
 
     if (req.user.role === 'ldc_staff') {
       const check = await query('SELECT is_exited FROM participants WHERE id = $1', [participant_id]);
@@ -107,13 +114,19 @@ router.put('/ol/:id', verifyToken, async (req, res) => {
       results_verified, notes, subjects
     } = req.body;
 
+    const ownerCheck = await query(
+      `SELECT p.ldc_id, p.is_exited FROM participants p
+       JOIN ol_results r ON r.participant_id = p.id
+       WHERE r.id = $1`, [req.params.id]
+    );
+    if (ownerCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'OL result not found' });
+    }
     if (req.user.role === 'ldc_staff') {
-      const check = await query(
-        `SELECT p.is_exited FROM participants p
-         JOIN ol_results r ON r.participant_id = p.id
-         WHERE r.id = $1`, [req.params.id]
-      );
-      if (check.rows[0]?.is_exited) {
+      if (ownerCheck.rows[0].ldc_id !== req.user.ldc_id) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+      if (ownerCheck.rows[0].is_exited) {
         return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
       }
     }
@@ -171,6 +184,9 @@ router.put('/ol/:id', verifyToken, async (req, res) => {
 // ── GET /api/academic/al/:participantId ──────────────────────────
 router.get('/al/:participantId', verifyToken, async (req, res) => {
   try {
+    if (!(await userOwnsParticipant(req, req.params.participantId))) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
     const results = await query(
       `SELECT r.*,
         json_agg(
@@ -212,6 +228,10 @@ router.post('/al', verifyToken, async (req, res) => {
       return res.status(400).json({ error: `Invalid stream: ${stream}` });
     if (medium && !VALID.alMedium.includes(medium))
       return res.status(400).json({ error: `Invalid medium: ${medium}` });
+
+    if (!(await userOwnsParticipant(req, participant_id))) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
 
     if (req.user.role === 'ldc_staff') {
       const check = await query('SELECT is_exited FROM participants WHERE id = $1', [participant_id]);
@@ -291,13 +311,19 @@ router.put('/al/:id', verifyToken, async (req, res) => {
     if (medium && !VALID.alMedium.includes(medium))
       return res.status(400).json({ error: `Invalid medium: ${medium}` });
 
+    const ownerCheck = await query(
+      `SELECT p.ldc_id, p.is_exited FROM participants p
+       JOIN al_results r ON r.participant_id = p.id
+       WHERE r.id = $1`, [req.params.id]
+    );
+    if (ownerCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'AL result not found' });
+    }
     if (req.user.role === 'ldc_staff') {
-      const check = await query(
-        `SELECT p.is_exited FROM participants p
-         JOIN al_results r ON r.participant_id = p.id
-         WHERE r.id = $1`, [req.params.id]
-      );
-      if (check.rows[0]?.is_exited) {
+      if (ownerCheck.rows[0].ldc_id !== req.user.ldc_id) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+      if (ownerCheck.rows[0].is_exited) {
         return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
       }
     }

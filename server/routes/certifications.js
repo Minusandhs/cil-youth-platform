@@ -3,7 +3,7 @@
 // ================================================================
 const express = require('express');
 const { query } = require('../config/database');
-const { verifyToken } = require('../middleware/auth');
+const { verifyToken, userOwnsParticipant } = require('../middleware/auth');
 const { requireSuperAdmin } = require('../middleware/roleCheck');
 
 const router = express.Router();
@@ -88,6 +88,9 @@ router.put('/types/:id', verifyToken, requireSuperAdmin, async (req, res) => {
 // ── GET /api/certifications/:participantId ────────────────────────
 router.get('/:participantId', verifyToken, async (req, res) => {
   try {
+    if (!(await userOwnsParticipant(req, req.params.participantId))) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
     const result = await query(
       `SELECT c.*, t.type_name, t.has_nvq_level
        FROM certifications c
@@ -111,17 +114,21 @@ router.post('/', verifyToken, async (req, res) => {
       grade_result, nvq_level, results_verified, notes
     } = req.body;
 
+    if (!participant_id || !cert_type_id || !cert_name) {
+      return res.status(400).json({
+        error: 'Participant, type and certificate name are required'
+      });
+    }
+
+    if (!(await userOwnsParticipant(req, participant_id))) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
     if (req.user.role === 'ldc_staff') {
       const check = await query('SELECT is_exited FROM participants WHERE id = $1', [participant_id]);
       if (check.rows[0]?.is_exited) {
         return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
       }
-    }
-
-    if (!participant_id || !cert_type_id || !cert_name) {
-      return res.status(400).json({
-        error: 'Participant, type and certificate name are required'
-      });
     }
 
     const result = await query(
@@ -159,13 +166,19 @@ router.put('/:id', verifyToken, async (req, res) => {
       nvq_level, results_verified, notes
     } = req.body;
 
+    const ownerCheck = await query(
+      `SELECT p.ldc_id, p.is_exited FROM participants p
+       JOIN certifications c ON c.participant_id = p.id
+       WHERE c.id = $1`, [req.params.id]
+    );
+    if (ownerCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Certification not found' });
+    }
     if (req.user.role === 'ldc_staff') {
-      const check = await query(
-        `SELECT p.is_exited FROM participants p
-         JOIN certifications c ON c.participant_id = p.id
-         WHERE c.id = $1`, [req.params.id]
-      );
-      if (check.rows[0]?.is_exited) {
+      if (ownerCheck.rows[0].ldc_id !== req.user.ldc_id) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+      if (ownerCheck.rows[0].is_exited) {
         return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
       }
     }
@@ -204,13 +217,19 @@ router.put('/:id', verifyToken, async (req, res) => {
 // ── DELETE /api/certifications/:id ───────────────────────────────
 router.delete('/:id', verifyToken, async (req, res) => {
   try {
+    const ownerCheck = await query(
+      `SELECT p.ldc_id, p.is_exited FROM participants p
+       JOIN certifications c ON c.participant_id = p.id
+       WHERE c.id = $1`, [req.params.id]
+    );
+    if (ownerCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Certification not found' });
+    }
     if (req.user.role === 'ldc_staff') {
-      const check = await query(
-        `SELECT p.is_exited FROM participants p
-         JOIN certifications c ON c.participant_id = p.id
-         WHERE c.id = $1`, [req.params.id]
-      );
-      if (check.rows[0]?.is_exited) {
+      if (ownerCheck.rows[0].ldc_id !== req.user.ldc_id) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+      if (ownerCheck.rows[0].is_exited) {
         return res.status(403).json({ error: 'This participant has exited the program. Profile is locked.' });
       }
     }

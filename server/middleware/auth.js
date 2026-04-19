@@ -10,7 +10,7 @@ async function verifyToken(req, res, next) {
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
     req.user = decoded;
 
     // Check LDC status for LDC staff
@@ -21,9 +21,9 @@ async function verifyToken(req, res, next) {
       );
 
       if (result.rows.length === 0 || !result.rows[0].is_active) {
-        return res.status(403).json({ 
+        return res.status(403).json({
           error: 'LDC_DEACTIVATED',
-          message: 'Your LDC has been deactivated. Access denied.' 
+          message: 'Your LDC has been deactivated. Access denied.'
         });
       }
     }
@@ -35,4 +35,17 @@ async function verifyToken(req, res, next) {
   }
 }
 
-module.exports = { verifyToken };
+// Returns true if the caller is allowed to touch the given participant.
+// - super_admin / national_admin: always allowed
+// - ldc_staff: only participants in their own LDC
+async function userOwnsParticipant(req, participantId) {
+  if (!participantId) return false;
+  if (req.user.role !== 'ldc_staff') return true;
+  const result = await query(
+    'SELECT ldc_id FROM participants WHERE id = $1',
+    [participantId]
+  );
+  return result.rows.length > 0 && result.rows[0].ldc_id === req.user.ldc_id;
+}
+
+module.exports = { verifyToken, userOwnsParticipant };

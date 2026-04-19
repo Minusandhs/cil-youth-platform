@@ -72,7 +72,10 @@ router.post('/login', async (req, res) => {
         ldc_id: user.ldc_id,
       },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
+      {
+        algorithm: 'HS256',
+        expiresIn: process.env.JWT_EXPIRES_IN || '8h'
+      }
     );
 
     // Return token and user info
