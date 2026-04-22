@@ -85,7 +85,7 @@ export default function Login() {
             borderRadius:'3px',
             marginBottom:'16px'
           }}>
-            CIL · TES
+            CIL
           </div>
           <h1 style={{
             fontSize:'24px',
