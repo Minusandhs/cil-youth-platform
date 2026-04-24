@@ -10,11 +10,15 @@ module.exports = {
   digital: {
     label: 'Digital & Technical Proficiency',
     talents: [
-      { value: 'coding',            label: 'Coding & Development' },
-      { value: 'web_design',        label: 'Web Design' },
-      { value: 'social_media',      label: 'Social Media Management' },
-      { value: 'content_creation',  label: 'Content Creation' },
-      { value: 'tech_troubleshoot', label: 'Technical Troubleshooting' },
+      { value: 'coding',                        label: 'Coding & Software Development' },
+      { value: 'web_design',                    label: 'Web Design' },
+      { value: 'social_media',                  label: 'Social Media Management' },
+      { value: 'content_creation',              label: 'Content Creation' },
+      { value: 'tech_troubleshoot',             label: 'Technical Troubleshooting' },
+      { value: 'graphic_design',                label: 'Graphic Designing' },
+      { value: 'multimedia_video_editing',      label: 'Animation and multimedia production' },
+      { value: 'artificial_intelligence',       label: 'Artificial Intelligence / Machine Learning'},
+      { value: 'foundational_digital_literacy', label: 'Foundational Digital Literacy Skills'},
     ],
   },
 
@@ -34,10 +38,19 @@ module.exports = {
   creative: {
     label: 'Creative & Performing Arts',
     talents: [
-      { value: 'musical',           label: 'Musical Performance' },
-      { value: 'visual_art',        label: 'Visual Artistry' },
-      { value: 'performing_arts',   label: 'Performance Arts' },
-      { value: 'creative_compose',  label: 'Creative Composition' },
+      { value: 'musical',               label: 'Musical Instrument' },
+      { value: 'musical_singing',       label: 'Singing'},
+      { value: 'musical_programing',    label: 'Music Production'},
+      { value: 'visual_art',            label: 'Visual Artistry' },
+      { value: 'performing_arts',       label: 'Performance Arts' },
+      { value: 'creative_compose',      label: 'Creative Composition' },
+      { value: 'dance',                 label: 'Dance (traditional, contemporary)'},
+      { value: 'drama',                 label: 'Drama and theatre'},
+      { value: 'stage_performance',     label: 'Stage performance skills'},
+      { value: 'creative_writing',      label: 'Creative Writing (stories/poetry)'},
+      { value: 'storytelling',          label: 'Spoken word and storytelling'},
+      { value: 'cultural_performance',  label: 'Cultural Performance'},
+      { value: 'photography',           label: 'Photography'},
     ],
   },
 
@@ -45,11 +58,12 @@ module.exports = {
   social: {
     label: 'Social & Emotional Intelligence',
     talents: [
-      { value: 'empathy',     label: 'Empathy & Awareness' },
-      { value: 'teamwork',    label: 'Teamwork & Collaboration' },
-      { value: 'emotional',   label: 'Emotional Regulation' },
-      { value: 'networking',  label: 'Networking' },
-      { value: 'mentorship',  label: 'Mentorship' },
+      { value: 'empathy',         label: 'Empathy & Awareness' },
+      { value: 'teamwork',        label: 'Teamwork & Collaboration' },
+      { value: 'emotional',       label: 'Emotional Regulation' },
+      { value: 'networking',      label: 'Networking' },
+      { value: 'mentorship',      label: 'Mentorship' },
+      { value: 'growth_mindset',  label: 'Growth Mindset'}
     ],
   },
 

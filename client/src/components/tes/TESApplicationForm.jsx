@@ -10,6 +10,7 @@ export default function TESApplicationForm({
   const [selParticipant, setSelParticipant] = useState(null);
   const [search,         setSearch        ] = useState('');
   const [profile,        setProfile       ] = useState(null);
+  const [careerPlan,     setCareerPlan    ] = useState(null);
   const [olResult,       setOlResult      ] = useState(null);
   const [alResult,       setAlResult      ] = useState(null);
   const [certs,          setCerts         ] = useState([]);
@@ -87,9 +88,10 @@ export default function TESApplicationForm({
 
   async function loadExistingParticipant() {
     try {
-      const [partRes, profileRes, olRes, alRes, certRes, histRes] = await Promise.all([
+      const [partRes, profileRes, careerRes, olRes, alRes, certRes, histRes] = await Promise.all([
         api.get(`/api/participants/${existingApp.participant_id}`),
         api.get(`/api/participants/${existingApp.participant_id}/profile`).catch(() => ({ data: null })),
+        api.get(`/api/career/${existingApp.participant_id}`).catch(() => ({ data: { plan: null } })),
         api.get(`/api/academic/ol/${existingApp.participant_id}`).catch(() => ({ data: [] })),
         api.get(`/api/academic/al/${existingApp.participant_id}`).catch(() => ({ data: [] })),
         api.get(`/api/certifications/${existingApp.participant_id}`).catch(() => ({ data: [] })),
@@ -97,6 +99,7 @@ export default function TESApplicationForm({
       ]);
       setSelParticipant(partRes.data);
       setProfile(profileRes.data);
+      setCareerPlan(careerRes.data?.plan || null);
       setOlResult(olRes.data?.[0] || null);
       setAlResult(alRes.data?.[0] || null);
       setCerts(certRes.data || []);
@@ -119,14 +122,16 @@ export default function TESApplicationForm({
     setSelParticipant(p);
     setError('');
     try {
-      const [profileRes, olRes, alRes, certRes, histRes] = await Promise.all([
+      const [profileRes, careerRes, olRes, alRes, certRes, histRes] = await Promise.all([
         api.get(`/api/participants/${p.id}/profile`).catch(() => ({ data: null })),
+        api.get(`/api/career/${p.id}`).catch(() => ({ data: { plan: null } })),
         api.get(`/api/academic/ol/${p.id}`).catch(() => ({ data: [] })),
         api.get(`/api/academic/al/${p.id}`).catch(() => ({ data: [] })),
         api.get(`/api/certifications/${p.id}`).catch(() => ({ data: [] })),
         api.get(`/api/tes/history/${p.id}`).catch(() => ({ data: { history:[], total_received:0 } })),
       ]);
       setProfile(profileRes.data);
+      setCareerPlan(careerRes.data?.plan || null);
       setOlResult(olRes.data?.[0] || null);
       setAlResult(alRes.data?.[0] || null);
       setCerts(certRes.data || []);
@@ -143,13 +148,16 @@ export default function TESApplicationForm({
     // ── Validate participant's Personal Info profile ──────────────
     if (profile) {
       const missing = [];
-      if (!profile.marital_status)  missing.push('Marital Status');
-      if (!profile.current_status)  missing.push('Current Status');
-      if (!profile.long_term_plan)  missing.push('Long Term Plan');
-      if (!profile.career_goal)     missing.push('Career Goal');
-      if (!profile.family_income)   missing.push('Family Monthly Income');
-      if (profile.no_of_dependants === '' || profile.no_of_dependants === null || profile.no_of_dependants === undefined)
-        missing.push('Number of Dependants');
+      const tabs = [];
+      if (!profile.marital_status)  { missing.push('Marital Status');  tabs.push('Personal Info'); }
+      if (!profile.current_status)  { missing.push('Current Status');  tabs.push('Personal Info'); }
+      if (!profile.family_income)   { missing.push('Family Monthly Income'); tabs.push('Personal Info'); }
+      if (profile.no_of_dependants === '' || profile.no_of_dependants === null || profile.no_of_dependants === undefined) {
+        missing.push('Number of Dependants'); tabs.push('Personal Info');
+      }
+      // Career plan fields (moved out of Personal Info)
+      if (!careerPlan?.long_term_plan)    { missing.push('Long Term Plan');   tabs.push('Career'); }
+      if (!careerPlan?.career_aspiration) { missing.push('Career Aspiration'); tabs.push('Career'); }
 
       // TES-specific form fields
       if (!form.institution_type)  missing.push('Institution Type');
@@ -162,9 +170,13 @@ export default function TESApplicationForm({
         missing.push('Amount Approved (For Official Use)');
 
       if (missing.length > 0) {
+        const uniqueTabs = [...new Set(tabs)];
+        const tabHint = uniqueTabs.length > 0
+          ? ` Please update the ${uniqueTabs.join(' and ')} tab${uniqueTabs.length > 1 ? 's' : ''} first.`
+          : '';
         setError(
-          `Cannot submit: the participant's profile is incomplete. ` +
-          `Please update their Personal Info tab first.\n\nMissing: ${missing.join(', ')}`
+          `Cannot submit: the participant's profile is incomplete.${tabHint}` +
+          `\n\nMissing: ${missing.join(', ')}`
         );
         return;
       }
@@ -401,25 +413,23 @@ export default function TESApplicationForm({
               </div>
             </div>
 
-            {/* Future Plans */}
-            {(profile?.long_term_plan ||
-              profile?.career_goal) && (
+            {/* Future Plans (from Career module) */}
+            {(careerPlan?.long_term_plan || careerPlan?.career_aspiration) && (
               <div style={{
                 marginTop:'14px', display:'grid', gap:'10px'
               }}>
-
-                {profile?.long_term_plan && (
+                {careerPlan?.career_aspiration && (
+                  <div>
+                    <label style={labelStyle}>Career Aspiration</label>
+                    <textarea style={{...readonlyStyle, minHeight:'50px'}}
+                      value={careerPlan.career_aspiration} readOnly />
+                  </div>
+                )}
+                {careerPlan?.long_term_plan && (
                   <div>
                     <label style={labelStyle}>Long Term Plan</label>
                     <textarea style={{...readonlyStyle, minHeight:'50px'}}
-                      value={profile.long_term_plan} readOnly />
-                  </div>
-                )}
-                {profile?.career_goal && (
-                  <div>
-                    <label style={labelStyle}>Career Goal</label>
-                    <textarea style={{...readonlyStyle, minHeight:'50px'}}
-                      value={profile.career_goal} readOnly />
+                      value={careerPlan.long_term_plan} readOnly />
                   </div>
                 )}
               </div>

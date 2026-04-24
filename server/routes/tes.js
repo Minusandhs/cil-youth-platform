@@ -607,7 +607,14 @@ router.get('/batches/:id/export', verifyToken, async (req, res) => {
         pp.current_status, pp.current_institution,
         pp.current_course, pp.family_income,
         pp.no_of_dependants, pp.other_assistance,
-        pp.long_term_plan, pp.career_goal,
+        COALESCE(cp.long_term_plan, pp.long_term_plan) AS long_term_plan,
+        COALESCE(cp.career_aspiration, pp.career_goal) AS career_aspiration,
+        cp.aspired_industry,
+        cp.interested_to_apply,
+        cp.interest_industry,
+        cp.interest_notes,
+        cp.holland_primary, cp.holland_secondary, cp.holland_tertiary,
+        cp.career_choice_1, cp.career_choice_2, cp.career_choice_3,
         a.contact_number, a.email, a.nic_number, a.guardian_name,
         a.lang_english, a.lang_sinhala, a.lang_tamil,
         a.institution_name, a.institution_type, a.course_name,
@@ -627,6 +634,7 @@ router.get('/batches/:id/export', verifyToken, async (req, res) => {
        JOIN participants p ON a.participant_id = p.id
        JOIN ldcs l ON a.ldc_id = l.id
        LEFT JOIN participant_profiles pp ON pp.participant_id = p.id
+       LEFT JOIN participant_career_plans cp ON cp.participant_id = p.id
        ${whereClause}
        ORDER BY l.ldc_id, p.full_name`,
       params

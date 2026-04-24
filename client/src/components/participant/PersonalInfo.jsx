@@ -29,10 +29,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
     current_course: '',
     current_year: '',
     current_exam_type: '',
-    long_term_plan: '',
-    career_goal: '',
-    further_education: false,
-    education_details: '',
     family_income: '',
     no_of_dependants: '',
   });
@@ -62,10 +58,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           current_course: profileRes.data.current_course || '',
           current_year: profileRes.data.current_year || '',
           current_exam_type: profileRes.data.current_exam_type || '',
-          long_term_plan: profileRes.data.long_term_plan || '',
-          career_goal: profileRes.data.career_goal || '',
-          further_education: profileRes.data.further_education || false,
-          education_details: profileRes.data.education_details || '',
           family_income: profileRes.data.family_income || '',
           no_of_dependants: profileRes.data.no_of_dependants || '',
         });
@@ -97,8 +89,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
     if (!form.family_income) missing.push('Family Monthly Income');
     if (form.no_of_dependants === '' || form.no_of_dependants === null || form.no_of_dependants === undefined)
       missing.push('Number of Dependants');
-    if (!form.long_term_plan) missing.push('Long Term Plan');
-    if (!form.career_goal) missing.push('Career Goal');
     if (missing.length > 0) {
       setError(`Please fill in the following required fields: ${missing.join(', ')}`);
       return;
@@ -156,8 +146,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
         outside_location: '', is_pregnant: false, number_of_children: 0,
         current_status: '', current_institution: '', current_course: '', current_year: '',
         current_exam_type: '',
-        long_term_plan: '', career_goal: '',
-        further_education: false, education_details: '',
         family_income: '', no_of_dependants: '',
       });
       return;
@@ -176,10 +164,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
         current_course: profile.current_course || '',
         current_year: profile.current_year || '',
         current_exam_type: profile.current_exam_type || '',
-        long_term_plan: profile.long_term_plan || '',
-        career_goal: profile.career_goal || '',
-        further_education: profile.further_education || false,
-        education_details: profile.education_details || '',
         family_income: profile.family_income || '',
         no_of_dependants: profile.no_of_dependants || '',
       });
@@ -307,18 +291,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                 ))}
               </div>
             )}
-          </div>
-
-          {/* Future Plans */}
-          <div style={sectionStyle}>
-            <div style={sectionTitleStyle}>Future Plans</div>
-            <div style={{ display: 'grid', gap: '16px' }}>
-              <ViewField label="Long Term Plan (5 years)" value={form.long_term_plan} />
-              <ViewField label="Career Goal" value={form.career_goal} />
-              {form.further_education && (
-                <ViewField label="Further Education Plans" value={form.education_details} />
-              )}
-            </div>
           </div>
 
           {/* Personal & Family Status (includes Family Background) */}
@@ -490,44 +462,6 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                 ))}
               </div>
             )}
-          </div>
-
-          {/* Future Plans */}
-          <div style={sectionStyle}>
-            <div style={sectionTitleStyle}>Future Plans</div>
-            <div style={{ display: 'grid', gap: '14px' }}>
-              <div>
-                <label style={labelStyle}>Long Term Plan (within 5 years)</label>
-                <textarea style={{ ...inputStyle(false), minHeight: '70px' }}
-                  value={form.long_term_plan}
-                  onChange={e => setForm({ ...form, long_term_plan: e.target.value })} />
-              </div>
-              <div>
-                <label style={labelStyle}>Career Goal</label>
-                <textarea style={{ ...inputStyle(false), minHeight: '70px' }}
-                  value={form.career_goal}
-                  onChange={e => setForm({ ...form, career_goal: e.target.value })} />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <input type="checkbox" id="further_ed"
-                  checked={form.further_education}
-                  onChange={e => setForm({ ...form, further_education: e.target.checked })}
-                  style={{ width: '16px', height: '16px', accentColor: '#c49a3c' }} />
-                <label htmlFor="further_ed" style={{
-                  fontSize: '13px', fontWeight: '600', cursor: 'pointer'
-                }}>
-                  Plans for further education
-                </label>
-              </div>
-              {form.further_education && (
-                <div>
-                  <label style={labelStyle}>Education Details</label>
-                  <textarea style={{ ...inputStyle(false), minHeight: '70px' }}
-                    value={form.education_details}
-                    onChange={e => setForm({ ...form, education_details: e.target.value })} />
-                </div>
-              )}
-            </div>
           </div>
 
           {/* Personal & Family Status (includes Family Background fields) */}

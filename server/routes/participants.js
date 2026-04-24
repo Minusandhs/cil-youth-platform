@@ -519,14 +519,13 @@ router.post('/:id/profile', verifyToken, async (req, res) => {
         number_of_children, current_status,
         current_institution, current_course, current_year,
         current_exam_type,
-        monthly_income, long_term_plan,
-        career_goal, further_education, education_details,
+        monthly_income,
         family_income, no_of_dependants, other_assistance,
         living_outside_ldc, outside_purpose, outside_location,
         last_updated_by
         ) VALUES (
-          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,
-          $12,$13,$14,$15,$16,$17,$18,$19,$20,$21
+          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
+          $11,$12,$13,$14,$15,$16,$17
         ) RETURNING *`,
       [
         req.params.id,
@@ -539,10 +538,6 @@ router.post('/:id/profile', verifyToken, async (req, res) => {
         p.current_year       || null,
         p.current_exam_type  || null,
         p.monthly_income     || null,
-        p.long_term_plan     || null,
-        p.career_goal        || null,
-        p.further_education  || false,
-        p.education_details  || null,
         p.family_income      || null,
         p.no_of_dependants   || 0,
         p.other_assistance   || null,
@@ -595,19 +590,15 @@ router.put('/:id/profile', verifyToken, async (req, res) => {
         current_year        = $7,
         current_exam_type   = $8,
         monthly_income      = $9,
-        long_term_plan      = $10,
-        career_goal         = $11,
-        further_education   = $12,
-        education_details   = $13,
-        family_income       = $14,
-        no_of_dependants    = $15,
-        other_assistance    = $16,
-        living_outside_ldc  = $17,
-        outside_purpose     = $18,
-        outside_location    = $19,
-        last_updated_by     = $20,
+        family_income       = $10,
+        no_of_dependants    = $11,
+        other_assistance    = $12,
+        living_outside_ldc  = $13,
+        outside_purpose     = $14,
+        outside_location    = $15,
+        last_updated_by     = $16,
         updated_at          = NOW()
-        WHERE participant_id = $21
+        WHERE participant_id = $17
        RETURNING *`,
       [
         p.marital_status     || null,
@@ -619,10 +610,6 @@ router.put('/:id/profile', verifyToken, async (req, res) => {
         p.current_year       || null,
         p.current_exam_type  || null,
         p.monthly_income     || null,
-        p.long_term_plan     || null,
-        p.career_goal        || null,
-        p.further_education  || false,
-        p.education_details  || null,
         p.family_income      || null,
         p.no_of_dependants   || 0,
         p.other_assistance   || null,
