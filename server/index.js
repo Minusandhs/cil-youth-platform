@@ -26,6 +26,7 @@ const needsRisksRoutes   = require('./routes/needsRisks');
 const homeVisitsRoutes   = require('./routes/homeVisits');
 const talentsRoutes      = require('./routes/talents');
 const careerRoutes       = require('./routes/career');
+const dashboardRoutes    = require('./routes/dashboard');
 const { verifyConnection } = require('./config/email');
 
 // ── Initialize App ───────────────────────────────────────────────
@@ -103,6 +104,7 @@ app.use('/api/needs-risks',   needsRisksRoutes);
 app.use('/api/home-visits',  homeVisitsRoutes);
 app.use('/api/talents',      talentsRoutes);
 app.use('/api/career',       careerRoutes);
+app.use('/api/dashboard',    dashboardRoutes);
 
 // ── 404 Handler ──────────────────────────────────────────────────
 // Catches any route that doesn't exist

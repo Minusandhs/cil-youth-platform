@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../lib/api';
-import { statusLabel, statusColor } from '../../lib/constants';
-
-function fmt(n) {
-  if (n === null || n === undefined) return '—';
-  return Number(n).toLocaleString();
-}
-
+import { statusLabel } from '../../lib/constants';
+import { useDashboardSummary } from '../../lib/useDashboardSummary';
+import {
+  HeroStats, ParticipantDemographics, AcademicSection,
+  DevelopmentSection, NeedsRisksSection, HomeVisitsSection, TalentsSection,
+  DashboardMeta,
+} from '../common/DashboardSections';
 
 function fmtDate(d) {
   if (!d) return '';
@@ -26,38 +26,13 @@ const sectionTitle = {
   paddingBottom: '10px', borderBottom: '1px solid var(--color-divider)',
 };
 
-const statCard = (color) => ({
-  background: 'var(--color-bg-card)', border: '1px solid var(--color-border-subtle)',
-  borderRadius: '8px', padding: '18px 20px',
-  boxShadow: '0 2px 8px rgba(26,22,16,0.06)',
-  borderTop: `3px solid ${color}`,
-});
-
 export default function LDCOverview() {
   const { user } = useAuth();
-  const [stats,       setStats      ] = useState(null);
-  const [overview,    setOverview   ] = useState(null);
-  const [loading,     setLoading    ] = useState(true);
   const [exporting,   setExporting  ] = useState('');
   const [exportError, setExportError] = useState('');
   const [exportType,  setExportType ] = useState('participants');
 
-  useEffect(() => { loadAll(); }, []);
-
-  async function loadAll() {
-    try {
-      const [statsRes, ovRes] = await Promise.all([
-        api.get('/api/auth/stats'),
-        api.get('/api/participants/overview'),
-      ]);
-      setStats(statsRes.data);
-      setOverview(ovRes.data);
-    } catch {
-      // silently fail
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { data: summary, loading: summaryLoading } = useDashboardSummary();
 
   // ── Export helpers ──────────────────────────────────────────────
   async function doExport(key, endpoint, buildRows, filename) {
@@ -171,139 +146,47 @@ export default function LDCOverview() {
     );
   }
 
-  const totalStatus = overview?.status_breakdown?.reduce((s, r) => s + r.count, 0) || 1;
-
   return (
     <div style={{ maxWidth: '1100px' }}>
       <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '4px' }}>
         Dashboard Overview
       </h2>
-      <p style={{ color: 'var(--color-text-subdued)', fontSize: '13px', marginBottom: '28px' }}>
+      <p style={{ color: 'var(--color-text-subdued)', fontSize: '13px', marginBottom: '14px' }}>
         {user?.ldc_code} — {user?.ldc_name || 'LDC'} summary.
       </p>
 
-      {/* ── SECTION 1: Summary ──────────────────────────────────── */}
-      <div style={{ marginBottom: '32px' }}>
-        <div style={sectionTitle}>Summary</div>
-        <div className="rsp-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px' }}>
-          <div style={statCard('var(--color-brand-accent)')}>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--color-brand-accent)', lineHeight: 1 }}>
-              {loading ? '…' : fmt(stats?.participants)}
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--color-text-subdued)', marginTop: '6px',
-              fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
-              Active Participants
-            </div>
-          </div>
-          <div style={statCard('var(--color-brand-accent)')}>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--color-brand-accent)', lineHeight: 1 }}>
-              {loading ? '…' : fmt(stats?.inactive_participants)}
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--color-text-subdued)', marginTop: '6px',
-              fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
-              Inactive Participants
-            </div>
-          </div>
-          <div style={statCard('var(--color-brand-accent)')}>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--color-brand-accent)', lineHeight: 1 }}>
-              {loading ? '…' : fmt(stats?.active_male)}
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--color-text-subdued)', marginTop: '6px',
-              fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
-              Active Male
-            </div>
-          </div>
-          <div style={statCard('var(--color-brand-accent)')}>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--color-brand-accent)', lineHeight: 1 }}>
-              {loading ? '…' : fmt(stats?.active_female)}
-            </div>
-            <div style={{ fontSize: '11px', color: 'var(--color-text-subdued)', marginTop: '6px',
-              fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
-              Active Female
-            </div>
-          </div>
-        </div>
+      <div style={{ marginBottom: '20px', paddingBottom: '12px',
+        borderBottom: '1px solid var(--color-divider)' }}>
+        <DashboardMeta generatedAt={summary?.generated_at} />
       </div>
 
-      {/* ── SECTION 2: Participant Info ──────────────────────────── */}
-      <div style={{ marginBottom: '32px' }}>
-        <div style={sectionTitle}>Participant Information</div>
+      {/* ── SECTION 1: Hero Stats ─────────────────────────────────── */}
+      <HeroStats hero={summary?.hero} isAdmin={false} loading={summaryLoading} />
 
-        {loading ? (
-          <div style={{ padding: '32px', textAlign: 'center', color: 'var(--color-text-subdued)', fontSize: '13px' }}>
-            Loading...
-          </div>
-        ) : overview ? (
-          <div>
-            <div className="rsp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+      {/* ── SECTION 2: Demographics (status + personal info) ─────── */}
+      <ParticipantDemographics
+        statusBreakdown={summary?.status_breakdown}
+        personalInfo={summary?.personal_info}
+      />
 
-              {/* Status breakdown */}
-              <div style={card}>
-                <div style={{ fontSize: '13px', fontWeight: '700', marginBottom: '14px', color: 'var(--color-text-heading)' }}>
-                  Participant Status
-                  <span style={{ marginLeft: '8px', color: 'var(--color-text-muted)', fontWeight: '400', fontSize: '12px' }}>
-                    ({fmt(overview.total_participants)} total)
-                  </span>
-                </div>
-                {overview.status_breakdown.length === 0 ? (
-                  <div style={{ color: 'var(--color-text-muted)', fontSize: '13px' }}>No data</div>
-                ) : (
-                  overview.status_breakdown.map(row => {
-                    const pct = Math.round((row.count / totalStatus) * 100);
-                    const color = statusColor(row.status);
-                    return (
-                      <div key={row.status} style={{ marginBottom: '10px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between',
-                          fontSize: '12px', marginBottom: '4px' }}>
-                          <span style={{ color: 'var(--color-text-heading)', fontWeight: '600' }}>
-                            {statusLabel(row.status)}
-                          </span>
-                          <span style={{ color: 'var(--color-text-subdued)', fontWeight: '700' }}>
-                            {fmt(row.count)}{' '}
-                            <span style={{ color: 'var(--color-text-muted)', fontWeight: '400' }}>({pct}%)</span>
-                          </span>
-                        </div>
-                        <div style={{ height: '6px', background: 'var(--color-bg-stripe)', borderRadius: '3px', overflow: 'hidden' }}>
-                          <div style={{ width: `${pct}%`, height: '100%',
-                            background: color, borderRadius: '3px', transition: 'width 0.4s' }} />
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
+      {/* ── SECTION 3: Academic Performance ──────────────────────── */}
+      <AcademicSection academic={summary?.academic} />
 
-              {/* Personal Stats */}
-              <div style={card}>
-                  <div style={{ fontSize: '13px', fontWeight: '700', marginBottom: '14px', color: 'var(--color-text-heading)' }}>
-                    Personal Information
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    {[
-                      { label: 'Married',           value: overview.married,      color: 'var(--color-brand-accent)' },
-                      { label: 'Has Children',       value: overview.has_children, color: 'var(--color-brand-accent)' },
-                      { label: 'Pregnant',           value: overview.pregnant,     color: 'var(--color-brand-accent)' },
-                      { label: 'Living Outside LDC', value: overview.outside_ldc,  color: 'var(--color-brand-accent)' },
-                    ].map(s => (
-                      <div key={s.label} style={{ background: 'var(--color-bg-page)',
-                        border: '1px solid var(--color-divider)', borderRadius: '6px',
-                        padding: '12px', textAlign: 'center' }}>
-                        <div style={{ fontSize: '22px', fontWeight: '700', color: s.color }}>
-                          {fmt(s.value)}
-                        </div>
-                        <div style={{ fontSize: '10px', color: 'var(--color-text-subdued)', marginTop: '4px',
-                          textTransform: 'uppercase', letterSpacing: '0.3px', fontWeight: '600' }}>
-                          {s.label}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-            </div>
+      {/* ── SECTION 5: Development Plans + Mentoring + Actions ───── */}
+      <DevelopmentSection
+        devPlans={summary?.dev_plans}
+        mentorSessions={summary?.mentor_sessions}
+        actionItems={summary?.action_items}
+      />
 
-          </div>
-        ) : null}
-      </div>
+      {/* ── SECTION 6: Needs & Risks ─────────────────────────────── */}
+      <NeedsRisksSection needsRisks={summary?.needs_risks} />
+
+      {/* ── SECTION 7: Home Visits ───────────────────────────────── */}
+      <HomeVisitsSection homeVisits={summary?.home_visits} />
+
+      {/* ── SECTION 8: Talents & Skills ──────────────────────────── */}
+      <TalentsSection talents={summary?.talents} />
 
       {/* ── SECTION 4: Data Export ───────────────────────────────── */}
       {(() => {

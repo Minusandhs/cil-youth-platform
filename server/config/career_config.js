@@ -8,14 +8,14 @@ module.exports = {
 
   // ── Career readiness checklist items ─────────────────────────
   readiness_items: [
-    { value: 'cv_prepared',         label: 'CV/Resume Prepared' },
-    { value: 'interview_skills',    label: 'Interview Skills Training' },
-    { value: 'job_search',          label: 'Job Search Guidance' },
-    { value: 'financial_literacy',  label: 'Financial Literacy Training' },
-    { value: 'workplace_etiquette', label: 'Workplace Etiquette Training' },
-    { value: 'digital_skills',      label: 'Digital Skills for Employment' },
-    { value: 'entrepreneurship',    label: 'Entrepreneurship Training' },
-    { value: 'communication',       label: 'Communication Skills Training' },
+    { value: 'career_guidance',       label: 'Career Guidance Completed' },
+    { value: 'cv_prepared',           label: 'CV/Resume Prepared' },
+    { value: 'interview_skills',      label: 'Interview Skills Training' },
+    { value: 'job_search',            label: 'Job Search Guidance' },
+    { value: 'financial_literacy',    label: 'Financial Literacy Training' },
+    { value: 'digital_skills',        label: 'Digital Skills for Employment' },
+    { value: 'entrepreneurship',      label: 'Entrepreneurship Training' },
+    { value: 'communication',         label: 'Communication Skills Training' },
   ],
 
   // ── Industries for aspirations & job interest ────────────────

@@ -5,10 +5,16 @@
 // ================================================================
 
 const { query } = require('../config/database');
+const nrCategories = require('../config/needs_risks_categories');
 
 const toInt   = v => (v === null || v === undefined ? 0 : parseInt(v, 10));
 const toFloat = v => (v === null || v === undefined ? 0 : Number(v));
 const pct     = (num, den) => (den > 0 ? Math.round((num / den) * 100) : 0);
+
+// Lookup maps so top-category rows in the snapshot carry human labels
+// (the participant_needs_risks rows store the value-only key).
+const NEED_LABELS = Object.fromEntries(nrCategories.needs.map(c => [c.value, c.label]));
+const RISK_LABELS = Object.fromEntries(nrCategories.risks.map(c => [c.value, c.label]));
 
 // ── Compute one scope ───────────────────────────────────────────
 // ldc_id = null  → national summary (all LDCs)
@@ -16,19 +22,15 @@ const pct     = (num, den) => (den > 0 ? Math.round((num / den) * 100) : 0);
 async function computeSummary({ ldc_id = null } = {}) {
   const params    = ldc_id ? [ldc_id] : [];
   const pWhere    = ldc_id ? 'AND p.ldc_id = $1'  : '';
-  const pWhereOnly= ldc_id ? 'AND ldc_id = $1'    : '';
-  const aWhere    = ldc_id ? 'AND a.ldc_id = $1'  : '';
   const isAdmin   = !ldc_id;
 
   const [
     heroCounts,
-    tesScholars,
     totalLdcs, totalUsers,
     statusRows,
     profileCounts, profilesCompleted, activeTotal,
     olAgg, alAgg, alStreams,
     certAgg, certTypes,
-    tesBatches, tesAppCounts, tesAmounts, tesByLdc,
     planAgg, planMissing,
     mentorCounts,
     actionAgg,
@@ -47,17 +49,6 @@ async function computeSummary({ ldc_id = null } = {}) {
          COUNT(*) FILTER (WHERE p.is_active = true  AND p.gender = 'Female')         AS female
        FROM participants p
        WHERE 1=1 ${pWhere}`,
-      params
-    ),
-
-    // TES active scholars: approved applications on funded/completed batches
-    query(
-      `SELECT COUNT(*) AS n
-       FROM tes_applications a
-       JOIN tes_batches b ON b.id = a.batch_id
-       WHERE a.approval_status = 'approved'
-         AND b.status IN ('funded','completed')
-         ${aWhere}`,
       params
     ),
 
@@ -158,53 +149,7 @@ async function computeSummary({ ldc_id = null } = {}) {
       params
     ),
 
-    // Section 4A — TES batches + applications
-    query(
-      `SELECT COUNT(*)::int AS open_batches
-       FROM tes_batches
-       WHERE status = 'open'`
-    ),
-    query(
-      `SELECT
-         COUNT(*) FILTER (WHERE a.approval_status = 'pending')   AS pending,
-         COUNT(*) FILTER (WHERE a.approval_status = 'approved')  AS approved,
-         COUNT(*) FILTER (WHERE a.approval_status = 'rejected')  AS rejected
-       FROM tes_applications a
-       WHERE 1=1 ${aWhere}`,
-      params
-    ),
-    query(
-      `SELECT
-         COALESCE(SUM(a.amount_approved),  0) AS total_approved,
-         COALESCE(SUM(a.disbursed_amount), 0) AS total_disbursed,
-         COUNT(*) FILTER (
-           WHERE a.approval_status='approved'
-             AND EXISTS (SELECT 1 FROM tes_batches b
-                         WHERE b.id = a.batch_id
-                           AND b.status IN ('funded','completed'))
-         )                                       AS funded_count,
-         COUNT(*) FILTER (
-           WHERE a.approval_status='approved'
-             AND a.disbursed_amount IS NOT NULL
-             AND a.disbursed_amount > 0
-         )                                       AS disbursed_count
-       FROM tes_applications a
-       WHERE 1=1 ${aWhere}`,
-      params
-    ),
-    // Section 4C — by LDC (admin only, skip for LDC scope)
-    isAdmin
-      ? query(
-          `SELECT l.ldc_id AS ldc_code, l.name AS ldc_name,
-                  COALESCE(SUM(a.disbursed_amount), 0) AS disbursed
-           FROM ldcs l
-           LEFT JOIN tes_applications a
-             ON a.ldc_id = l.id AND a.approval_status = 'approved'
-           WHERE l.is_active = true
-           GROUP BY l.ldc_id, l.name
-           ORDER BY disbursed DESC`
-        )
-      : Promise.resolve({ rows: [] }),
+    // (Section 4 — TES Pipeline removed; will move to a dedicated TES dashboard.)
 
     // Section 5A — development plans (current year)
     query(
@@ -372,6 +317,8 @@ async function computeSummary({ ldc_id = null } = {}) {
     ),
 
     // Section 9 — data completeness for the current scope (headline figures)
+    // visit_pct and mentor_pct are MONTHLY (current calendar month) per the
+    // dashboard spec; profile/OL/dev-plan stay as cumulative coverage.
     query(
       `SELECT
          COUNT(*)                                                                        AS active,
@@ -387,8 +334,16 @@ async function computeSummary({ ldc_id = null } = {}) {
              AND d.plan_year = EXTRACT(YEAR FROM NOW())::int
          ))                                                                              AS have_plan,
          COUNT(*) FILTER (WHERE EXISTS (
-           SELECT 1 FROM participant_home_visits v WHERE v.participant_id = p.id
-         ))                                                                              AS have_visit
+           SELECT 1 FROM participant_home_visits v
+           WHERE v.participant_id = p.id
+             AND v.visited_date >= date_trunc('month', NOW())
+         ))                                                                              AS have_visit_month,
+         COUNT(*) FILTER (WHERE EXISTS (
+           SELECT 1 FROM development_plans d
+           JOIN mentor_conversations c ON c.plan_id = d.id
+           WHERE d.participant_id = p.id
+             AND c.conversation_date >= date_trunc('month', NOW())
+         ))                                                                              AS have_mentor_month
        FROM participants p
        WHERE p.is_active = true ${pWhere}`,
       params
@@ -412,8 +367,16 @@ async function computeSummary({ ldc_id = null } = {}) {
                  AND d.plan_year = EXTRACT(YEAR FROM NOW())::int
              ))                                                                                      AS have_plan,
              COUNT(p.id) FILTER (WHERE p.is_active = true AND EXISTS (
-               SELECT 1 FROM participant_home_visits v WHERE v.participant_id = p.id
-             ))                                                                                      AS have_visit
+               SELECT 1 FROM participant_home_visits v
+               WHERE v.participant_id = p.id
+                 AND v.visited_date >= date_trunc('month', NOW())
+             ))                                                                                      AS have_visit_month,
+             COUNT(p.id) FILTER (WHERE p.is_active = true AND EXISTS (
+               SELECT 1 FROM development_plans d
+               JOIN mentor_conversations c ON c.plan_id = d.id
+               WHERE d.participant_id = p.id
+                 AND c.conversation_date >= date_trunc('month', NOW())
+             ))                                                                                      AS have_mentor_month
            FROM ldcs l
            LEFT JOIN participants p ON p.ldc_id = l.id
            WHERE l.is_active = true
@@ -428,8 +391,6 @@ async function computeSummary({ ldc_id = null } = {}) {
   const ol   = olAgg.rows[0];
   const al   = alAgg.rows[0];
   const cert = certAgg.rows[0];
-  const tesA = tesAppCounts.rows[0];
-  const tesM = tesAmounts.rows[0];
   const plan = planAgg.rows[0];
   const ai   = actionAgg.rows[0];
   const nrA  = nrActive.rows[0];
@@ -444,7 +405,6 @@ async function computeSummary({ ldc_id = null } = {}) {
       female             : toInt(hero.female),
       total_ldcs         : isAdmin ? toInt(totalLdcs.rows[0].n)  : null,
       total_users        : isAdmin ? toInt(totalUsers.rows[0].n) : null,
-      tes_active_scholars: toInt(tesScholars.rows[0].n),
     },
     status_breakdown: statusRows.rows.map(r => ({
       status: r.status, count: toInt(r.count),
@@ -475,23 +435,6 @@ async function computeSummary({ ldc_id = null } = {}) {
         by_type                 : certTypes.rows.map(r => ({ type: r.type, count: toInt(r.count) })),
       },
     },
-    tes: {
-      open_batches       : toInt(tesBatches.rows[0].open_batches),
-      pending            : toInt(tesA.pending),
-      approved           : toInt(tesA.approved),
-      rejected           : toInt(tesA.rejected),
-      total_approved_lkr : toFloat(tesM.total_approved),
-      total_disbursed_lkr: toFloat(tesM.total_disbursed),
-      funnel: isAdmin ? {
-        pending  : toInt(tesA.pending),
-        approved : toInt(tesA.approved),
-        funded   : toInt(tesM.funded_count),
-        disbursed: toInt(tesM.disbursed_count),
-      } : null,
-      by_ldc: isAdmin ? tesByLdc.rows.map(r => ({
-        ldc_code: r.ldc_code, ldc_name: r.ldc_name, disbursed: toFloat(r.disbursed),
-      })) : null,
-    },
     dev_plans: {
       total_current_year : toInt(plan.total_current_year),
       without_plan       : toInt(planMissing.rows[0].n),
@@ -517,8 +460,16 @@ async function computeSummary({ ldc_id = null } = {}) {
       active_needs        : toInt(nrA.active_needs),
       active_risks        : toInt(nrA.active_risks),
       resolved_all_time   : toInt(nrResolved.rows[0].n),
-      top_need_categories : topNeedCats.rows.map(r => ({ category: r.category, count: toInt(r.count) })),
-      top_risk_categories : topRiskCats.rows.map(r => ({ category: r.category, count: toInt(r.count) })),
+      top_need_categories : topNeedCats.rows.map(r => ({
+        category: r.category,
+        label   : NEED_LABELS[r.category] || r.category,
+        count   : toInt(r.count),
+      })),
+      top_risk_categories : topRiskCats.rows.map(r => ({
+        category: r.category,
+        label   : RISK_LABELS[r.category] || r.category,
+        count   : toInt(r.count),
+      })),
     },
     home_visits: {
       visits_this_month: toInt(visitCounts.rows[0].visits_this_month),
@@ -533,18 +484,20 @@ async function computeSummary({ ldc_id = null } = {}) {
       by_category              : talentByCat.rows.map(r => ({ category: r.category, count: toInt(r.count) })),
     },
     completeness: isAdmin ? {
-      profile_pct  : pct(toInt(comp.have_profile), toInt(comp.active)),
-      ol_pct       : pct(toInt(comp.have_ol),      toInt(comp.active)),
-      dev_plan_pct : pct(toInt(comp.have_plan),    toInt(comp.active)),
-      visit_pct    : pct(toInt(comp.have_visit),   toInt(comp.active)),
+      profile_pct  : pct(toInt(comp.have_profile),       toInt(comp.active)),
+      ol_pct       : pct(toInt(comp.have_ol),            toInt(comp.active)),
+      dev_plan_pct : pct(toInt(comp.have_plan),          toInt(comp.active)),
+      visit_pct    : pct(toInt(comp.have_visit_month),   toInt(comp.active)),
+      mentor_pct   : pct(toInt(comp.have_mentor_month),  toInt(comp.active)),
       per_ldc      : perLdc.rows.map(r => ({
         ldc_code    : r.ldc_code,
         ldc_name    : r.ldc_name,
         active      : toInt(r.active),
-        profile_pct : pct(toInt(r.have_profile), toInt(r.active)),
-        ol_pct      : pct(toInt(r.have_ol),      toInt(r.active)),
-        dev_plan_pct: pct(toInt(r.have_plan),    toInt(r.active)),
-        visit_pct   : pct(toInt(r.have_visit),   toInt(r.active)),
+        profile_pct : pct(toInt(r.have_profile),       toInt(r.active)),
+        ol_pct      : pct(toInt(r.have_ol),            toInt(r.active)),
+        dev_plan_pct: pct(toInt(r.have_plan),          toInt(r.active)),
+        visit_pct   : pct(toInt(r.have_visit_month),   toInt(r.active)),
+        mentor_pct  : pct(toInt(r.have_mentor_month),  toInt(r.active)),
       })),
     } : null,
   };

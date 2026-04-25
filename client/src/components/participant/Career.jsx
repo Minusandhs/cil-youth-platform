@@ -345,7 +345,7 @@ export default function Career({ participantId, readOnly = false }) {
 
         {/* EDIT (or no plan yet) */}
         {(editMode || !plan) && (
-          <form onSubmit={handleSave}>
+          <div>
             <div style={{ display: 'grid', gap: '14px' }}>
               <div className="rsp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                 <div>
@@ -443,20 +443,7 @@ export default function Career({ participantId, readOnly = false }) {
                 </div>
               </div>
             </div>
-
-            {!readOnly && (
-              <div className="rsp-submit-row" style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
-                <button type="submit" disabled={saving} style={{ ...btnSuccess, opacity: saving ? 0.7 : 1 }}>
-                  {saving ? 'Saving...' : 'Save Career Plan'}
-                </button>
-                {plan && (
-                  <button type="button" onClick={handleCancel} style={btnGhost}>
-                    Cancel
-                  </button>
-                )}
-              </div>
-            )}
-          </form>
+          </div>
         )}
       </div>
 
@@ -546,9 +533,9 @@ export default function Career({ participantId, readOnly = false }) {
               marginBottom: '14px',
             }}>
               {[
-                { key: 'holland_primary',   label: 'Primary' },
+                { key: 'holland_primary', label: 'Primary' },
                 { key: 'holland_secondary', label: 'Secondary' },
-                { key: 'holland_tertiary',  label: 'Tertiary' },
+                { key: 'holland_tertiary', label: 'Tertiary' },
               ].map(({ key, label }) => (
                 <div key={key}>
                   <label style={labelStyle}>{label}</label>
@@ -620,6 +607,117 @@ export default function Career({ participantId, readOnly = false }) {
                 );
               })}
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── 3. Job Interest ──────────────────────────────────── */}
+      <div style={{
+        ...card,
+        background: plan?.interested_to_apply
+          ? 'var(--color-bg-highlight)'
+          : 'var(--color-bg-card)',
+        border: plan?.interested_to_apply
+          ? '2px solid var(--color-brand-accent)'
+          : '1px solid var(--color-border-subtle)',
+      }}>
+        <div style={secTitle}>
+          <span>Job Interest</span>
+          {plan?.interested_to_apply && (
+            <span style={{
+              background: 'var(--color-brand-accent)',
+              color: 'var(--color-text-heading)',
+              padding: '3px 12px', borderRadius: '12px',
+              fontSize: '11px', fontWeight: '700',
+              letterSpacing: '0.3px',
+            }}>
+              Interested to Apply
+            </span>
+          )}
+        </div>
+
+        {!editMode && plan ? (
+          plan.interested_to_apply ? (
+            <div>
+              <div style={{
+                fontSize: '13px', color: 'var(--color-text-subdued)',
+                marginBottom: '14px', lineHeight: '1.6',
+              }}>
+                This participant is looking for employment opportunities.
+              </div>
+              <div className="rsp-grid-2" style={{
+                display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px',
+              }}>
+                <ViewField label="Preferred Industry"
+                  value={plan.interest_industry ? industryLabel(plan.interest_industry) : ''} />
+                <ViewField label="Notes" value={plan.interest_notes} fullWidth />
+              </div>
+            </div>
+          ) : (
+            <div style={{
+              fontSize: '13px', color: 'var(--color-text-subdued)',
+              fontStyle: 'italic',
+            }}>
+              Not currently flagged as interested in job placement.
+            </div>
+          )
+        ) : (
+          <div style={{ display: 'grid', gap: '14px' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '10px',
+              padding: '12px 14px',
+              background: form.interested_to_apply
+                ? 'var(--color-brand-primary)'
+                : 'var(--color-bg-page)',
+              border: `1px solid ${form.interested_to_apply ? 'var(--color-brand-accent)' : 'var(--color-border-subtle)'}`,
+              borderRadius: '6px',
+            }}>
+              <input
+                type="checkbox"
+                id="interested_to_apply"
+                checked={form.interested_to_apply}
+                onChange={e => setForm({ ...form, interested_to_apply: e.target.checked })}
+                disabled={readOnly}
+                style={{ width: '16px', height: '16px', accentColor: 'var(--color-brand-accent)' }}
+              />
+              <label htmlFor="interested_to_apply" style={{
+                fontSize: '13px', fontWeight: '700', cursor: 'pointer',
+                color: form.interested_to_apply
+                  ? 'var(--color-brand-accent)'
+                  : 'var(--color-text-heading)',
+              }}>
+                Participant is interested in job placement
+              </label>
+            </div>
+
+            {form.interested_to_apply && (
+              <div className="rsp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div>
+                  <label style={labelStyle}>Preferred Industry</label>
+                  <select
+                    style={inputStyle}
+                    value={form.interest_industry}
+                    onChange={e => setForm({ ...form, interest_industry: e.target.value })}
+                    disabled={readOnly}
+                  >
+                    <option value="">— Select Industry —</option>
+                    {config.industries.map(i => (
+                      <option key={i.value} value={i.value}>{i.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label style={labelStyle}>Notes</label>
+                  <input
+                    style={inputStyle}
+                    value={form.interest_notes}
+                    onChange={e => setForm({ ...form, interest_notes: e.target.value })}
+                    placeholder="e.g. Available from June, willing to relocate..."
+                    disabled={readOnly}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -769,116 +867,22 @@ export default function Career({ participantId, readOnly = false }) {
         </div>
       </div>
 
-      {/* ── 3. Job Interest ──────────────────────────────────── */}
-      <div style={{
-        ...card,
-        background: plan?.interested_to_apply
-          ? 'var(--color-bg-highlight)'
-          : 'var(--color-bg-card)',
-        border: plan?.interested_to_apply
-          ? '2px solid var(--color-brand-accent)'
-          : '1px solid var(--color-border-subtle)',
-      }}>
-        <div style={secTitle}>
-          <span>Job Interest</span>
-          {plan?.interested_to_apply && (
-            <span style={{
-              background: 'var(--color-brand-accent)',
-              color: 'var(--color-text-heading)',
-              padding: '3px 12px', borderRadius: '12px',
-              fontSize: '11px', fontWeight: '700',
-              letterSpacing: '0.3px',
-            }}>
-              Interested to Apply
-            </span>
+      {/* ── Save Row at Bottom ───────────────────────────────── */}
+      {(editMode || !plan) && !readOnly && (
+        <div className="rsp-submit-row" style={{
+          display: 'flex', gap: '10px', marginTop: '10px', justifyContent: 'flex-end',
+        }}>
+          {plan && (
+            <button type="button" onClick={handleCancel} style={btnGhost}>
+              Cancel
+            </button>
           )}
+          <button type="button" onClick={handleSave} disabled={saving} style={{ ...btnSuccess, opacity: saving ? 0.7 : 1 }}>
+            {saving ? 'Saving...' : 'Save Career Plan'}
+          </button>
         </div>
+      )}
 
-        {!editMode && plan ? (
-          plan.interested_to_apply ? (
-            <div>
-              <div style={{
-                fontSize: '13px', color: 'var(--color-text-subdued)',
-                marginBottom: '14px', lineHeight: '1.6',
-              }}>
-                This participant is looking for employment opportunities.
-              </div>
-              <div className="rsp-grid-2" style={{
-                display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px',
-              }}>
-                <ViewField label="Preferred Industry"
-                  value={plan.interest_industry ? industryLabel(plan.interest_industry) : ''} />
-                <ViewField label="Notes" value={plan.interest_notes} fullWidth />
-              </div>
-            </div>
-          ) : (
-             <div style={{
-              fontSize: '13px', color: 'var(--color-text-subdued)',
-              fontStyle: 'italic',
-            }}>
-              Not currently flagged as interested in job placement.
-            </div>
-          )
-        ) : (
-          <div style={{ display: 'grid', gap: '14px' }}>
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '10px',
-              padding: '12px 14px',
-              background: form.interested_to_apply
-                ? 'var(--color-brand-primary)'
-                : 'var(--color-bg-page)',
-              border: `1px solid ${form.interested_to_apply ? 'var(--color-brand-accent)' : 'var(--color-border-subtle)'}`,
-              borderRadius: '6px',
-            }}>
-              <input
-                type="checkbox"
-                id="interested_to_apply"
-                checked={form.interested_to_apply}
-                onChange={e => setForm({ ...form, interested_to_apply: e.target.checked })}
-                disabled={readOnly}
-                style={{ width: '16px', height: '16px', accentColor: 'var(--color-brand-accent)' }}
-              />
-              <label htmlFor="interested_to_apply" style={{
-                fontSize: '13px', fontWeight: '700', cursor: 'pointer',
-                color: form.interested_to_apply
-                  ? 'var(--color-brand-accent)'
-                  : 'var(--color-text-heading)',
-              }}>
-                Participant is interested in job placement
-              </label>
-            </div>
-
-            {form.interested_to_apply && (
-              <div className="rsp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-                <div>
-                  <label style={labelStyle}>Preferred Industry</label>
-                  <select
-                    style={inputStyle}
-                    value={form.interest_industry}
-                    onChange={e => setForm({ ...form, interest_industry: e.target.value })}
-                    disabled={readOnly}
-                  >
-                    <option value="">— Select Industry —</option>
-                    {config.industries.map(i => (
-                      <option key={i.value} value={i.value}>{i.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label style={labelStyle}>Notes</label>
-                  <input
-                    style={inputStyle}
-                    value={form.interest_notes}
-                    onChange={e => setForm({ ...form, interest_notes: e.target.value })}
-                    placeholder="e.g. Available from June, willing to relocate..."
-                    disabled={readOnly}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
     </div>
   );
 }

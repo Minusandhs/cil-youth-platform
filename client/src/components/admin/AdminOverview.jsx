@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import api from '../../lib/api';
-import { statusLabel, statusColor } from '../../lib/constants';
-
-function fmt(n) {
-  if (n === null || n === undefined) return '—';
-  return Number(n).toLocaleString();
-}
-
+import { useAuth } from '../../contexts/AuthContext';
+import { statusLabel } from '../../lib/constants';
+import { useDashboardSummary } from '../../lib/useDashboardSummary';
+import {
+  HeroStats, ParticipantDemographics, AcademicSection,
+  DevelopmentSection, NeedsRisksSection, HomeVisitsSection, TalentsSection,
+  DataCompletenessSection, DashboardMeta, RebuildSnapshotButton, DashboardEmptyState,
+} from '../common/DashboardSections';
 
 function fmtDate(d) {
   if (!d) return '';
@@ -26,62 +28,36 @@ const sectionTitle = {
   paddingBottom:'10px', borderBottom:'1px solid var(--color-divider)'
 };
 
-const statCard = (color) => ({
-  background:'var(--color-bg-card)', border:'1px solid var(--color-border-subtle)',
-  borderRadius:'8px', padding:'18px 20px',
-  boxShadow:'0 2px 8px rgba(26,22,16,0.06)',
-  borderTop: `3px solid ${color}`
-});
-
 export default function AdminOverview() {
-  const [stats,           setStats          ] = useState(null);
+  const { user } = useAuth();
   const [ldcs,            setLdcs           ] = useState([]);
   const [filterLDC,       setFilterLDC      ] = useState('');
-  const [overview,        setOverview       ] = useState(null);
-  const [loading,         setLoading        ] = useState(true);
-  const [ovLoading,       setOvLoading      ] = useState(false);
   const [exporting,       setExporting      ] = useState('');
   const [exportError,     setExportError    ] = useState('');
   const [exportType,      setExportType     ] = useState('participants');
 
+  const {
+    data: summary,
+    loading: summaryLoading,
+    forceRefresh,
+    refreshing,
+  } = useDashboardSummary({ ldcId: filterLDC || null });
+
+  const isSuperAdmin = user?.role === 'super_admin';
+
+  async function handleRebuild() {
+    try {
+      await forceRefresh();
+      toast.success('Dashboard snapshot rebuilt');
+    } catch (err) {
+      const msg = err?.response?.data?.error || 'Failed to rebuild snapshot';
+      toast.error(msg);
+    }
+  }
+
   useEffect(() => {
-    loadAll();
+    api.get('/api/ldcs').then(r => setLdcs(r.data)).catch(() => {});
   }, []);
-
-  async function loadAll() {
-    try {
-      const [statsRes, ldcRes, ovRes] = await Promise.all([
-        api.get('/api/auth/stats'),
-        api.get('/api/ldcs'),
-        api.get('/api/participants/overview'),
-      ]);
-      setStats(statsRes.data);
-      setLdcs(ldcRes.data);
-      setOverview(ovRes.data);
-    } catch {
-      // silently fail individual sections
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function loadOverview(ldc) {
-    setOvLoading(true);
-    try {
-      const params = ldc ? { ldc_id: ldc } : {};
-      const res = await api.get('/api/participants/overview', { params });
-      setOverview(res.data);
-    } catch {
-      // silently fail
-    } finally {
-      setOvLoading(false);
-    }
-  }
-
-  function handleLDCChange(val) {
-    setFilterLDC(val);
-    loadOverview(val);
-  }
 
   // ── Export helpers ──────────────────────────────────────────────
   async function doExport(key, endpoint, buildRows, filename) {
@@ -229,25 +205,6 @@ export default function AdminOverview() {
     );
   }
 
-  // ── Render helpers ──────────────────────────────────────────────
-  function StatCard({ label, value, color, sub }) {
-    return (
-      <div style={statCard(color)}>
-        <div style={{ fontSize:'28px', fontWeight:'700', color, lineHeight:1 }}>
-          {loading ? '…' : fmt(value)}
-        </div>
-        <div style={{ fontSize:'11px', color:'var(--color-text-subdued)', marginTop:'6px',
-          fontWeight:'600', textTransform:'uppercase', letterSpacing:'0.4px' }}>
-          {label}
-        </div>
-        {sub && <div style={{ fontSize:'11px', color:'var(--color-text-subdued)', marginTop:'3px' }}>{sub}</div>}
-      </div>
-    );
-  }
-
-  // Compute total for bar widths
-  const totalStatus = overview?.status_breakdown?.reduce((s,r) => s + r.count, 0) || 1;
-
   const selectedLDCLabel = filterLDC
     ? ldcs.find(l => l.id === filterLDC)?.ldc_id || ''
     : 'All LDCs';
@@ -261,137 +218,93 @@ export default function AdminOverview() {
         Platform summary and participant insights.
       </p>
 
-      {/* ── SECTION 1: Summary ───────────────────────────────────── */}
-      <div style={{ marginBottom:'32px' }}>
-        <div style={sectionTitle}>Summary</div>
-        <div className="rsp-grid-3" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'16px', marginBottom:'16px' }}>
-          <StatCard label="Total Users"         value={stats?.users}        color="var(--color-brand-accent)" />
-          <StatCard label="LDC Centres"         value={stats?.ldcs}         color="var(--color-brand-accent)" />
-          <StatCard label="Active Participants"  value={stats?.participants} color="var(--color-brand-accent)" />
-        </div>
-        <div className="rsp-grid-3" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'16px' }}>
-          <StatCard label="Inactive Participants" value={stats?.inactive_participants} color="var(--color-brand-accent)" />
-          <StatCard label="Active Male"           value={stats?.active_male}           color="var(--color-brand-accent)" />
-          <StatCard label="Active Female"         value={stats?.active_female}         color="var(--color-brand-accent)" />
-        </div>
-      </div>
-
-      {/* ── SECTION 2: Participant Info (filterable) ──────────────── */}
-      <div style={{ marginBottom:'32px' }}>
-        {/* Header + LDC Filter */}
-        <div className="rsp-section-header" style={{ display:'flex', justifyContent:'space-between',
-          alignItems:'center', marginBottom:'16px',
-          paddingBottom:'10px', borderBottom:'1px solid var(--color-divider)' }}>
-          <div style={{ fontSize:'15px', fontWeight:'700', color:'var(--color-text-heading)' }}>
-            Participant Information
-            {filterLDC && (
-              <span style={{ marginLeft:'10px', background:'var(--color-tint-info)',
-                color:'var(--color-info)', padding:'2px 10px', borderRadius:'10px',
-                fontSize:'11px', fontWeight:'700' }}>
-                {selectedLDCLabel}
+      {/* ── Page-level LDC filter + snapshot controls ─────────────── */}
+      <div className="rsp-section-header" style={{ display:'flex', justifyContent:'space-between',
+        alignItems:'center', marginBottom:'20px',
+        paddingBottom:'12px', borderBottom:'1px solid var(--color-divider)', gap:'12px' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'14px', flexWrap:'wrap' }}>
+          <div style={{ fontSize:'13px', fontWeight:'600', color:'var(--color-text-subdued)' }}>
+            Scope:
+            <span style={{ marginLeft:'8px', background:'var(--color-tint-info)',
+              color:'var(--color-info)', padding:'3px 10px', borderRadius:'10px',
+              fontSize:'12px', fontWeight:'700' }}>
+              {selectedLDCLabel}
+            </span>
+            {summaryLoading && (
+              <span style={{ marginLeft:'10px', color:'var(--color-text-muted)', fontSize:'12px' }}>
+                loading…
               </span>
             )}
           </div>
-          <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-            <select
-              aria-label="Filter by LDC"
-              value={filterLDC}
-              onChange={e => handleLDCChange(e.target.value)}
-              style={{ padding:'7px 11px', border:'1px solid var(--color-border-subtle)',
-                borderRadius:'5px', fontSize:'12px', background:'var(--color-bg-page)',
-                color:'var(--color-text-heading)', fontFamily:'inherit', outline:'none' }}>
-              <option value="">All LDCs</option>
-              {ldcs.map(l => (
-                <option key={l.id} value={l.id}>{l.ldc_id} — {l.name}</option>
-              ))}
-            </select>
-            {filterLDC && (
-              <button onClick={() => handleLDCChange('')}
-                style={{ background:'transparent', color:'var(--color-text-subdued)',
-                  border:'1px solid var(--color-border-subtle)', borderRadius:'5px',
-                  padding:'7px 12px', fontSize:'12px',
-                  cursor:'pointer', fontFamily:'inherit' }}>
-                Clear
-              </button>
-            )}
-          </div>
+          <DashboardMeta generatedAt={summary?.generated_at} />
         </div>
-
-        {ovLoading ? (
-          <div style={{ padding:'32px', textAlign:'center', color:'var(--color-text-subdued)', fontSize:'13px' }}>
-            Loading...
-          </div>
-        ) : overview ? (
-          <div>
-            {/* Top row: Status breakdown + TES type breakdown */}
-            <div className="rsp-grid-2" style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px', marginBottom:'16px' }}>
-
-              {/* Status Breakdown */}
-              <div style={card}>
-                <div style={{ fontSize:'13px', fontWeight:'700', marginBottom:'14px', color:'var(--color-text-heading)' }}>
-                  Participant Status
-                  <span style={{ marginLeft:'8px', color:'var(--color-text-subdued)', fontWeight:'400', fontSize:'12px' }}>
-                    ({fmt(overview.total_participants)} total)
-                  </span>
-                </div>
-                {overview.status_breakdown.length === 0 ? (
-                  <div style={{ color:'var(--color-text-subdued)', fontSize:'13px' }}>No data</div>
-                ) : (
-                  overview.status_breakdown.map(row => {
-                    const pct = Math.round((row.count / totalStatus) * 100);
-                    const color = statusColor(row.status);
-                    return (
-                      <div key={row.status} style={{ marginBottom:'10px' }}>
-                        <div style={{ display:'flex', justifyContent:'space-between',
-                          fontSize:'12px', marginBottom:'4px' }}>
-                          <span style={{ color:'var(--color-text-heading)', fontWeight:'600' }}>
-                            {statusLabel(row.status)}
-                          </span>
-                          <span style={{ color:'var(--color-text-subdued)', fontWeight:'700' }}>
-                            {fmt(row.count)} <span style={{ color:'var(--color-text-subdued)', fontWeight:'400' }}>({pct}%)</span>
-                          </span>
-                        </div>
-                        <div style={{ height:'6px', background:'var(--color-bg-stripe)', borderRadius:'3px', overflow:'hidden' }}>
-                          <div style={{ width:`${pct}%`, height:'100%',
-                            background: color, borderRadius:'3px', transition:'width 0.4s' }} />
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-
-              {/* Personal Stats */}
-              <div style={card}>
-                  <div style={{ fontSize:'13px', fontWeight:'700', marginBottom:'14px', color:'var(--color-text-heading)' }}>
-                    Personal Information
-                  </div>
-                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
-                    {[
-                      { label:'Married',           value: overview.married,     color:'var(--color-brand-accent)' },
-                      { label:'Has Children',       value: overview.has_children, color:'var(--color-brand-accent)' },
-                      { label:'Pregnant',           value: overview.pregnant,    color:'var(--color-brand-accent)' },
-                      { label:'Living Outside LDC', value: overview.outside_ldc, color:'var(--color-brand-accent)' },
-                    ].map(s => (
-                      <div key={s.label} style={{ background:'var(--color-bg-page)',
-                        border:'1px solid var(--color-divider)', borderRadius:'6px',
-                        padding:'12px', textAlign:'center' }}>
-                        <div style={{ fontSize:'22px', fontWeight:'700', color: s.color }}>
-                          {fmt(s.value)}
-                        </div>
-                        <div style={{ fontSize:'10px', color:'var(--color-text-subdued)',
-                          marginTop:'4px', textTransform:'uppercase',
-                          letterSpacing:'0.3px', fontWeight:'600' }}>
-                          {s.label}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-            </div>
-          </div>
-        ) : null}
+        <div style={{ display:'flex', alignItems:'center', gap:'8px', flexWrap:'wrap' }}>
+          <select
+            aria-label="Filter by LDC"
+            value={filterLDC}
+            onChange={e => setFilterLDC(e.target.value)}
+            style={{ padding:'7px 11px', border:'1px solid var(--color-border-subtle)',
+              borderRadius:'5px', fontSize:'12px', background:'var(--color-bg-page)',
+              color:'var(--color-text-heading)', fontFamily:'inherit', outline:'none' }}>
+            <option value="">All LDCs</option>
+            {ldcs.map(l => (
+              <option key={l.id} value={l.id}>{l.ldc_id} — {l.name}</option>
+            ))}
+          </select>
+          {filterLDC && (
+            <button onClick={() => setFilterLDC('')}
+              style={{ background:'transparent', color:'var(--color-text-subdued)',
+                border:'1px solid var(--color-border-subtle)', borderRadius:'5px',
+                padding:'7px 12px', fontSize:'12px',
+                cursor:'pointer', fontFamily:'inherit' }}>
+              Clear
+            </button>
+          )}
+          {isSuperAdmin && (
+            <RebuildSnapshotButton onClick={handleRebuild} refreshing={refreshing} />
+          )}
+        </div>
       </div>
+
+      {/* Empty state: no snapshot yet (first load or post-truncate) */}
+      {!summary && !summaryLoading && (
+        <DashboardEmptyState
+          canRefresh={isSuperAdmin}
+          refreshing={refreshing}
+          onRefresh={handleRebuild}
+        />
+      )}
+
+      {/* ── SECTION 1: Hero Stats ─────────────────────────────────── */}
+      <HeroStats hero={summary?.hero} isAdmin={true} loading={summaryLoading} />
+
+      {/* ── SECTION 2: Demographics (status + personal info) ─────── */}
+      <ParticipantDemographics
+        statusBreakdown={summary?.status_breakdown}
+        personalInfo={summary?.personal_info}
+      />
+
+      {/* ── SECTION 3: Academic Performance ──────────────────────── */}
+      <AcademicSection academic={summary?.academic} />
+
+      {/* ── SECTION 5: Development Plans + Mentoring + Actions ───── */}
+      <DevelopmentSection
+        devPlans={summary?.dev_plans}
+        mentorSessions={summary?.mentor_sessions}
+        actionItems={summary?.action_items}
+      />
+
+      {/* ── SECTION 6: Needs & Risks ─────────────────────────────── */}
+      <NeedsRisksSection needsRisks={summary?.needs_risks} />
+
+      {/* ── SECTION 7: Home Visits ───────────────────────────────── */}
+      <HomeVisitsSection homeVisits={summary?.home_visits} />
+
+      {/* ── SECTION 8: Talents & Skills ──────────────────────────── */}
+      <TalentsSection talents={summary?.talents} />
+
+      {/* ── SECTION 9: Data Completeness (admin scope only) ──────── */}
+      <DataCompletenessSection completeness={summary?.completeness} />
 
       {/* ── SECTION 4: Data Export ────────────────────────────────── */}
       {(() => {

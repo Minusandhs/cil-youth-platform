@@ -259,3 +259,29 @@ export function instLabel(value) {
 export function maritalLabel(value) {
   return MARITAL_STATUS.find(s => s.value === value)?.label || value || '—';
 }
+
+
+// ── Talent Categories ────────────────────────────────────────────
+// Used in: Talents (participant), DashboardSections (talents card).
+// Server source of truth: server/config/talents_categories.js — these
+// are the same keys, with display labels and palette colors for chips.
+export const TALENT_CATEGORIES = {
+  digital:       { label: 'Digital & Technical',     color: 'var(--color-info)' },
+  cognitive:     { label: 'Cognitive & Analytical',  color: 'var(--color-brand-accent)' },
+  creative:      { label: 'Creative & Performing',   color: 'var(--color-special)' },
+  social:        { label: 'Social & Emotional',      color: 'var(--color-success)' },
+  communication: { label: 'Communication & Leadership', color: 'var(--color-warning)' },
+  athletic:      { label: 'Athletic & Physical',     color: 'var(--color-stat-funds)' },
+  practical:     { label: 'Practical Life',          color: 'var(--color-brand-secondary)' },
+  language:      { label: 'Language',                color: 'var(--color-text-subdued)' },
+};
+
+/** Returns the display label for a talent category value */
+export function talentCategoryLabel(value) {
+  return TALENT_CATEGORIES[value]?.label || value || '—';
+}
+
+/** Returns the display color for a talent category value */
+export function talentCategoryColor(value) {
+  return TALENT_CATEGORIES[value]?.color || 'var(--color-text-muted)';
+}

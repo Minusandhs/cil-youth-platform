@@ -50,9 +50,87 @@ const label = {
 };
 
 const fmt = (n) => (n === null || n === undefined ? '—' : Number(n).toLocaleString());
-const fmtLKR = (n) => (n == null ? '—' : 'LKR ' + Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 }));
 const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('en-GB') : '');
 const pct = (n, d) => (d > 0 ? Math.round((n / d) * 100) : 0);
+
+// ── Snapshot freshness pill ─────────────────────────────────────
+// Read-only label showing how stale the cached payload is. Both
+// overviews render this near the top.
+function relTime(ts) {
+  if (!ts) return 'never';
+  const diff = Math.max(0, Date.now() - new Date(ts).getTime());
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m} min ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} h ago`;
+  return `${Math.floor(h / 24)} d ago`;
+}
+
+export function DashboardMeta({ generatedAt }) {
+  return (
+    <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+      Last refreshed:{' '}
+      <span style={{ color: 'var(--color-text-subdued)', fontWeight: '600' }}>
+        {relTime(generatedAt)}
+      </span>
+    </span>
+  );
+}
+
+// ── Prominent "Rebuild Snapshot" button (super-admin only) ──────
+// Snapshot is normally rebuilt nightly; this lets a super-admin
+// regenerate it on demand after editing underlying data.
+export function RebuildSnapshotButton({ onClick, refreshing }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={refreshing}
+      title="Recomputes every dashboard snapshot from the live database."
+      style={{
+        background: refreshing ? 'var(--color-text-subdued)' : 'var(--color-brand-accent)',
+        color: '#fff', border: 'none', borderRadius: '6px',
+        padding: '8px 16px', fontSize: '12px', fontWeight: '700',
+        cursor: refreshing ? 'not-allowed' : 'pointer',
+        fontFamily: 'inherit', whiteSpace: 'nowrap',
+        display: 'inline-flex', alignItems: 'center', gap: '6px',
+      }}
+    >
+      {refreshing ? 'Rebuilding…' : '↻ Rebuild Snapshot'}
+    </button>
+  );
+}
+
+// ── Empty state shown when the snapshot is missing ──────────────
+// First-load case (post-truncate or fresh install) where /api/dashboard/summary
+// hasn't yielded a payload yet. Super-admins get an inline rebuild button.
+export function DashboardEmptyState({ canRefresh, refreshing, onRefresh }) {
+  return (
+    <div style={{
+      background: 'var(--color-bg-card)',
+      border: '1px dashed var(--color-border-subtle)',
+      borderRadius: '8px', padding: '32px', textAlign: 'center',
+      marginBottom: '32px',
+    }}>
+      <div style={{ fontSize: '14px', fontWeight: '700',
+        color: 'var(--color-text-heading)', marginBottom: '6px' }}>
+        No dashboard snapshot yet
+      </div>
+      <div style={{ fontSize: '12px', color: 'var(--color-text-subdued)',
+        marginBottom: canRefresh ? '16px' : '0', maxWidth: '480px',
+        margin: '0 auto', lineHeight: 1.5 }}>
+        Snapshots aggregate data from across the platform. They rebuild
+        nightly, but you can also generate one on demand.
+      </div>
+      {canRefresh && (
+        <div style={{ marginTop: '16px' }}>
+          <RebuildSnapshotButton onClick={onRefresh} refreshing={refreshing} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 // ── Primitive: Stat Card ─────────────────────────────────────────
 export function StatCard({ label: lbl, value, color, sub, loading }) {
@@ -172,10 +250,6 @@ export function HeroStats({ hero, isAdmin, loading }) {
           {cards.slice(3).map(c => <StatCard key={c.label} {...c} loading={loading} />)}
         </div>
       )}
-      <div style={{ marginTop: '16px' }}>
-        <StatCard label="TES Active Scholars" value={hero.tes_active_scholars}
-          color="var(--color-stat-funds)" loading={loading} sub="Approved on funded/completed batches" />
-      </div>
     </div>
   );
 }
@@ -331,91 +405,7 @@ export function AcademicSection({ academic }) {
 }
 
 
-// ── Section 4 — TES Pipeline ─────────────────────────────────────
-export function TesSection({ tes, isAdmin }) {
-  if (!tes) return null;
-  const cards = [
-    { label: 'Open Batches',        value: tes.open_batches, color: 'var(--color-info)' },
-    { label: 'Pending',             value: tes.pending,      color: 'var(--color-brand-accent)' },
-    { label: 'Approved',            value: tes.approved,     color: 'var(--color-success)' },
-    { label: 'Rejected',            value: tes.rejected,     color: 'var(--color-danger)' },
-  ];
-  return (
-    <div style={{ marginBottom: '32px' }}>
-      <div style={sectionTitle}>TES Scholarship Pipeline</div>
-
-      <div className="rsp-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px', marginBottom: '16px' }}>
-        {cards.map(c => <StatCard key={c.label} {...c} />)}
-      </div>
-
-      <div className="rsp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: isAdmin ? '16px' : '0' }}>
-        <div style={statCardStyle('var(--color-success)')}>
-          <div style={{ fontSize: '22px', fontWeight: '700', color: 'var(--color-success)', lineHeight: 1 }}>
-            {fmtLKR(tes.total_approved_lkr)}
-          </div>
-          <div style={{ fontSize: '11px', color: 'var(--color-text-subdued)', marginTop: '6px',
-            fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
-            Total Approved
-          </div>
-        </div>
-        <div style={statCardStyle('var(--color-stat-funds)')}>
-          <div style={{ fontSize: '22px', fontWeight: '700', color: 'var(--color-stat-funds)', lineHeight: 1 }}>
-            {fmtLKR(tes.total_disbursed_lkr)}
-          </div>
-          <div style={{ fontSize: '11px', color: 'var(--color-text-subdued)', marginTop: '6px',
-            fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
-            Total Disbursed
-          </div>
-        </div>
-      </div>
-
-      {isAdmin && tes.funnel && (
-        <div style={{ ...card, marginBottom: '16px' }}>
-          <div style={subTitle}>Application Funnel</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '10px' }}>
-            {[
-              { label: 'Pending',   value: tes.funnel.pending,   color: 'var(--color-brand-accent)' },
-              { label: 'Approved',  value: tes.funnel.approved,  color: 'var(--color-success)' },
-              { label: 'Funded',    value: tes.funnel.funded,    color: 'var(--color-info)' },
-              { label: 'Disbursed', value: tes.funnel.disbursed, color: 'var(--color-stat-funds)' },
-            ].map((f, i, arr) => {
-              const maxVal = Math.max(1, ...arr.map(x => x.value));
-              const percent = pct(f.value, maxVal);
-              return (
-                <div key={f.label}>
-                  <div style={{ fontSize: '18px', fontWeight: '700', color: f.color }}>{fmt(f.value)}</div>
-                  <div style={{ ...label, marginTop: 0, marginBottom: '6px' }}>{f.label}</div>
-                  <div style={{ height: '6px', background: 'var(--color-bg-stripe)',
-                    borderRadius: '3px', overflow: 'hidden' }}>
-                    <div style={{ width: `${percent}%`, height: '100%',
-                      background: f.color, borderRadius: '3px' }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {isAdmin && tes.by_ldc && tes.by_ldc.length > 0 && (
-        <div style={card}>
-          <div style={subTitle}>Disbursement by LDC</div>
-          {(() => {
-            const max = Math.max(1, ...tes.by_ldc.map(r => r.disbursed));
-            return tes.by_ldc.filter(r => r.disbursed > 0).map(r => (
-              <BarRow key={r.ldc_code}
-                label={`${r.ldc_code} — ${r.ldc_name}`}
-                count={fmtLKR(r.disbursed)}
-                percent={pct(r.disbursed, max)}
-                color="var(--color-stat-funds)" />
-            ));
-          })()}
-          {tes.by_ldc.every(r => r.disbursed === 0) && <div style={muted}>No disbursements yet.</div>}
-        </div>
-      )}
-    </div>
-  );
-}
+// (Section 4 — TES Pipeline removed; will be reintroduced as a dedicated TES dashboard.)
 
 
 // ── Section 5 — Dev Plans + Mentoring + Action Items ─────────────
@@ -549,7 +539,7 @@ export function NeedsRisksSection({ needsRisks }) {
           {needsRisks.top_need_categories.length > 0 ? needsRisks.top_need_categories.map(c => (
             <div key={c.category} style={{ display: 'flex', justifyContent: 'space-between',
               fontSize: '12px', padding: '5px 0', borderBottom: '1px solid rgba(26,64,104,0.15)' }}>
-              <span style={{ color: 'var(--color-text-heading)' }}>{c.category}</span>
+              <span style={{ color: 'var(--color-text-heading)' }}>{c.label || c.category}</span>
               <span style={{ color: 'var(--color-info)', fontWeight: '700' }}>{c.count}</span>
             </div>
           )) : <div style={muted}>No active needs.</div>}
@@ -565,7 +555,7 @@ export function NeedsRisksSection({ needsRisks }) {
           {needsRisks.top_risk_categories.length > 0 ? needsRisks.top_risk_categories.map(c => (
             <div key={c.category} style={{ display: 'flex', justifyContent: 'space-between',
               fontSize: '12px', padding: '5px 0', borderBottom: '1px solid rgba(155,35,53,0.15)' }}>
-              <span style={{ color: 'var(--color-text-heading)' }}>{c.category}</span>
+              <span style={{ color: 'var(--color-text-heading)' }}>{c.label || c.category}</span>
               <span style={{ color: 'var(--color-danger)', fontWeight: '700' }}>{c.count}</span>
             </div>
           )) : <div style={muted}>No active risks.</div>}
@@ -645,7 +635,7 @@ export function TalentsSection({ talents }) {
     <div style={{ marginBottom: '32px' }}>
       <div style={sectionTitle}>Talents & Skills</div>
       <div style={card}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+        <div className="rsp-grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' }}>
           <div style={miniCard}>
             <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--color-info)' }}>
               {fmt(talents.total_records)}
@@ -686,13 +676,16 @@ export function TalentsSection({ talents }) {
 
 
 // ── Section 9 — Data Completeness (admin only) ───────────────────
+// `?? 0` fallbacks let stale snapshots (pre-migration 032) still render
+// without "undefined%" until the next snapshot refresh.
 export function DataCompletenessSection({ completeness }) {
   if (!completeness) return null;
   const headline = [
-    { label: 'Profile Completion',       value: completeness.profile_pct },
-    { label: 'O/L Records Coverage',     value: completeness.ol_pct },
-    { label: 'Development Plan Coverage', value: completeness.dev_plan_pct },
-    { label: 'Home Visit Coverage',      value: completeness.visit_pct },
+    { label: 'Profile Completion',              value: completeness.profile_pct  ?? 0 },
+    { label: 'O/L Records Coverage',            value: completeness.ol_pct       ?? 0 },
+    { label: 'Development Plan Coverage',       value: completeness.dev_plan_pct ?? 0 },
+    { label: 'Home Visit Coverage (Monthly)',   value: completeness.visit_pct    ?? 0 },
+    { label: 'Mentoring Sessions (Monthly)',    value: completeness.mentor_pct   ?? 0 },
   ];
   return (
     <div style={{ marginBottom: '32px' }}>
@@ -732,6 +725,7 @@ export function DataCompletenessSection({ completeness }) {
                   <th style={{ padding: '8px', color: 'var(--color-text-heading)', fontWeight: '700', textAlign: 'right' }}>O/L %</th>
                   <th style={{ padding: '8px', color: 'var(--color-text-heading)', fontWeight: '700', textAlign: 'right' }}>Dev Plan %</th>
                   <th style={{ padding: '8px', color: 'var(--color-text-heading)', fontWeight: '700', textAlign: 'right' }}>Visits %</th>
+                  <th style={{ padding: '8px', color: 'var(--color-text-heading)', fontWeight: '700', textAlign: 'right' }}>Mentoring %</th>
                 </tr>
               </thead>
               <tbody>
@@ -742,10 +736,11 @@ export function DataCompletenessSection({ completeness }) {
                       <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>{r.ldc_name}</div>
                     </td>
                     <td data-label="Active" style={{ padding: '8px', textAlign: 'right' }}>{r.active}</td>
-                    <td data-label="Profile %" style={{ padding: '8px', textAlign: 'right' }}>{r.profile_pct}%</td>
-                    <td data-label="O/L %" style={{ padding: '8px', textAlign: 'right' }}>{r.ol_pct}%</td>
-                    <td data-label="Dev Plan %" style={{ padding: '8px', textAlign: 'right' }}>{r.dev_plan_pct}%</td>
-                    <td data-label="Visits %" style={{ padding: '8px', textAlign: 'right' }}>{r.visit_pct}%</td>
+                    <td data-label="Profile %" style={{ padding: '8px', textAlign: 'right' }}>{r.profile_pct ?? 0}%</td>
+                    <td data-label="O/L %" style={{ padding: '8px', textAlign: 'right' }}>{r.ol_pct ?? 0}%</td>
+                    <td data-label="Dev Plan %" style={{ padding: '8px', textAlign: 'right' }}>{r.dev_plan_pct ?? 0}%</td>
+                    <td data-label="Visits %" style={{ padding: '8px', textAlign: 'right' }}>{r.visit_pct ?? 0}%</td>
+                    <td data-label="Mentoring %" style={{ padding: '8px', textAlign: 'right' }}>{r.mentor_pct ?? 0}%</td>
                   </tr>
                 ))}
               </tbody>
