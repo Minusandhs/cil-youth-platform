@@ -198,7 +198,7 @@ export default function Career({ participantId, readOnly = false }) {
     fontSize: '14px', fontWeight: '700',
     marginBottom: '16px', paddingBottom: '10px',
     borderBottom: '1px solid var(--color-divider)',
-    color: 'var(--color-brand-primary)',
+    color: 'var(--color-text-heading)',
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
   };
   const labelStyle = {
@@ -209,7 +209,7 @@ export default function Career({ participantId, readOnly = false }) {
   const inputStyle = {
     width: '100%', padding: '9px 11px',
     border: '1px solid var(--color-border-subtle)', borderRadius: '5px',
-    fontSize: '13px', color: 'var(--color-brand-primary)',
+    fontSize: '13px', color: 'var(--color-text-heading)',
     background: 'var(--color-bg-page)', outline: 'none', fontFamily: 'inherit',
     boxSizing: 'border-box',
   };
@@ -230,7 +230,7 @@ export default function Career({ participantId, readOnly = false }) {
   };
 
   if (loading) return (
-    <div style={{ color: 'var(--color-text-muted)', fontSize: '13px', padding: '24px' }}>
+    <div style={{ color: 'var(--color-text-subdued)', fontSize: '13px', padding: '24px' }}>
       Loading career data...
     </div>
   );
@@ -333,7 +333,7 @@ export default function Career({ participantId, readOnly = false }) {
                           color: 'var(--color-brand-accent)',
                           fontSize: '11px', fontWeight: '700', flexShrink: 0,
                         }}>{i + 1}</span>
-                        <span style={{ fontSize: '13px', color: 'var(--color-brand-primary)' }}>{c}</span>
+                        <span style={{ fontSize: '13px', color: 'var(--color-text-heading)' }}>{c}</span>
                       </div>
                     ) : null
                   ))}
@@ -492,7 +492,7 @@ export default function Career({ participantId, readOnly = false }) {
                   }}>
                     <div style={{
                       fontSize: '10px', fontWeight: '700',
-                      color: 'var(--color-text-muted)',
+                      color: 'var(--color-text-subdued)',
                       textTransform: 'uppercase', letterSpacing: '0.4px',
                       marginBottom: '6px',
                     }}>{rank}</div>
@@ -506,10 +506,10 @@ export default function Career({ participantId, readOnly = false }) {
                             display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
                             width: '26px', height: '26px', borderRadius: '50%',
                             background: 'var(--color-brand-accent)',
-                            color: 'var(--color-brand-primary)',
+                            color: 'var(--color-text-heading)',
                             fontSize: '13px', fontWeight: '700',
                           }}>{code}</span>
-                          <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-brand-primary)' }}>
+                          <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-text-heading)' }}>
                             {meta?.label}
                           </span>
                         </div>
@@ -528,7 +528,7 @@ export default function Career({ participantId, readOnly = false }) {
               })}
             </div>
           ) : (
-            <div style={{ fontSize: '13px', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>
+            <div style={{ fontSize: '13px', color: 'var(--color-text-subdued)', fontStyle: 'italic' }}>
               No Holland Code recorded yet.
             </div>
           )
@@ -610,7 +610,7 @@ export default function Career({ participantId, readOnly = false }) {
                       color: active ? 'var(--color-brand-primary)' : 'var(--color-text-subdued)',
                       fontSize: '11px', fontWeight: '700', flexShrink: 0,
                     }}>{h.value}</span>
-                    <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-brand-primary)', minWidth: '90px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--color-text-heading)', minWidth: '90px' }}>
                       {h.label}
                     </span>
                     <span style={{ fontSize: '11px', color: 'var(--color-text-subdued)', lineHeight: '1.4' }}>
@@ -628,7 +628,7 @@ export default function Career({ participantId, readOnly = false }) {
       <div style={card}>
         <div style={secTitle}>
           <span>Career Readiness</span>
-          <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: '400' }}>
+          <span style={{ fontSize: '11px', color: 'var(--color-text-subdued)', fontWeight: '400' }}>
             {completedCount} / {totalItems} complete
           </span>
         </div>
@@ -682,7 +682,7 @@ export default function Career({ participantId, readOnly = false }) {
                   />
                   <label htmlFor={`ready_${item.value}`} style={{
                     fontSize: '13px', fontWeight: '600', flex: 1,
-                    color: isCompleted ? 'var(--color-success)' : 'var(--color-brand-primary)',
+                    color: isCompleted ? 'var(--color-success)' : 'var(--color-text-heading)',
                     cursor: readOnly ? 'default' : 'pointer',
                   }}>
                     {item.label}
@@ -692,7 +692,7 @@ export default function Career({ participantId, readOnly = false }) {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <span style={{
                         fontSize: '10px', fontWeight: '700',
-                        color: 'var(--color-text-muted)',
+                        color: 'var(--color-text-subdued)',
                         textTransform: 'uppercase', letterSpacing: '0.4px',
                       }}>
                         Completed
@@ -756,7 +756,7 @@ export default function Career({ participantId, readOnly = false }) {
                     {entry.history && entry.history.length > 0 && (
                       <div style={{
                         marginTop: '8px', fontSize: '10px',
-                        color: 'var(--color-text-muted)',
+                        color: 'var(--color-text-subdued)',
                       }}>
                         {entry.history.length} change{entry.history.length !== 1 ? 's' : ''} logged
                       </div>
@@ -784,7 +784,7 @@ export default function Career({ participantId, readOnly = false }) {
           {plan?.interested_to_apply && (
             <span style={{
               background: 'var(--color-brand-accent)',
-              color: 'var(--color-brand-primary)',
+              color: 'var(--color-text-heading)',
               padding: '3px 12px', borderRadius: '12px',
               fontSize: '11px', fontWeight: '700',
               letterSpacing: '0.3px',
@@ -812,8 +812,8 @@ export default function Career({ participantId, readOnly = false }) {
               </div>
             </div>
           ) : (
-            <div style={{
-              fontSize: '13px', color: 'var(--color-text-muted)',
+             <div style={{
+              fontSize: '13px', color: 'var(--color-text-subdued)',
               fontStyle: 'italic',
             }}>
               Not currently flagged as interested in job placement.
@@ -842,7 +842,7 @@ export default function Career({ participantId, readOnly = false }) {
                 fontSize: '13px', fontWeight: '700', cursor: 'pointer',
                 color: form.interested_to_apply
                   ? 'var(--color-brand-accent)'
-                  : 'var(--color-brand-primary)',
+                  : 'var(--color-text-heading)',
               }}>
                 Participant is interested in job placement
               </label>
@@ -889,12 +889,12 @@ function ViewField({ label, value, fullWidth = false }) {
   return (
     <div style={{ gridColumn: fullWidth ? '1 / -1' : 'auto' }}>
       <div style={{
-        fontSize: '10px', fontWeight: '700', color: 'var(--color-text-muted)',
+        fontSize: '10px', fontWeight: '700', color: 'var(--color-text-subdued)',
         textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '4px',
       }}>{label}</div>
       <div style={{
         fontSize: '13px',
-        color: has ? 'var(--color-brand-primary)' : 'var(--color-text-placeholder)',
+        color: has ? 'var(--color-text-heading)' : 'var(--color-text-placeholder)',
         whiteSpace: 'pre-wrap',
       }}>
         {has ? value : '—'}

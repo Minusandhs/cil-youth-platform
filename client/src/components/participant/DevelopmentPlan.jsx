@@ -33,7 +33,7 @@ const labelStyle = {
 const inputStyle = {
   width: '100%', padding: '9px 11px',
   border: '1px solid var(--color-border-subtle)', borderRadius: '5px',
-  fontSize: '13px', color: 'var(--color-brand-primary)',
+  fontSize: '13px', color: 'var(--color-text-heading)',
   background: 'var(--color-bg-page)', outline: 'none', fontFamily: 'inherit',
   boxSizing: 'border-box',
 };
@@ -107,7 +107,7 @@ function ViewField({ label, value }) {
         textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '3px',
       }}>{label}</div>
       <div style={{
-        fontSize: '13px', color: 'var(--color-brand-primary)',
+        fontSize: '13px', color: 'var(--color-text-heading)',
         lineHeight: '1.6', whiteSpace: 'pre-wrap',
       }}>{value}</div>
     </div>
@@ -388,7 +388,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <h3 style={{
             fontSize: '16px', fontWeight: '700',
-            color: 'var(--color-brand-primary)', margin: 0,
+            color: 'var(--color-text-heading)', margin: 0,
           }}>
             Development Plan
           </h3>
@@ -853,7 +853,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                     }}>
                       <span style={{
                         fontSize: '13px', fontWeight: '700',
-                        color: 'var(--color-brand-primary)',
+                        color: 'var(--color-text-heading)',
                       }}>
                         {new Date(c.conversation_date).toLocaleString('en-GB', {
                           day: '2-digit', month: 'short', year: 'numeric',
@@ -890,7 +890,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
 
                     {/* Discussion points */}
                     <div style={{
-                      fontSize: '13px', color: 'var(--color-brand-primary)',
+                      fontSize: '13px', color: 'var(--color-text-heading)',
                       lineHeight: '1.6', marginBottom: c.next_meeting_date ? '10px' : 0,
                       whiteSpace: 'pre-wrap',
                     }}>
@@ -1035,7 +1035,7 @@ function buildPrintHTML(name, year, plan, actionItems, conversations) {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      border-bottom: 2px solid #1a1610;
+      border-bottom: 2px solid var(--color-brand-primary);
       padding-bottom: 6px;
       margin-bottom: 10px;
     }
@@ -1048,7 +1048,7 @@ function buildPrintHTML(name, year, plan, actionItems, conversations) {
       flex-shrink: 0;
       display: flex;
       gap: 0;
-      border: 1px solid #d4c9b0;
+      border: 1px solid var(--color-border-subtle);
       border-radius: 4px;
       overflow: hidden;
       margin-bottom: 10px;
@@ -1056,7 +1056,7 @@ function buildPrintHTML(name, year, plan, actionItems, conversations) {
     .meta-item {
       flex: 1;
       padding: 6px 10px;
-      border-right: 1px solid #d4c9b0;
+      border-right: 1px solid var(--color-border-subtle);
       background: #f5f2ec;
     }
     .meta-item:last-child { border-right: none; }
@@ -1098,7 +1098,7 @@ function buildPrintHTML(name, year, plan, actionItems, conversations) {
     .goal-value {
       flex: 1;
       font-size: 11px; color: #111; line-height: 1.5;
-      border-left: 2px solid #c49a3c;
+      border-left: 2px solid var(--color-brand-accent);
       padding-left: 6px;
     }
     .blank-lines { flex: 1; display: flex; flex-direction: column; gap: 0; }
@@ -1127,7 +1127,7 @@ function buildPrintHTML(name, year, plan, actionItems, conversations) {
       table-layout: fixed;
     }
     th {
-      background: #1a1610; color: #c49a3c;
+      background: var(--color-brand-primary); color: var(--color-brand-accent);
       border: 1px solid #333;
       padding: 5px 7px;
       text-align: left; font-size: 9px;
@@ -1143,7 +1143,7 @@ function buildPrintHTML(name, year, plan, actionItems, conversations) {
       vertical-align: top;
       word-break: break-word;
     }
-    .table-wrap tbody tr:nth-child(even) td { background: #faf8f3; }
+    .table-wrap tbody tr:nth-child(even) td { background: var(--color-bg-page); }
 
     @media print {
       .page { page-break-after: always; }

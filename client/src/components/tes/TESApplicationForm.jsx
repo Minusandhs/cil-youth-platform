@@ -212,27 +212,27 @@ export default function TESApplicationForm({
   // ── Styles ──────────────────────────────────────────────────────
   const labelStyle = {
     display:'block', fontSize:'11px', fontWeight:'700',
-    color:'#3d3528', letterSpacing:'0.3px',
+    color:'var(--color-text-heading)', letterSpacing:'0.3px',
     textTransform:'uppercase', marginBottom:'5px'
   };
   const inputStyle = {
     width:'100%', padding:'9px 11px',
-    border:'1px solid #d4c9b0', borderRadius:'5px',
-    fontSize:'13px', color:'#1a1610',
-    background:'#faf8f3', outline:'none', fontFamily:'inherit'
+    border:'1px solid var(--color-border-subtle)', borderRadius:'5px',
+    fontSize:'13px', color:'var(--color-text-heading)',
+    background:'var(--color-bg-page)', outline:'none', fontFamily:'inherit'
   };
   const readonlyStyle = {
-    ...inputStyle, background:'#f0ece2', color:'#6b5e4a', cursor:'default'
+    ...inputStyle, background:'var(--color-bg-stripe)', color:'var(--color-text-subdued)', cursor:'default'
   };
   const sectionStyle = {
-    background:'#fffef9', border:'1px solid #d4c9b0',
+    background:'var(--color-bg-card)', border:'1px solid var(--color-border-subtle)',
     borderRadius:'8px', padding:'20px', marginBottom:'16px'
   };
   const secTitle = {
-    fontSize:'11px', fontWeight:'700', color:'#6b5e4a',
+    fontSize:'11px', fontWeight:'700', color:'var(--color-text-subdued)',
     textTransform:'uppercase', letterSpacing:'0.6px',
     marginBottom:'14px', paddingBottom:'8px',
-    borderBottom:'1px solid #e8e0d0'
+    borderBottom:'1px solid var(--color-divider)'
   };
 
   return (
@@ -243,15 +243,15 @@ export default function TESApplicationForm({
         gap:'12px', marginBottom:'20px'
       }}>
         <button onClick={onBack} style={{
-          background:'transparent', border:'1px solid #d4c9b0',
-          color:'#6b5e4a', padding:'6px 14px', borderRadius:'5px',
+          background:'transparent', border:'1px solid var(--color-border-subtle)',
+          color:'var(--color-text-subdued)', padding:'6px 14px', borderRadius:'5px',
           fontSize:'12px', cursor:'pointer', fontFamily:'inherit'
         }}>← Back</button>
         <div>
           <h2 style={{fontSize:'18px', fontWeight:'700'}}>
             {existingApp ? 'Edit Application' : 'New Application'}
           </h2>
-          <div style={{fontSize:'12px', color:'#6b5e4a'}}>
+          <div style={{fontSize:'12px', color:'var(--color-text-subdued)'}}>
             {batch.batch_name}
           </div>
         </div>
@@ -259,9 +259,9 @@ export default function TESApplicationForm({
 
       {error && (
         <div style={{
-          background:'#f5e0e3', border:'1px solid #9b2335',
+          background:'var(--color-tint-danger)', border:'1px solid var(--color-danger)',
           borderRadius:'6px', padding:'10px 14px',
-          color:'#9b2335', fontSize:'13px', marginBottom:'16px'
+          color:'var(--color-danger)', fontSize:'13px', marginBottom:'16px'
         }}>{error}</div>
       )}
 
@@ -275,33 +275,33 @@ export default function TESApplicationForm({
               onChange={e => setSearch(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && searchParticipants()} />
             <button onClick={searchParticipants} style={{
-              background:'#1a1610', color:'#c49a3c', border:'none',
+              background:'var(--color-brand-primary)', color:'var(--color-brand-accent)', border:'none',
               borderRadius:'6px', padding:'9px 20px', fontSize:'13px',
               fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
             }}>Search</button>
           </div>
           {participants.length > 0 && (
             <div style={{
-              border:'1px solid #d4c9b0', borderRadius:'6px', overflow:'hidden'
+              border:'1px solid var(--color-border-subtle)', borderRadius:'6px', overflow:'hidden'
             }}>
               {participants.map(p => (
                 <div key={p.id} onClick={() => selectParticipant(p)}
                   style={{
                     padding:'12px 16px', cursor:'pointer',
-                    borderBottom:'1px solid #e8e0d0',
+                    borderBottom:'1px solid var(--color-divider)',
                     display:'flex', justifyContent:'space-between',
                     alignItems:'center'
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background='#faf8f3'}
+                  onMouseEnter={e => e.currentTarget.style.background='var(--color-bg-page)'}
                   onMouseLeave={e => e.currentTarget.style.background='white'}
                 >
                   <div>
                     <div style={{fontWeight:'600'}}>{p.full_name}</div>
-                    <div style={{fontSize:'11px', color:'#a09080'}}>
+                    <div style={{fontSize:'11px', color:'var(--color-text-muted)'}}>
                       {p.participant_id} · {p.ldc_code}
                     </div>
                   </div>
-                  <div style={{fontSize:'11px', color:'#6b5e4a'}}>
+                  <div style={{fontSize:'11px', color:'var(--color-text-subdued)'}}>
                     Age: {calcAge(p.date_of_birth)}
                   </div>
                 </div>
@@ -319,20 +319,20 @@ export default function TESApplicationForm({
           {/* Previous TES Support Banner */}
           {tesHistory.history.filter(h => h.status !== 'reverted').length > 0 && (
               <div style={{
-                background:'#1a1610', borderRadius:'8px',
+                background:'var(--color-brand-primary)', borderRadius:'8px',
                 padding:'16px 20px', marginBottom:'16px',
                 display:'flex', alignItems:'center',
                 justifyContent:'space-between', flexWrap:'wrap', gap:'12px'
               }}>
                 <div>
                   <div style={{
-                    fontSize:'11px', color:'#a09080',
+                    fontSize:'11px', color:'var(--color-text-muted)',
                     textTransform:'uppercase', letterSpacing:'0.5px',
                     marginBottom:'4px'
                   }}>
                     Previously Received TES Support
                   </div>
-                  <div style={{fontSize:'12px', color:'#e8d4a0'}}>
+                  <div style={{fontSize:'12px', color:'var(--color-brand-accent-lt)'}}>
                     {tesHistory.history.filter(h => h.status !== 'reverted').length} previous intervention{tesHistory.history.filter(h => h.status !== 'reverted').length !== 1 ? 's' : ''}
                   </div>
                   <div style={{
@@ -342,7 +342,7 @@ export default function TESApplicationForm({
                       .filter(h => h.status !== 'reverted')
                       .map(h => (
                         <span key={h.id} style={{
-                          background:'#2e2a22', color:'#c49a3c',
+                          background:'var(--color-brand-primary)', color:'var(--color-brand-accent)',
                           padding:'2px 8px', borderRadius:'6px',
                           fontSize:'11px', fontWeight:'600'
                         }}>
@@ -354,14 +354,14 @@ export default function TESApplicationForm({
                 </div>
                 <div style={{textAlign:'right'}}>
                   <div style={{
-                    fontSize:'10px', color:'#a09080',
+                    fontSize:'10px', color:'var(--color-text-muted)',
                     textTransform:'uppercase', letterSpacing:'0.5px',
                     marginBottom:'4px'
                   }}>
                     Total Received
                   </div>
                   <div style={{
-                    fontSize:'22px', fontWeight:'700', color:'#c49a3c'
+                    fontSize:'22px', fontWeight:'700', color:'var(--color-brand-accent)'
                   }}>
                     LKR {parseFloat(tesHistory.total_received).toLocaleString('en-LK', {
                       minimumFractionDigits:2, maximumFractionDigits:2
@@ -594,12 +594,12 @@ export default function TESApplicationForm({
                   Requested Amount (LKR)
                   <span style={{
                     fontWeight:'400', textTransform:'none',
-                    fontSize:'10px', color:'#a09080'
+                    fontSize:'10px', color:'var(--color-text-muted)'
                   }}> (Auto-calculated)</span>
                 </label>
                 <input style={{
                   ...readonlyStyle,
-                  fontWeight:'700', fontSize:'15px', color:'#2d6a4f'
+                  fontWeight:'700', fontSize:'15px', color:'var(--color-success)'
                 }}
                 value={`LKR ${parseFloat(form.requested_amount || 0)
                   .toLocaleString('en-LK', {
@@ -640,19 +640,19 @@ export default function TESApplicationForm({
                 <label key={doc.key} style={{
                   display:'flex', alignItems:'center', gap:'10px',
                   padding:'10px 14px',
-                  background: form[doc.key] ? '#d8ede4' : '#faf8f3',
-                  border:`1px solid ${form[doc.key] ? '#2d6a4f' : '#d4c9b0'}`,
+                  background: form[doc.key] ? 'var(--color-tint-success)' : 'var(--color-bg-page)',
+                  border:`1px solid ${form[doc.key] ? 'var(--color-success)' : 'var(--color-border-subtle)'}`,
                   borderRadius:'6px', cursor:'pointer',
                   fontSize:'13px', fontWeight:'600', transition:'all 0.15s'
                 }}>
                   <input type="checkbox" checked={form[doc.key]}
                     onChange={e => setForm({...form, [doc.key]:e.target.checked})}
-                    style={{width:'16px', height:'16px', accentColor:'#2d6a4f'}} />
+                    style={{width:'16px', height:'16px', accentColor:'var(--color-success)'}} />
                   {doc.label}
                   {form[doc.key] && (
                     <span style={{
                       marginLeft:'auto', fontSize:'11px',
-                      color:'#2d6a4f', fontWeight:'700'
+                      color:'var(--color-success)', fontWeight:'700'
                     }}>✓ Attached</span>
                   )}
                 </label>
@@ -661,7 +661,7 @@ export default function TESApplicationForm({
 
             {/* Commitment */}
             <div style={{
-              background:'#1a1610', borderRadius:'8px', padding:'16px 20px',
+              background:'var(--color-brand-primary)', borderRadius:'8px', padding:'16px 20px',
               marginBottom:'20px'
             }}>
               <label style={{
@@ -675,16 +675,16 @@ export default function TESApplicationForm({
                   })}
                   style={{
                     width:'18px', height:'18px',
-                    accentColor:'#c49a3c', marginTop:'2px', flexShrink:0
+                    accentColor:'var(--color-brand-accent)', marginTop:'2px', flexShrink:0
                   }} />
                 <div>
                   <div style={{
                     fontSize:'13px', fontWeight:'700',
-                    color:'#e8d4a0', marginBottom:'4px'
+                    color:'var(--color-brand-accent-lt)', marginBottom:'4px'
                   }}>
                     Participant Commitment Confirmation *
                   </div>
-                  <div style={{fontSize:'12px', color:'#a09080', lineHeight:'1.6'}}>
+                  <div style={{fontSize:'12px', color:'var(--color-text-muted)', lineHeight:'1.6'}}>
                     I confirm that the participant has been informed about the
                     TES scholarship requirements and has committed to fulfilling
                     all obligations. The information provided is accurate and
@@ -696,11 +696,11 @@ export default function TESApplicationForm({
 
             {/* For Official Use — LDC fills amount */}
             <div style={{
-              background:'#f5edd8', border:'1px solid #c49a3c',
+              background:'var(--color-tint-warning)', border:'1px solid var(--color-brand-accent)',
               borderRadius:'8px', padding:'16px 20px'
             }}>
               <div style={{
-                fontSize:'11px', fontWeight:'700', color:'#b85c00',
+                fontSize:'11px', fontWeight:'700', color:'var(--color-warning)',
                 textTransform:'uppercase', letterSpacing:'0.6px',
                 marginBottom:'14px'
               }}>
@@ -710,7 +710,7 @@ export default function TESApplicationForm({
                 display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'
               }}>
                 <div>
-                  <label style={{...labelStyle, color:'#b85c00'}}>
+                  <label style={{...labelStyle, color:'var(--color-warning)'}}>
                     Amount Approved (LKR) *
                   </label>
                   <input style={inputStyle} type="number" min="0" step="0.01"
@@ -719,7 +719,7 @@ export default function TESApplicationForm({
                     />
                 </div>
                 <div>
-                  <label style={{...labelStyle, color:'#b85c00'}}>
+                  <label style={{...labelStyle, color:'var(--color-warning)'}}>
                     Official Notes
                   </label>
                   <input style={inputStyle}
@@ -734,7 +734,7 @@ export default function TESApplicationForm({
           {/* Submit */}
           <div className="rsp-submit-row" style={{display:'flex', gap:'12px', flexWrap:'wrap'}}>
             <button type="submit" disabled={saving} style={{
-              background: saving ? '#a09080' : '#2d6a4f',
+              background: saving ? 'var(--color-border-subtle)' : 'var(--color-success)',
               color:'#fff', border:'none', borderRadius:'6px',
               padding:'12px 32px', fontSize:'14px', fontWeight:'700',
               cursor: saving ? 'not-allowed' : 'pointer', fontFamily:'inherit'
@@ -742,8 +742,8 @@ export default function TESApplicationForm({
               {saving ? 'Saving...' : existingApp ? 'Save Changes' : 'Submit Application'}
             </button>
             <button type="button" onClick={onBack} style={{
-              background:'transparent', color:'#6b5e4a',
-              border:'1px solid #d4c9b0', borderRadius:'6px',
+              background:'transparent', color:'var(--color-text-subdued)',
+              border:'1px solid var(--color-border-subtle)', borderRadius:'6px',
               padding:'12px 24px', fontSize:'14px',
               cursor:'pointer', fontFamily:'inherit'
             }}>Cancel</button>

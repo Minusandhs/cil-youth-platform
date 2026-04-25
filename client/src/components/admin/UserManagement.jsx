@@ -139,19 +139,19 @@ export default function UserManagement({ readOnly = false }) {
 
   const labelStyle = {
     display: 'block', fontSize: '11px', fontWeight: '700',
-    color: '#3d3528', letterSpacing: '0.3px',
+    color: 'var(--color-text-heading)', letterSpacing: '0.3px',
     textTransform: 'uppercase', marginBottom: '5px'
   };
 
   const inputStyle = {
     width: '100%', padding: '9px 11px',
-    border: '1px solid #d4c9b0', borderRadius: '5px',
-    fontSize: '13px', color: '#1a1610',
-    background: '#faf8f3', outline: 'none', fontFamily: 'inherit'
+    border: '1px solid var(--color-border-subtle)', borderRadius: '5px',
+    fontSize: '13px', color: 'var(--color-text-heading)',
+    background: 'var(--color-bg-page)', outline: 'none', fontFamily: 'inherit'
   };
 
   if (loading) return (
-    <div style={{ padding: '32px', color: '#6b5e4a' }}>Loading...</div>
+    <div style={{ padding: '32px', color: 'var(--color-text-subdued)' }}>Loading...</div>
   );
 
   return (
@@ -161,8 +161,8 @@ export default function UserManagement({ readOnly = false }) {
         alignItems: 'center', marginBottom: '20px'
       }}>
         <div>
-          <h2 style={{ fontSize: '20px', fontWeight: '700' }}>User Management</h2>
-          <p style={{ color: '#6b5e4a', fontSize: '13px', marginTop: '2px' }}>
+          <h2 style={{ color:'var(--color-text-heading)', fontSize: '20px', fontWeight: '700' }}>User Management</h2>
+          <p style={{ color: 'var(--color-text-subdued)', fontSize: '13px', marginTop: '2px' }}>
             Create and manage LDC staff accounts
           </p>
         </div>
@@ -170,7 +170,7 @@ export default function UserManagement({ readOnly = false }) {
           <div style={{display:'flex', gap:'10px'}}>
 
             <button onClick={openCreate} style={{
-              background:'#1a1610', color:'#c49a3c', border:'none',
+              background:'var(--color-brand-primary)', color:'var(--color-brand-accent)', border:'none',
               borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
               fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
             }}>
@@ -182,23 +182,23 @@ export default function UserManagement({ readOnly = false }) {
 
       {error && (
         <div style={{
-          background: '#f5e0e3', border: '1px solid #9b2335',
+          background: 'var(--color-tint-danger)', border: '1px solid var(--color-danger)',
           borderRadius: '6px', padding: '10px 14px',
-          color: '#9b2335', fontSize: '13px', marginBottom: '16px'
+          color: 'var(--color-danger)', fontSize: '13px', marginBottom: '16px'
         }}>{error}</div>
       )}
       {success && (
         <div style={{
-          background: '#d8ede4', border: '1px solid #2d6a4f',
+          background: 'var(--color-tint-success)', border: '1px solid var(--color-success)',
           borderRadius: '6px', padding: '10px 14px',
-          color: '#2d6a4f', fontSize: '13px', marginBottom: '16px'
+          color: 'var(--color-success)', fontSize: '13px', marginBottom: '16px'
         }}>{success}</div>
       )}
 
       {/* Create / Edit Form */}
       {showForm && (
         <div style={{
-          background: '#fffef9', border: '1px solid #d4c9b0',
+          background: 'var(--color-bg-card)', border: '1px solid var(--color-border-subtle)',
           borderRadius: '8px', padding: '20px', marginBottom: '24px'
         }}>
           <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '16px' }}>
@@ -222,15 +222,15 @@ export default function UserManagement({ readOnly = false }) {
                 <label style={labelStyle}>Username</label>
                 <input style={{
                   ...inputStyle,
-                  background: editUser ? '#f0ece2' : '#faf8f3',
-                  color: editUser ? '#a09080' : '#1a1610'
+                  background: editUser ? 'var(--color-bg-stripe)' : 'var(--color-bg-page)',
+                  color: editUser ? 'var(--color-text-subdued)' : 'var(--color-text-heading)'
                 }}
                   value={form.username}
                   onChange={e => setForm({ ...form, username: e.target.value })}
                   readOnly={!!editUser}
                   required />
                 {editUser && (
-                  <div style={{ fontSize: '11px', color: '#a09080', marginTop: '3px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-subdued)', marginTop: '3px' }}>
                     Username cannot be changed
                   </div>
                 )}
@@ -271,15 +271,15 @@ export default function UserManagement({ readOnly = false }) {
             </div>
             <div className="rsp-submit-row" style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
               <button type="submit" style={{
-                background: '#2d6a4f', color: '#fff', border: 'none',
+                background: 'var(--color-success)', color: '#fff', border: 'none',
                 borderRadius: '6px', padding: '10px 24px', fontSize: '13px',
                 fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit'
               }}>
                 {editUser ? 'Save Changes' : 'Create User'}
               </button>
               <button type="button" onClick={cancelForm} style={{
-                background: 'transparent', color: '#6b5e4a',
-                border: '1px solid #d4c9b0', borderRadius: '6px',
+                background: 'transparent', color: 'var(--color-text-subdued)',
+                border: '1px solid var(--color-border-subtle)', borderRadius: '6px',
                 padding: '10px 24px', fontSize: '13px',
                 cursor: 'pointer', fontFamily: 'inherit'
               }}>
@@ -293,13 +293,13 @@ export default function UserManagement({ readOnly = false }) {
       {/* Reset Password Form */}
       {showPwForm && (
         <div style={{
-          background: '#fffef9', border: '1px solid #c49a3c',
+          background: 'var(--color-bg-card)', border: '1px solid var(--color-brand-accent)',
           borderRadius: '8px', padding: '20px', marginBottom: '24px'
         }}>
           <h3 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '4px' }}>
             Reset Password — {showPwForm.full_name}
           </h3>
-          <p style={{ fontSize: '12px', color: '#6b5e4a', marginBottom: '14px' }}>
+          <p style={{ fontSize: '12px', color: 'var(--color-text-subdued)', marginBottom: '14px' }}>
             Enter a new password for this user.
           </p>
           <div>
@@ -311,7 +311,7 @@ export default function UserManagement({ readOnly = false }) {
           </div>
           <div className="rsp-submit-row" style={{ display: 'flex', gap: '10px' }}>
             <button onClick={() => handleResetPassword(showPwForm.id)} style={{
-              background: '#c49a3c', color: '#1a1610', border: 'none',
+              background: 'var(--color-brand-accent)', color: 'var(--color-text-heading)', border: 'none',
               borderRadius: '6px', padding: '10px 20px', fontSize: '13px',
               fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit',
               whiteSpace: 'nowrap'
@@ -319,8 +319,8 @@ export default function UserManagement({ readOnly = false }) {
               Reset Password
             </button>
             <button onClick={cancelForm} style={{
-              background: 'transparent', color: '#6b5e4a',
-              border: '1px solid #d4c9b0', borderRadius: '6px',
+              background: 'transparent', color: 'var(--color-text-subdued)',
+              border: '1px solid var(--color-border-subtle)', borderRadius: '6px',
               padding: '10px 16px', fontSize: '13px',
               cursor: 'pointer', fontFamily: 'inherit'
             }}>
@@ -335,13 +335,13 @@ export default function UserManagement({ readOnly = false }) {
         <div className="rsp-table-wrap">
           <table className="rsp-card-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
             <thead>
-              <tr style={{ background: '#f0ece2' }}>
+              <tr style={{ background: 'var(--color-bg-stripe)' }}>
                 {['Full Name', 'Email', 'Username', 'Role', 'LDC', 'Status', 'Last Login', 'Actions'].map(h => (
                   <th key={h} style={{
                     padding: '12px 14px', textAlign: 'left',
                     fontSize: '10px', fontWeight: '700',
                     textTransform: 'uppercase', letterSpacing: '0.5px',
-                    color: '#3d3528', borderBottom: '1px solid #d4c9b0',
+                    color: 'var(--color-text-heading)', borderBottom: '1px solid var(--color-border-subtle)',
                     whiteSpace: 'nowrap'
                   }}>{h}</th>
                 ))}
@@ -350,13 +350,13 @@ export default function UserManagement({ readOnly = false }) {
             <tbody>
               {users.map(u => (
                 <tr key={u.id} style={{
-                  borderBottom: '1px solid #e8e0d0',
+                  borderBottom: '1px solid var(--color-divider)',
                   background: u.is_active ? 'transparent' : 'rgba(155,35,53,0.02)',
                   transition: 'background 0.2s'
                 }}>
-                  <td data-label="Name" style={{ padding: '12px 14px', fontWeight: '600', color: '#1a1610' }}>{u.full_name}</td>
-                  <td data-label="Email" style={{ padding: '12px 14px', color: '#6b5e4a', fontSize: '12px' }}>{u.email || '—'}</td>
-                  <td data-label="Username" style={{ padding: '12px 14px', color: '#6b5e4a' }}>{u.username}</td>
+                  <td data-label="Name" style={{ padding: '12px 14px', fontWeight: '600', color: 'var(--color-text-heading)' }}>{u.full_name}</td>
+                  <td data-label="Email" style={{ padding: '12px 14px', color: 'var(--color-text-subdued)', fontSize: '12px' }}>{u.email || '—'}</td>
+                  <td data-label="Username" style={{ padding: '12px 14px', color: 'var(--color-text-subdued)' }}>{u.username}</td>
                   <td data-label="Role" style={{ padding: '12px 14px' }}>
                     <span style={{
                       background: u.role === 'super_admin' ? 'var(--color-brand-primary)'
@@ -370,7 +370,7 @@ export default function UserManagement({ readOnly = false }) {
                         : u.role === 'national_admin' ? 'National' : 'LDC Staff'}
                     </span>
                   </td>
-                  <td data-label="LDC" style={{ padding: '12px 14px', color: '#3d3528', fontWeight: '500' }}>
+                  <td data-label="LDC" style={{ padding: '12px 14px', color: 'var(--color-text-heading)', fontWeight: '500' }}>
                     {u.ldc_code || '—'}
                   </td>
                   <td data-label="Status" style={{ padding: '12px 14px' }}>
@@ -383,7 +383,7 @@ export default function UserManagement({ readOnly = false }) {
                       {u.is_active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
-                  <td data-label="Last Login" style={{ padding: '12px 14px', color: '#6b5e4a', fontSize: '12px', whiteSpace: 'nowrap' }}>
+                  <td data-label="Last Login" style={{ padding: '12px 14px', color: 'var(--color-text-subdued)', fontSize: '12px', whiteSpace: 'nowrap' }}>
                     {u.last_login ? new Date(u.last_login).toLocaleDateString() : 'Never'}
                   </td>
                   <td data-label="Actions" style={{ padding: '12px 14px' }}>
@@ -418,7 +418,7 @@ export default function UserManagement({ readOnly = false }) {
                         {u.id !== currentUser?.id && (
                           <button onClick={() => handleDeleteUser(u)} 
                             style={{
-                              background:'rgba(155,35,53,0.1)', color:'#9b2335',
+                              background:'rgba(155,35,53,0.1)', color:'var(--color-danger)',
                               border:'none', borderRadius:'4px', padding:'4px 10px',
                               fontSize:'11px', fontWeight:'700',
                               cursor:'pointer', fontFamily:'inherit'
@@ -435,7 +435,7 @@ export default function UserManagement({ readOnly = false }) {
           </table>
         </div>
         {users.length === 0 && (
-          <div style={{ padding: '32px', textAlign: 'center', color: '#6b5e4a' }}>
+          <div style={{ padding: '32px', textAlign: 'center', color: 'var(--color-text-subdued)' }}>
             No users found. Create your first LDC staff account.
           </div>
         )}

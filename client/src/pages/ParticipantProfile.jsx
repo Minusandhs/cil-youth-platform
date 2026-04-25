@@ -16,6 +16,7 @@ import HomeVisits from '../components/participant/HomeVisits';
 import Talents from '../components/participant/Talents';
 import Career from '../components/participant/Career';
 import MobileMenu from '../components/common/MobileMenu';
+import ThemeToggle from '../components/common/ThemeToggle';
 
 export default function ParticipantProfile() {
   const { id } = useParams();
@@ -86,7 +87,7 @@ export default function ParticipantProfile() {
     <div style={{
       display: 'flex', alignItems: 'center',
       justifyContent: 'center', height: '100vh',
-      color: '#6b5e4a', fontSize: '14px'
+      color: 'var(--color-text-subdued)', fontSize: '14px'
     }}>
       Loading participant...
     </div>
@@ -99,9 +100,9 @@ export default function ParticipantProfile() {
     }}>
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
-        <div style={{ color: '#9b2335', fontSize: '16px' }}>{error}</div>
+        <div style={{ color: 'var(--color-danger)', fontSize: '16px' }}>{error}</div>
         <button onClick={() => fromAdmin ? navigate('/admin') : navigate(-1)} style={{
-          background: '#c49a3c', color: '#1a1610',
+          background: 'var(--color-brand-accent-lt)', color: 'var(--color-text-heading)',
           border: 'none', borderRadius: '20px',
           padding: '6px 16px', cursor: 'pointer',
           fontFamily: 'inherit', fontWeight: '700',
@@ -113,13 +114,13 @@ export default function ParticipantProfile() {
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: '#faf8f3' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--color-bg-page)' }}>
 
       {/* Header */}
       <header style={{
-        background: '#1a1610', position: 'sticky',
+        background: 'var(--color-brand-primary)', position: 'sticky',
         top: 0, zIndex: 100,
-        boxShadow: '0 4px 24px rgba(26,22,16,0.18)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
         overflow: 'visible'
       }}>
         <div className="rsp-header-pad" style={{
@@ -132,7 +133,7 @@ export default function ParticipantProfile() {
             <button onClick={() => fromAdmin ? navigate('/admin') : navigate(-1)}
               className="rsp-header-btn"
               style={{
-                background: '#c49a3c', color: '#1a1610',
+                background: 'var(--color-brand-accent-lt)', color: 'var(--color-text-heading)',
                 border: 'none', borderRadius: '20px',
                 padding: '6px 14px', cursor: 'pointer',
                 fontFamily: 'inherit', fontWeight: '700',
@@ -140,7 +141,7 @@ export default function ParticipantProfile() {
                 display: 'flex', alignItems: 'center', gap: '4px'
               }}><ChevronLeft size={14} strokeWidth={3} /> Back</button>
             <div className="rsp-hide-mobile" style={{
-              background: '#c49a3c', color: '#1a1610',
+              background: 'var(--color-brand-accent-lt)', color: 'var(--color-text-heading)',
               fontWeight: '700', fontSize: '10px',
               letterSpacing: '2px', padding: '4px 10px', borderRadius: '2px'
             }}>CIL</div>
@@ -149,13 +150,13 @@ export default function ParticipantProfile() {
           {/* Row 2 (mobile) / middle (desktop): title + LDC */}
           <div className="rsp-header-title-wrap">
             <div className="rsp-header-title" style={{
-              fontSize: '15px', fontWeight: '700', color: '#e8d4a0',
+              fontSize: '15px', fontWeight: '700', color: 'var(--color-brand-accent-lt)',
               display: 'flex', alignItems: 'center', gap: '8px'
             }}>
               <span style={{ whiteSpace: 'nowrap' }}>Participant Profile</span>
               {participant && !participant.is_active && (
                 <span style={{
-                  background: '#6b5e4a', color: '#e8d4a0',
+                  background: 'var(--color-text-subdued)', color: 'var(--color-brand-accent-lt)',
                   padding: '2px 8px', borderRadius: '3px',
                   fontSize: '10px', fontWeight: '700', letterSpacing: '0.5px',
                   whiteSpace: 'nowrap'
@@ -163,7 +164,7 @@ export default function ParticipantProfile() {
               )}
             </div>
             <div className="rsp-header-sub" style={{
-              fontSize: '11px', color: '#a09080',
+              fontSize: '11px', color: 'var(--color-text-on-dark)',
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
             }}>
               {participant?.ldc_code} — {participant?.ldc_name}
@@ -172,13 +173,14 @@ export default function ParticipantProfile() {
 
           {/* Right: mobile ☰ */}
           <div className="rsp-header-actions">
+            <ThemeToggle />
             <button
               className="rsp-show-mobile-only"
               onClick={() => setMenuOpen(true)}
               style={{
                 background: 'transparent',
-                border: '1px solid #c49a3c',
-                color: '#c49a3c',
+                border: '1px solid var(--color-brand-accent-lt)',
+                color: 'var(--color-brand-accent-lt)',
                 borderRadius: '6px', padding: '6px 8px',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}
@@ -187,17 +189,20 @@ export default function ParticipantProfile() {
         </div>
 
         {/* Tabs */}
-        <div style={{ borderTop: '1px solid #3a3428' }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            {/* Desktop tab bar */}
+        <div style={{
+          borderTop: '1px solid var(--color-header-border)',
+          background: 'var(--color-header-tabs-bg)'
+        }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
+            {/* Desktop tab bar — bg full width, items aligned with content */}
             <div className="rsp-tabs rsp-tabs-desktop">
               {tabs.map(tab => (
                 <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
                   fontSize: '12px', fontWeight: '600',
-                  color: activeTab === tab.id ? '#c49a3c' : '#a09080',
+                  color: activeTab === tab.id ? 'var(--color-brand-accent-lt)' : 'var(--color-text-on-dark)',
                   background: 'transparent', border: 'none',
                   borderBottom: activeTab === tab.id
-                    ? '2px solid #c49a3c' : '2px solid transparent',
+                    ? '2px solid var(--color-brand-accent-lt)' : '2px solid transparent',
                   padding: '10px 20px', cursor: 'pointer',
                   fontFamily: 'inherit', transition: 'all 0.2s'
                 }}>{tab.label}</button>
@@ -206,9 +211,9 @@ export default function ParticipantProfile() {
             {/* Mobile active-tab label */}
             <div className="rsp-tabs-mobile" style={{
               alignItems: 'center', padding: '0 16px',
-              borderBottom: '2px solid #3a3428'
+              borderBottom: '2px solid var(--color-header-border)'
             }}>
-              <span style={{ fontSize: '12px', fontWeight: '600', color: '#c49a3c', padding: '13px 0' }}>
+              <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--color-brand-accent-lt)', padding: '13px 0' }}>
                 {tabs.find(t => t.id === activeTab)?.label}
               </span>
             </div>
@@ -228,7 +233,7 @@ export default function ParticipantProfile() {
 
       {/* Participant Summary Bar */}
       <div style={{
-        background: '#fffef9', borderBottom: '1px solid #d4c9b0',
+        background: 'var(--color-bg-card)', borderBottom: '1px solid var(--color-border-subtle)',
         padding: '16px 24px'
       }}>
         <div style={{
@@ -241,9 +246,9 @@ export default function ParticipantProfile() {
           <div className="rsp-sumbar-identity">
             <div style={{
               width: '52px', height: '52px', borderRadius: '50%',
-              background: '#1a1610', display: 'flex',
+              background: 'var(--color-brand-primary)', display: 'flex',
               alignItems: 'center', justifyContent: 'center',
-              fontSize: '20px', fontWeight: '700', color: '#c49a3c',
+              fontSize: '20px', fontWeight: '700', color: 'var(--color-brand-accent-lt)',
               flexShrink: 0
             }}>
               {participant?.full_name?.charAt(0)}
@@ -252,7 +257,7 @@ export default function ParticipantProfile() {
               <div style={{ fontSize: '18px', fontWeight: '700', letterSpacing: '-0.3px' }}>
                 {participant?.full_name}
               </div>
-              <div style={{ fontSize: '12px', color: '#6b5e4a', marginTop: '2px' }}>
+              <div style={{ fontSize: '12px', color: 'var(--color-text-subdued)', marginTop: '2px' }}>
                 {participant?.participant_id} · {participant?.ldc_code}
               </div>
               {/* Desktop only: Deactivate/Reactivate below name */}
@@ -263,7 +268,7 @@ export default function ParticipantProfile() {
                   className="rsp-hide-mobile"
                   style={{
                     marginTop: '8px',
-                    background: participant.is_active ? '#9b2335' : '#2d6a4f',
+                    background: participant.is_active ? 'var(--color-danger)' : 'var(--color-success)',
                     color: '#fff', border: 'none', borderRadius: '6px',
                     padding: '5px 14px', fontSize: '11px', fontWeight: '700',
                     cursor: toggling ? 'not-allowed' : 'pointer',
@@ -282,8 +287,8 @@ export default function ParticipantProfile() {
             {/* Row 2 col 1 — Gender badge */}
             <div className="rsp-sumbar-gender-cell">
               <span style={{
-                background: participant?.gender === 'Female' ? '#f5e0e3' : '#dce9f5',
-                color: participant?.gender === 'Female' ? '#9b2335' : '#1a4068',
+                background: participant?.gender === 'Female' ? 'var(--color-tint-danger)' : 'var(--color-tint-info)',
+                color: participant?.gender === 'Female' ? 'var(--color-danger)' : 'var(--color-info)',
                 padding: '4px 12px', borderRadius: '12px',
                 fontSize: '11px', fontWeight: '700'
               }}>
@@ -292,28 +297,28 @@ export default function ParticipantProfile() {
             </div>
             {/* Row 2 col 2 — Age */}
             <div className="rsp-sumbar-stat" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '15px', fontWeight: '700', color: '#1a1610' }}>
+              <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--color-text-heading)' }}>
                 {calcAge(participant?.date_of_birth)}
               </div>
-              <div style={{ fontSize: '10px', color: '#a09080', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              <div style={{ fontSize: '10px', color: 'var(--color-text-subdued)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                 Age
               </div>
             </div>
             {/* Row 3 col 1 — DOB */}
             <div className="rsp-sumbar-stat" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '15px', fontWeight: '700', color: '#1a1610' }}>
+              <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--color-text-heading)' }}>
                 {formatDate(participant?.date_of_birth)}
               </div>
-              <div style={{ fontSize: '10px', color: '#a09080', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              <div style={{ fontSize: '10px', color: 'var(--color-text-subdued)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                 DOB
               </div>
             </div>
             {/* Row 3 col 2 — Completion */}
             <div className="rsp-sumbar-stat" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '15px', fontWeight: '700', color: '#1a1610' }}>
+              <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--color-text-heading)' }}>
                 {formatDate(participant?.planned_completion)}
               </div>
-              <div style={{ fontSize: '10px', color: '#a09080', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+              <div style={{ fontSize: '10px', color: 'var(--color-text-subdued)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
                 Completion
               </div>
             </div>
@@ -327,7 +332,7 @@ export default function ParticipantProfile() {
                 disabled={toggling}
                 style={{
                   width: '100%',
-                  background: participant.is_active ? '#9b2335' : '#2d6a4f',
+                  background: participant.is_active ? 'var(--color-danger)' : 'var(--color-success)',
                   color: '#fff', border: 'none', borderRadius: '6px',
                   padding: '8px 14px', fontSize: '12px', fontWeight: '700',
                   cursor: toggling ? 'not-allowed' : 'pointer',
@@ -345,13 +350,13 @@ export default function ParticipantProfile() {
       {/* Inactive Banner — shown to admin when participant is deactivated */}
       {participant && !participant.is_active && isSuperAdmin && (
         <div style={{
-          background: '#f0ece2', borderBottom: '2px solid #6b5e4a',
+          background: 'var(--color-bg-stripe)', borderBottom: '2px solid var(--color-text-subdued)',
           padding: '10px 24px'
         }}>
           <div style={{
             maxWidth: '1200px', margin: '0 auto',
             display: 'flex', alignItems: 'center', gap: '10px',
-            fontSize: '13px', color: '#3d3528', fontWeight: '600'
+            fontSize: '13px', color: 'var(--color-text-heading)', fontWeight: '600'
           }}>
             <span style={{ fontSize: '16px' }}>⚠️</span>
             This participant is inactive. They are hidden from LDC staff. Use the Reactivate button to restore access.
@@ -362,13 +367,13 @@ export default function ParticipantProfile() {
       {/* Locked Banner — shown to LDC staff when participant is inactive */}
       {participant && !participant.is_active && isLDCStaff && (
         <div style={{
-          background: '#fef3e2', borderBottom: '2px solid #d4956a',
+          background: 'var(--color-tint-warning)', borderBottom: '2px solid var(--color-warning)',
           padding: '10px 24px'
         }}>
           <div style={{
             maxWidth: '1200px', margin: '0 auto',
             display: 'flex', alignItems: 'center', gap: '10px',
-            fontSize: '13px', color: '#7a4f1a', fontWeight: '600'
+            fontSize: '13px', color: 'var(--color-warning)', fontWeight: '600'
           }}>
             <span style={{ fontSize: '16px' }}>🔒</span>
             This participant is inactive. Their profile is view-only — editing is disabled.

@@ -126,8 +126,8 @@ export default function ParticipantSync({ readOnly = false }) {
           Participant Sync
         </h2>
         <div style={{
-          background:'#f0ece2', border:'1px solid #d4c9b0',
-          borderRadius:'8px', padding:'24px', color:'#6b5e4a', fontSize:'13px'
+          background:'var(--color-bg-stripe)', border:'1px solid var(--color-border-subtle)',
+          borderRadius:'8px', padding:'24px', color:'var(--color-text-subdued)', fontSize:'13px'
         }}>
           Participant sync is not available for National Admin accounts.
           Contact a Super Admin to perform a sync.
@@ -141,44 +141,44 @@ export default function ParticipantSync({ readOnly = false }) {
       <h2 style={{fontSize:'20px', fontWeight:'700', marginBottom:'6px'}}>
         Participant Sync
       </h2>
-      <p style={{color:'#6b5e4a', fontSize:'13px', marginBottom:'24px'}}>
+      <p style={{color:'var(--color-text-subdued)', fontSize:'13px', marginBottom:'24px'}}>
         Upload Salesforce participant export to sync the database.
         New participants will be added, existing ones updated.
       </p>
 
       {error && (
         <div style={{
-          background:'#f5e0e3', border:'1px solid #9b2335',
+          background:'var(--color-tint-danger)', border:'1px solid var(--color-danger)',
           borderRadius:'6px', padding:'10px 14px',
-          color:'#9b2335', fontSize:'13px', marginBottom:'16px'
+          color:'var(--color-danger)', fontSize:'13px', marginBottom:'16px'
         }}>{error}</div>
       )}
 
       {/* Success Result */}
       {result && (
         <div style={{
-          background:'#d8ede4', border:'1px solid #2d6a4f',
+          background:'var(--color-tint-success)', border:'1px solid var(--color-success)',
           borderRadius:'8px', padding:'20px', marginBottom:'24px'
         }}>
-          <div style={{fontSize:'15px', fontWeight:'700', color:'#2d6a4f', marginBottom:'12px'}}>
+          <div style={{fontSize:'15px', fontWeight:'700', color:'var(--color-success)', marginBottom:'12px'}}>
             Sync Completed Successfully!
           </div>
           <div style={{display:'flex', gap:'16px', flexWrap:'wrap'}}>
             {[
-              { label:'Total Processed', value: result.total,    color:'#1a4068' },
-              { label:'New Added',       value: result.inserted, color:'#2d6a4f' },
-              { label:'Updated',         value: result.updated,  color:'#c49a3c' },
-              { label:'Deactivated',     value: result.exited,   color:'#7a4f1a' },
-              { label:'Errors',          value: result.errors,   color:'#9b2335' },
+              { label:'Total Processed', value: result.total,    color:'var(--color-info)' },
+              { label:'New Added',       value: result.inserted, color:'var(--color-success)' },
+              { label:'Updated',         value: result.updated,  color:'var(--color-brand-accent)' },
+              { label:'Deactivated',     value: result.exited,   color:'var(--color-warning)' },
+              { label:'Errors',          value: result.errors,   color:'var(--color-danger)' },
             ].map(s => (
               <div key={s.label} style={{
-                background:'#fff', borderRadius:'6px',
+                background:'var(--color-bg-card)', borderRadius:'6px',
                 padding:'12px 20px', textAlign:'center', minWidth:'100px'
               }}>
                 <div style={{fontSize:'24px', fontWeight:'700', color: s.color}}>
                   {s.value}
                 </div>
-                <div style={{fontSize:'11px', color:'#6b5e4a', marginTop:'3px'}}>
+                <div style={{fontSize:'11px', color:'var(--color-text-subdued)', marginTop:'3px'}}>
                   {s.label}
                 </div>
               </div>
@@ -189,13 +189,13 @@ export default function ParticipantSync({ readOnly = false }) {
 
       {/* File Upload */}
       <div style={{
-        background:'#fffef9', border:'1px solid #d4c9b0',
+        background:'var(--color-bg-card)', border:'1px solid var(--color-border-subtle)',
         borderRadius:'8px', padding:'20px', marginBottom:'20px'
       }}>
         <div style={{fontSize:'14px', fontWeight:'700', marginBottom:'4px'}}>
           Step 1 — Upload Salesforce Export
         </div>
-        <div style={{fontSize:'12px', color:'#6b5e4a', marginBottom:'14px'}}>
+        <div style={{fontSize:'12px', color:'var(--color-text-subdued)', marginBottom:'14px'}}>
           Export participants from Salesforce as CSV with the required columns.
         </div>
 
@@ -205,16 +205,16 @@ export default function ParticipantSync({ readOnly = false }) {
           onDragOver={e => e.preventDefault()}
           onDrop={e => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); }}
           style={{
-            border:'2px dashed #d4c9b0', borderRadius:'6px',
+            border:'2px dashed var(--color-border-subtle)', borderRadius:'6px',
             padding:'32px', textAlign:'center', cursor:'pointer',
-            background:'#faf8f3', transition:'all 0.2s'
+            background:'var(--color-bg-page)', transition:'all 0.2s'
           }}
         >
           <div style={{fontSize:'28px', marginBottom:'8px', opacity:0.5}}>📂</div>
-          <div style={{fontSize:'13px', color:'#6b5e4a'}}>
+          <div style={{fontSize:'13px', color:'var(--color-text-subdued)'}}>
             {file ? `✓ ${file.name}` : 'Click to browse or drag & drop CSV file'}
           </div>
-          <div style={{fontSize:'11px', color:'#a09080', marginTop:'4px'}}>
+          <div style={{fontSize:'11px', color:'var(--color-text-subdued)', marginTop:'4px'}}>
             Supports .csv only
           </div>
         </div>
@@ -224,12 +224,12 @@ export default function ParticipantSync({ readOnly = false }) {
 
         {/* Required Columns */}
         <div style={{
-          marginTop:'14px', background:'#dce9f5',
+          marginTop:'14px', background:'var(--color-tint-info)',
           border:'1px solid rgba(26,64,104,0.25)',
           borderRadius:'6px', padding:'14px'
         }}>
           <div style={{
-            fontSize:'11px', fontWeight:'700', color:'#1a4068',
+            fontSize:'11px', fontWeight:'700', color:'var(--color-info)',
             textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:'8px'
           }}>
             Required Column Names
@@ -241,7 +241,7 @@ export default function ParticipantSync({ readOnly = false }) {
                   <th key={h} style={{
                     padding:'5px 8px', textAlign:'left',
                     background:'rgba(26,64,104,0.1)',
-                    color:'#1a4068', fontWeight:'700',
+                    color:'var(--color-info)', fontWeight:'700',
                     border:'1px solid rgba(26,64,104,0.2)'
                   }}>{h}</th>
                 ))}
@@ -257,8 +257,8 @@ export default function ParticipantSync({ readOnly = false }) {
                 ['Planned Completion Date',   '29/8/2028'],
               ].map(([col, ex]) => (
                 <tr key={col}>
-                  <td style={{padding:'5px 8px', border:'1px solid rgba(26,64,104,0.15)', color:'#1a4068', fontWeight:'600'}}>{col}</td>
-                  <td style={{padding:'5px 8px', border:'1px solid rgba(26,64,104,0.15)', color:'#1a4068'}}>{ex}</td>
+                  <td style={{padding:'5px 8px', border:'1px solid rgba(26,64,104,0.15)', color:'var(--color-info)', fontWeight:'600'}}>{col}</td>
+                  <td style={{padding:'5px 8px', border:'1px solid rgba(26,64,104,0.15)', color:'var(--color-info)'}}>{ex}</td>
                 </tr>
               ))}
             </tbody>
@@ -269,7 +269,7 @@ export default function ParticipantSync({ readOnly = false }) {
       {/* Preview */}
       {stats && (
         <div style={{
-          background:'#fffef9', border:'1px solid #d4c9b0',
+          background:'var(--color-bg-card)', border:'1px solid var(--color-border-subtle)',
           borderRadius:'8px', padding:'20px', marginBottom:'20px'
         }}>
           <div style={{fontSize:'14px', fontWeight:'700', marginBottom:'14px'}}>
@@ -279,19 +279,19 @@ export default function ParticipantSync({ readOnly = false }) {
           {/* Stats */}
           <div style={{display:'flex', gap:'12px', marginBottom:'16px', flexWrap:'wrap'}}>
             {[
-              { label:'Total',  value: stats.total,  color:'#1a4068' },
-              { label:'LDCs',   value: stats.ldcs,   color:'#c49a3c' },
-              { label:'Female', value: stats.female, color:'#9b2335' },
-              { label:'Male',   value: stats.male,   color:'#2d6a4f' },
+              { label:'Total',  value: stats.total,  color:'var(--color-info)' },
+              { label:'LDCs',   value: stats.ldcs,   color:'var(--color-brand-accent)' },
+              { label:'Female', value: stats.female, color:'var(--color-danger)' },
+              { label:'Male',   value: stats.male,   color:'var(--color-success)' },
             ].map(s => (
               <div key={s.label} style={{
-                background:'#f0ece2', borderRadius:'6px',
+                background:'var(--color-bg-stripe)', borderRadius:'6px',
                 padding:'10px 16px', textAlign:'center', minWidth:'80px'
               }}>
                 <div style={{fontSize:'22px', fontWeight:'700', color: s.color}}>
                   {s.value}
                 </div>
-                <div style={{fontSize:'10px', color:'#6b5e4a', textTransform:'uppercase'}}>
+                <div style={{fontSize:'10px', color:'var(--color-text-subdued)', textTransform:'uppercase'}}>
                   {s.label}
                 </div>
               </div>
@@ -300,35 +300,35 @@ export default function ParticipantSync({ readOnly = false }) {
 
           {/* Preview Table */}
           <div style={{
-            border:'1px solid #d4c9b0', borderRadius:'6px',
+            border:'1px solid var(--color-border-subtle)', borderRadius:'6px',
             overflow:'hidden', overflowX:'auto', marginBottom:'16px'
           }}>
             <table className="rsp-card-table" style={{width:'100%', borderCollapse:'collapse', fontSize:'12px'}}>
               <thead>
-                <tr style={{background:'#f0ece2'}}>
+                <tr style={{background:'var(--color-bg-stripe)'}}>
                   {['LDC ID','Participant ID','Name','DOB','Gender'].map(h => (
                     <th key={h} style={{
                       padding:'7px 10px', textAlign:'left',
                       fontWeight:'700', fontSize:'10px',
                       textTransform:'uppercase', letterSpacing:'0.4px',
-                      borderBottom:'1px solid #d4c9b0', color:'#3d3528'
+                      borderBottom:'1px solid var(--color-border-subtle)', color:'var(--color-text-heading)'
                     }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {preview.map((p, i) => (
-                  <tr key={i} style={{borderBottom:'1px solid #e8e0d0'}}>
-                    <td data-label="LDC" style={{padding:'6px 10px', color:'#c49a3c', fontWeight:'700'}}>{p.ldc_id}</td>
-                    <td data-label="P.ID" style={{padding:'6px 10px', color:'#6b5e4a'}}>{p.participant_id}</td>
+                  <tr key={i} style={{borderBottom:'1px solid var(--color-divider)'}}>
+                    <td data-label="LDC" style={{padding:'6px 10px', color:'var(--color-brand-accent)', fontWeight:'700'}}>{p.ldc_id}</td>
+                    <td data-label="P.ID" style={{padding:'6px 10px', color:'var(--color-text-subdued)'}}>{p.participant_id}</td>
                     <td data-label="Name" style={{padding:'6px 10px', fontWeight:'600'}}>{p.full_name}</td>
-                    <td data-label="DOB" style={{padding:'6px 10px', color:'#6b5e4a'}}>{p.date_of_birth || '—'}</td>
-                    <td data-label="Gender" style={{padding:'6px 10px', color:'#6b5e4a'}}>{p.gender}</td>
+                    <td data-label="DOB" style={{padding:'6px 10px', color:'var(--color-text-subdued)'}}>{p.date_of_birth || '—'}</td>
+                    <td data-label="Gender" style={{padding:'6px 10px', color:'var(--color-text-subdued)'}}>{p.gender}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div style={{padding:'6px 10px', fontSize:'11px', color:'#a09080'}}>
+            <div style={{padding:'6px 10px', fontSize:'11px', color:'var(--color-text-subdued)'}}>
               Showing first 5 of {stats.total} records
             </div>
           </div>
@@ -337,7 +337,7 @@ export default function ParticipantSync({ readOnly = false }) {
           <div style={{marginBottom:'16px', maxWidth:'300px'}}>
             <label style={{
               display:'block', fontSize:'11px', fontWeight:'700',
-              color:'#3d3528', textTransform:'uppercase',
+              color:'var(--color-text-heading)', textTransform:'uppercase',
               letterSpacing:'0.3px', marginBottom:'5px'
             }}>Batch Label</label>
             <input
@@ -345,16 +345,16 @@ export default function ParticipantSync({ readOnly = false }) {
               onChange={e => setBatchLabel(e.target.value)}
               style={{
                 width:'100%', padding:'9px 11px',
-                border:'1px solid #d4c9b0', borderRadius:'5px',
-                fontSize:'13px', color:'#1a1610',
-                background:'#faf8f3', outline:'none', fontFamily:'inherit'
+                border:'1px solid var(--color-border-subtle)', borderRadius:'5px',
+                fontSize:'13px', color:'var(--color-text-heading)',
+                background:'var(--color-bg-page)', outline:'none', fontFamily:'inherit'
               }}
             />
           </div>
 
           {/* Sync Button */}
           <button onClick={handleSync} disabled={loading} style={{
-            background: loading ? '#a09080' : '#2d6a4f',
+            background: loading ? 'var(--color-border-subtle)' : 'var(--color-success)',
             color:'#fff', border:'none', borderRadius:'6px',
             padding:'12px 28px', fontSize:'14px', fontWeight:'700',
             cursor: loading ? 'not-allowed' : 'pointer', fontFamily:'inherit'

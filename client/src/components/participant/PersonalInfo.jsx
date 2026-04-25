@@ -173,28 +173,28 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
   // ── Style helpers ───────────────────────────────────────────────
   const labelStyle = {
     display: 'block', fontSize: '11px', fontWeight: '700',
-    color: '#3d3528', letterSpacing: '0.3px',
+    color: 'var(--color-text-heading)', letterSpacing: '0.3px',
     textTransform: 'uppercase', marginBottom: '5px'
   };
 
   const inputStyle = (disabled) => ({
     width: '100%', padding: '9px 11px',
-    border: '1px solid #d4c9b0', borderRadius: '5px',
-    fontSize: '13px', color: disabled ? '#a09080' : '#1a1610',
-    background: disabled ? '#f0ece2' : '#faf8f3',
+    border: '1px solid var(--color-border-subtle)', borderRadius: '5px',
+    fontSize: '13px', color: disabled ? 'var(--color-text-subdued)' : 'var(--color-text-heading)',
+    background: disabled ? 'var(--color-bg-stripe)' : 'var(--color-bg-page)',
     outline: 'none', fontFamily: 'inherit',
     cursor: disabled ? 'default' : 'text'
   });
 
   const sectionStyle = {
-    background: '#fffef9', border: '1px solid #d4c9b0',
+    background: 'var(--color-bg-card)', border: '1px solid var(--color-border-subtle)',
     borderRadius: '8px', padding: '20px', marginBottom: '20px'
   };
 
   const sectionTitleStyle = {
     fontSize: '14px', fontWeight: '700',
     marginBottom: '16px', paddingBottom: '10px',
-    borderBottom: '1px solid #e8e0d0', color: '#1a1610',
+    borderBottom: '1px solid var(--color-divider)', color: 'var(--color-text-heading)',
     display: 'flex', justifyContent: 'space-between', alignItems: 'center'
   };
 
@@ -209,12 +209,12 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           borderBottom: '1px solid var(--color-divider)'
         }}>
           <div className="pi-vf-lbl" style={{
-            fontSize: '11px', fontWeight: '700', color: 'var(--color-text-muted)',
+            fontSize: '11px', fontWeight: '700', color: 'var(--color-text-subdued)',
             textTransform: 'uppercase', letterSpacing: '0.4px', flexShrink: 0
           }}>{label}</div>
           <div style={{
             fontSize: '13px', textAlign: 'right',
-            color: hasValue ? 'var(--color-brand-primary)' : 'var(--color-text-placeholder)'
+            color: hasValue ? 'var(--color-text-heading)' : 'var(--color-text-placeholder)'
           }}>
             {hasValue ? value : '—'}
           </div>
@@ -224,10 +224,10 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
     return (
       <div>
         <div style={{
-          fontSize: '10px', fontWeight: '700', color: '#a09080',
+          fontSize: '10px', fontWeight: '700', color: 'var(--color-text-subdued)',
           textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '3px'
         }}>{label}</div>
-        <div style={{ fontSize: '13px', color: value ? '#1a1610' : '#c0b090' }}>
+        <div style={{ fontSize: '13px', color: value ? 'var(--color-text-heading)' : 'var(--color-text-placeholder)' }}>
           {value || '—'}
         </div>
       </div>
@@ -235,7 +235,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
   }
 
   if (loading) return (
-    <div style={{ padding: '32px', color: '#6b5e4a' }}>Loading profile...</div>
+    <div style={{ padding: '32px', color: 'var(--color-text-subdued)' }}>Loading profile...</div>
   );
 
   return (
@@ -243,16 +243,16 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
       {/* Messages */}
       {error && (
         <div style={{
-          background: '#f5e0e3', border: '1px solid #9b2335',
+          background: 'var(--color-tint-danger)', border: '1px solid var(--color-danger)',
           borderRadius: '6px', padding: '10px 14px',
-          color: '#9b2335', fontSize: '13px', marginBottom: '16px'
+          color: 'var(--color-danger)', fontSize: '13px', marginBottom: '16px'
         }}>{error}</div>
       )}
       {success && (
         <div style={{
-          background: '#d8ede4', border: '1px solid #2d6a4f',
+          background: 'var(--color-tint-success)', border: '1px solid var(--color-success)',
           borderRadius: '6px', padding: '10px 14px',
-          color: '#2d6a4f', fontSize: '13px', marginBottom: '16px'
+          color: 'var(--color-success)', fontSize: '13px', marginBottom: '16px'
         }}>{success}</div>
       )}
 
@@ -263,7 +263,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           {!readOnly && (
             <div className="rsp-edit-btn-row" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
               <button onClick={() => setEditMode(true)} style={{
-                background: '#1a1610', color: '#c49a3c', border: 'none',
+                background: 'var(--color-brand-primary)', color: 'var(--color-brand-accent)', border: 'none',
                 borderRadius: '6px', padding: '10px 24px', fontSize: '13px',
                 fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit'
               }}>
@@ -316,26 +316,26 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>Status History</div>
             {history.length === 0 ? (
-              <div style={{ color: '#a09080', fontSize: '13px' }}>
+              <div style={{ color: 'var(--color-text-subdued)', fontSize: '13px' }}>
                 No status history recorded yet.
               </div>
             ) : (
               <div style={{ display: 'grid', gap: '12px' }}>
                 {(showAllHistory ? history : history.slice(0, 5)).map((h, i) => (
                   <div key={h.id} style={{
-                    border: '1px solid #d4c9b0',
+                    border: '1px solid var(--color-border-subtle)',
                     borderRadius: '8px',
                     padding: '16px',
-                    background: i === 0 ? '#f5edd8' : '#fffef9',
+                    background: i === 0 ? 'var(--color-tint-warning)' : 'var(--color-bg-card)',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '12px'
                   }}>
                     {/* Card Header: Status Tag & Date */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '2px', paddingBottom: '10px', borderBottom: '1px solid #e8e0d0' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '2px', paddingBottom: '10px', borderBottom: '1px solid var(--color-divider)' }}>
                       <div>
                         <span style={{
-                          background: '#dce9f5', color: '#1a4068',
+                          background: 'var(--color-tint-info)', color: 'var(--color-info)',
                           padding: '4px 10px', borderRadius: '12px',
                           fontSize: '12px', fontWeight: '700',
                           display: 'inline-block'
@@ -343,7 +343,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                           {statusLabel(h.status)}
                         </span>
                       </div>
-                      <div style={{ fontSize: '10px', color: '#a09080', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      <div style={{ fontSize: '10px', color: 'var(--color-text-subdued)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                         Recorded on {new Date(h.recorded_at).toLocaleDateString('en-GB')}
                       </div>
                     </div>
@@ -352,26 +352,26 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' }}>
                       {h.institution && (
                         <div>
-                          <div style={{ fontSize: '10px', color: '#a09080', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.4px', marginBottom: '2px' }}>
+                          <div style={{ fontSize: '10px', color: 'var(--color-text-subdued)', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.4px', marginBottom: '2px' }}>
                             {CURRENT_STATUS[h.status]?.fields.find(f => f.key === 'current_institution' || f.key === 'current_exam_type')?.label || 'Institution / Employer'}
                           </div>
-                          <div style={{ fontSize: '13px', color: '#1a1610' }}>{h.institution}</div>
+                          <div style={{ fontSize: '13px', color: 'var(--color-text-heading)' }}>{h.institution}</div>
                         </div>
                       )}
                       {h.course && (
                         <div>
-                          <div style={{ fontSize: '10px', color: '#a09080', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.4px', marginBottom: '2px' }}>
+                          <div style={{ fontSize: '10px', color: 'var(--color-text-subdued)', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.4px', marginBottom: '2px' }}>
                             {CURRENT_STATUS[h.status]?.fields.find(f => f.key === 'current_course')?.label || 'Course / Role'}
                           </div>
-                          <div style={{ fontSize: '13px', color: '#1a1610' }}>{h.course}</div>
+                          <div style={{ fontSize: '13px', color: 'var(--color-text-heading)' }}>{h.course}</div>
                         </div>
                       )}
                       {h.year_level && (
                         <div>
-                          <div style={{ fontSize: '10px', color: '#a09080', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.4px', marginBottom: '2px' }}>
+                          <div style={{ fontSize: '10px', color: 'var(--color-text-subdued)', textTransform: 'uppercase', fontWeight: '700', letterSpacing: '0.4px', marginBottom: '2px' }}>
                             {CURRENT_STATUS[h.status]?.fields.find(f => f.key === 'current_year')?.label || 'Year / Duration'}
                           </div>
-                          <div style={{ fontSize: '13px', color: '#1a1610' }}>{h.year_level}</div>
+                          <div style={{ fontSize: '13px', color: 'var(--color-text-heading)' }}>{h.year_level}</div>
                         </div>
                       )}
                     </div>
@@ -381,7 +381,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                   <button 
                     onClick={() => setShowAllHistory(!showAllHistory)} 
                     style={{
-                      background: 'transparent', color: '#1a4068', border: '1px solid #dce9f5',
+                      background: 'transparent', color: 'var(--color-info)', border: '1px solid var(--color-tint-info)',
                       borderRadius: '6px', padding: '10px', fontSize: '13px',
                       fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit',
                       marginTop: '8px'
@@ -425,8 +425,8 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
             {form.current_status && CURRENT_STATUS[form.current_status] && (
               <div className="rsp-grid-3" style={{
                 display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px',
-                background: '#f5edd8', padding: '14px', borderRadius: '6px',
-                border: '1px solid #e8d4a0'
+                background: 'var(--color-tint-warning)', padding: '14px', borderRadius: '6px',
+                border: '1px solid var(--color-brand-accent-lt)'
               }}>
                 {CURRENT_STATUS[form.current_status].fields.map(f => (
                   <div key={f.key}>
@@ -488,7 +488,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                 <input type="checkbox" id="pregnant"
                   checked={form.is_pregnant}
                   onChange={e => setForm({ ...form, is_pregnant: e.target.checked })}
-                  style={{ width: '16px', height: '16px', accentColor: '#c49a3c' }} />
+                  style={{ width: '16px', height: '16px', accentColor: 'var(--color-brand-accent)' }} />
                 <label htmlFor="pregnant" style={{ fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
                   Pregnant / Spouse Pregnant
                 </label>
@@ -510,8 +510,8 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: '10px',
                   padding: '12px 14px',
-                  background: form.living_outside_ldc ? '#fdecd8' : '#faf8f3',
-                  border: `1px solid ${form.living_outside_ldc ? '#c49a3c' : '#d4c9b0'}`,
+                  background: form.living_outside_ldc ? 'var(--color-tint-warning)' : 'var(--color-bg-page)',
+                  border: `1px solid ${form.living_outside_ldc ? 'var(--color-brand-accent)' : 'var(--color-border-subtle)'}`,
                   borderRadius: '6px', marginBottom: form.living_outside_ldc ? '12px' : '0'
                 }}>
                   <input type="checkbox" id="living_outside"
@@ -522,7 +522,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
                       outside_purpose: '',
                       outside_location: ''
                     })}
-                    style={{ width: '16px', height: '16px', accentColor: '#c49a3c' }} />
+                    style={{ width: '16px', height: '16px', accentColor: 'var(--color-brand-accent)' }} />
                   <label htmlFor="living_outside" style={{ fontSize: '13px', fontWeight: '400', cursor: 'pointer' }}>
                     Participant is currently living outside the LDC area
                   </label>
@@ -554,7 +554,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           {/* Save / Cancel Buttons */}
           <div className="rsp-submit-row" style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
             <button type="submit" disabled={saving} style={{
-              background: saving ? '#a09080' : '#2d6a4f',
+              background: saving ? 'var(--color-border-subtle)' : 'var(--color-success)',
               color: '#fff', border: 'none', borderRadius: '6px',
               padding: '12px 32px', fontSize: '14px', fontWeight: '700',
               cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit'
@@ -562,8 +562,8 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
               {saving ? 'Saving...' : 'Save Profile'}
             </button>
             <button type="button" onClick={handleCancel} style={{
-              background: 'transparent', color: '#6b5e4a',
-              border: '1px solid #d4c9b0', borderRadius: '6px',
+              background: 'transparent', color: 'var(--color-text-subdued)',
+              border: '1px solid var(--color-border-subtle)', borderRadius: '6px',
               padding: '12px 24px', fontSize: '14px',
               cursor: 'pointer', fontFamily: 'inherit'
             }}>
@@ -577,21 +577,21 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
       {/* ── No Profile Yet ────────────────────────────────────── */}
       {!editMode && !profile && (
         <div style={{
-          background: '#fffef9', border: '1px solid #d4c9b0',
+          background: 'var(--color-bg-card)', border: '1px solid var(--color-border-subtle)',
           borderRadius: '8px', padding: '40px', textAlign: 'center'
         }}>
           <div style={{ fontSize: '40px', marginBottom: '12px' }}>📋</div>
           <div style={{ fontSize: '16px', fontWeight: '700', marginBottom: '8px' }}>
             No Profile Yet
           </div>
-          <div style={{ color: '#6b5e4a', fontSize: '13px', marginBottom: '20px' }}>
+          <div style={{ color: 'var(--color-text-subdued)', fontSize: '13px', marginBottom: '20px' }}>
             {readOnly
               ? 'No profile was recorded for this participant.'
               : 'Start by creating a profile for this participant.'}
           </div>
           {!readOnly && (
             <button onClick={() => setEditMode(true)} style={{
-              background: '#1a1610', color: '#c49a3c', border: 'none',
+              background: 'var(--color-brand-primary)', color: 'var(--color-brand-accent)', border: 'none',
               borderRadius: '6px', padding: '10px 24px', fontSize: '13px',
               fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit'
             }}>

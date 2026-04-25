@@ -43,10 +43,10 @@ export default function TESApplicationDetail({
 
   function statusBadge(status) {
     const map = {
-      pending     : { bg:'#f0ece2', color:'#6b5e4a', label:'Pending'      },
-      approved    : { bg:'#d8ede4', color:'#2d6a4f', label:'Approved'     },
-      rejected    : { bg:'#f5e0e3', color:'#9b2335', label:'Rejected'     },
-      resubmitted : { bg:'#dce9f5', color:'#1a4068', label:'Resubmitted'  },
+      pending     : { bg:'var(--color-bg-stripe)', color:'var(--color-text-subdued)', label:'Pending'      },
+      approved    : { bg:'var(--color-tint-success)', color:'var(--color-success)', label:'Approved'     },
+      rejected    : { bg:'var(--color-tint-danger)', color:'var(--color-danger)', label:'Rejected'     },
+      resubmitted : { bg:'var(--color-tint-info)', color:'var(--color-info)', label:'Resubmitted'  },
     };
     const s = map[status] || map.pending;
     return (
@@ -63,35 +63,35 @@ export default function TESApplicationDetail({
     return (
       <div style={{marginBottom:'10px'}}>
         <div style={{
-          fontSize:'10px', fontWeight:'700', color:'#a09080',
+          fontSize:'10px', fontWeight:'700', color:'var(--color-text-muted)',
           textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:'2px'
         }}>{label}</div>
         <div style={{
-          fontSize:'13px', color:'#1a1610', lineHeight:'1.6'
+          fontSize:'13px', color:'var(--color-text-heading)', lineHeight:'1.6'
         }}>{value}</div>
       </div>
     );
   }
 
   const sectionStyle = {
-    background:'#fffef9', border:'1px solid #d4c9b0',
+    background:'var(--color-bg-card)', border:'1px solid var(--color-border-subtle)',
     borderRadius:'8px', padding:'20px', marginBottom:'16px'
   };
   const secTitle = {
-    fontSize:'11px', fontWeight:'700', color:'#6b5e4a',
+    fontSize:'11px', fontWeight:'700', color:'var(--color-text-subdued)',
     textTransform:'uppercase', letterSpacing:'0.6px',
     marginBottom:'14px', paddingBottom:'8px',
-    borderBottom:'1px solid #e8e0d0'
+    borderBottom:'1px solid var(--color-divider)'
   };
   const inputStyle = {
     width:'100%', padding:'9px 11px',
-    border:'1px solid #d4c9b0', borderRadius:'5px',
-    fontSize:'13px', color:'#1a1610',
-    background:'#faf8f3', outline:'none', fontFamily:'inherit'
+    border:'1px solid var(--color-border-subtle)', borderRadius:'5px',
+    fontSize:'13px', color:'var(--color-text-heading)',
+    background:'var(--color-bg-page)', outline:'none', fontFamily:'inherit'
   };
   const labelStyle = {
     display:'block', fontSize:'11px', fontWeight:'700',
-    color:'#3d3528', letterSpacing:'0.3px',
+    color:'var(--color-text-heading)', letterSpacing:'0.3px',
     textTransform:'uppercase', marginBottom:'5px'
   };
 
@@ -126,8 +126,8 @@ export default function TESApplicationDetail({
         gap:'12px', marginBottom:'20px', flexWrap:'wrap'
       }}>
         <button onClick={onBack} style={{
-          background:'transparent', border:'1px solid #d4c9b0',
-          color:'#6b5e4a', padding:'6px 14px', borderRadius:'5px',
+          background:'transparent', border:'1px solid var(--color-border-subtle)',
+          color:'var(--color-text-subdued)', padding:'6px 14px', borderRadius:'5px',
           fontSize:'12px', cursor:'pointer', fontFamily:'inherit'
         }}>← Back</button>
         <div style={{flex:1}}>
@@ -139,13 +139,13 @@ export default function TESApplicationDetail({
             </h2>
             {statusBadge(application.approval_status)}
           </div>
-          <div style={{fontSize:'12px', color:'#6b5e4a', marginTop:'2px'}}>
+          <div style={{fontSize:'12px', color:'var(--color-text-subdued)', marginTop:'2px'}}>
             {application.pid} · {application.ldc_code}
           </div>
         </div>
         {canEdit && (
           <button onClick={() => setEditing(true)} style={{
-            background:'#1a1610', color:'#c49a3c', border:'none',
+            background:'var(--color-brand-primary)', color:'var(--color-brand-accent)', border:'none',
             borderRadius:'6px', padding:'8px 16px', fontSize:'12px',
             fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
           }}>Edit Application</button>
@@ -154,36 +154,36 @@ export default function TESApplicationDetail({
 
       {error && (
         <div style={{
-          background:'#f5e0e3', border:'1px solid #9b2335',
+          background:'var(--color-tint-danger)', border:'1px solid var(--color-danger)',
           borderRadius:'6px', padding:'10px 14px',
-          color:'#9b2335', fontSize:'13px', marginBottom:'16px'
+          color:'var(--color-danger)', fontSize:'13px', marginBottom:'16px'
         }}>{error}</div>
       )}
       {success && (
         <div style={{
-          background:'#d8ede4', border:'1px solid #2d6a4f',
+          background:'var(--color-tint-success)', border:'1px solid var(--color-success)',
           borderRadius:'6px', padding:'10px 14px',
-          color:'#2d6a4f', fontSize:'13px', marginBottom:'16px'
+          color:'var(--color-success)', fontSize:'13px', marginBottom:'16px'
         }}>{success}</div>
       )}
 
       {/* Previous TES Support — only show if has history */}
 {tesHistory.history.filter(h => h.status !== 'reverted').length > 0 && (
   <div style={{
-    background:'#1a1610', borderRadius:'8px',
+    background:'var(--color-brand-primary)', borderRadius:'8px',
     padding:'16px 20px', marginBottom:'16px',
     display:'flex', alignItems:'center',
     justifyContent:'space-between', flexWrap:'wrap', gap:'12px'
   }}>
     <div>
       <div style={{
-        fontSize:'11px', color:'#a09080',
+        fontSize:'11px', color:'var(--color-text-muted)',
         textTransform:'uppercase', letterSpacing:'0.5px',
         marginBottom:'4px'
       }}>
         Previously Received TES Support
       </div>
-      <div style={{fontSize:'12px', color:'#e8d4a0'}}>
+      <div style={{fontSize:'12px', color:'var(--color-brand-accent-lt)'}}>
         {tesHistory.history.filter(h => h.status !== 'reverted').length} previous intervention{tesHistory.history.filter(h => h.status !== 'reverted').length !== 1 ? 's' : ''}
       </div>
       <div style={{
@@ -193,7 +193,7 @@ export default function TESApplicationDetail({
           .filter(h => h.status !== 'reverted')
           .map(h => (
             <span key={h.id} style={{
-              background:'#2e2a22', color:'#c49a3c',
+              background:'var(--color-brand-primary)', color:'var(--color-brand-accent)',
               padding:'2px 8px', borderRadius:'6px',
               fontSize:'11px', fontWeight:'600'
             }}>
@@ -205,14 +205,14 @@ export default function TESApplicationDetail({
     </div>
     <div style={{textAlign:'right'}}>
       <div style={{
-        fontSize:'10px', color:'#a09080',
+        fontSize:'10px', color:'var(--color-text-muted)',
         textTransform:'uppercase', letterSpacing:'0.5px',
         marginBottom:'4px'
       }}>
         Total Received
       </div>
       <div style={{
-        fontSize:'22px', fontWeight:'700', color:'#c49a3c'
+        fontSize:'22px', fontWeight:'700', color:'var(--color-brand-accent)'
       }}>
         LKR {parseFloat(tesHistory.total_received).toLocaleString('en-LK', {
           minimumFractionDigits:2, maximumFractionDigits:2
@@ -286,19 +286,19 @@ export default function TESApplicationDetail({
                 highlight: true },
             ].map(f => f.value ? (
               <div key={f.label} style={{
-                background: f.highlight ? '#d8ede4' : '#f0ece2',
+                background: f.highlight ? 'var(--color-tint-success)' : 'var(--color-bg-stripe)',
                 borderRadius:'6px', padding:'10px 14px', textAlign:'center'
               }}>
                 <div style={{
                   fontSize:'16px', fontWeight:'700',
-                  color: f.highlight ? '#2d6a4f' : '#1a1610'
+                  color: f.highlight ? 'var(--color-success)' : 'var(--color-brand-primary)'
                 }}>
                   LKR {parseFloat(f.value).toLocaleString('en-LK', {
                     minimumFractionDigits:2
                   })}
                 </div>
                 <div style={{
-                  fontSize:'10px', color:'#6b5e4a',
+                  fontSize:'10px', color:'var(--color-text-subdued)',
                   textTransform:'uppercase', letterSpacing:'0.3px',
                   marginTop:'3px'
                 }}>{f.label}</div>
@@ -333,12 +333,12 @@ export default function TESApplicationDetail({
             <div key={doc.key} style={{
               display:'flex', alignItems:'center', gap:'10px',
               padding:'8px 12px',
-              background: application[doc.key] ? '#d8ede4' : '#f5e0e3',
-              border:`1px solid ${application[doc.key] ? '#2d6a4f' : '#9b2335'}`,
+              background: application[doc.key] ? 'var(--color-tint-success)' : 'var(--color-tint-danger)',
+              border:`1px solid ${application[doc.key] ? 'var(--color-success)' : 'var(--color-danger)'}`,
               borderRadius:'5px', fontSize:'13px'
             }}>
               <span style={{
-                color: application[doc.key] ? '#2d6a4f' : '#9b2335'
+                color: application[doc.key] ? 'var(--color-success)' : 'var(--color-danger)'
               }}>
                 {application[doc.key] ? '✓' : '✕'}
               </span>
@@ -348,10 +348,10 @@ export default function TESApplicationDetail({
         </div>
         <div style={{
           marginTop:'12px', padding:'12px 16px',
-          background: application.commitment_confirmed ? '#d8ede4' : '#f5e0e3',
-          border:`1px solid ${application.commitment_confirmed ? '#2d6a4f' : '#9b2335'}`,
+          background: application.commitment_confirmed ? 'var(--color-tint-success)' : 'var(--color-tint-danger)',
+          border:`1px solid ${application.commitment_confirmed ? 'var(--color-success)' : 'var(--color-danger)'}`,
           borderRadius:'6px', fontSize:'13px', fontWeight:'600',
-          color: application.commitment_confirmed ? '#2d6a4f' : '#9b2335'
+          color: application.commitment_confirmed ? 'var(--color-success)' : 'var(--color-danger)'
         }}>
           {application.commitment_confirmed ? '✓' : '✕'} Participant Commitment Confirmed
         </div>
@@ -361,7 +361,7 @@ export default function TESApplicationDetail({
       {!isAdmin && (
         <div style={{
           ...sectionStyle,
-          border:'1px solid #c49a3c', background:'#fdfaf0'
+          border:'1px solid var(--color-brand-accent)', background:'var(--color-bg-highlight)'
         }}>
           <div style={secTitle}>For Official Use Only</div>
           <div style={{
@@ -380,11 +380,11 @@ export default function TESApplicationDetail({
       {/* Participant Profile Quick Links (admin only) */}
       {isAdmin && (
         <div style={{
-          background:'#fffef9', border:'1px solid #d4c9b0',
+          background:'var(--color-bg-card)', border:'1px solid var(--color-border-subtle)',
           borderRadius:'8px', padding:'16px 20px', marginBottom:'16px'
         }}>
           <div style={{
-            fontSize:'11px', fontWeight:'700', color:'#6b5e4a',
+            fontSize:'11px', fontWeight:'700', color:'var(--color-text-subdued)',
             textTransform:'uppercase', letterSpacing:'0.6px',
             marginBottom:'12px'
           }}>
@@ -402,7 +402,7 @@ export default function TESApplicationDetail({
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  background:'#dce9f5', color:'#1a4068',
+                  background:'var(--color-tint-info)', color:'var(--color-info)',
                   border:'none', borderRadius:'5px',
                   padding:'7px 14px', fontSize:'12px',
                   fontWeight:'600', textDecoration:'none',
@@ -420,13 +420,13 @@ export default function TESApplicationDetail({
       {isAdmin && (
         <div style={{
           ...sectionStyle,
-          border:'2px solid #1a1610', background:'#1a1610'
+          border:'2px solid var(--color-brand-primary)', background:'var(--color-brand-primary)'
         }}>
           <div style={{
-            fontSize:'11px', fontWeight:'700', color:'#c49a3c',
+            fontSize:'11px', fontWeight:'700', color:'var(--color-brand-accent)',
             textTransform:'uppercase', letterSpacing:'0.6px',
             marginBottom:'14px', paddingBottom:'8px',
-            borderBottom:'1px solid #3a3428'
+            borderBottom:'1px solid var(--color-header-border)'
           }}>
             Admin Decision
           </div>
@@ -434,11 +434,11 @@ export default function TESApplicationDetail({
           {/* Show LDC's official use info */}
           {(application.amount_approved || application.official_notes) && (
             <div style={{
-              background:'#2e2a22', borderRadius:'6px',
+              background:'var(--color-brand-primary)', borderRadius:'6px',
               padding:'12px 16px', marginBottom:'16px'
             }}>
               <div style={{
-                fontSize:'10px', color:'#a09080',
+                fontSize:'10px', color:'var(--color-text-muted)',
                 textTransform:'uppercase', marginBottom:'8px'
               }}>
                 LDC Submitted
@@ -448,11 +448,11 @@ export default function TESApplicationDetail({
               }}>
                 {application.amount_approved && (
                   <div>
-                    <div style={{fontSize:'10px', color:'#a09080'}}>
+                    <div style={{fontSize:'10px', color:'var(--color-text-muted)'}}>
                       Amount Requested
                     </div>
                     <div style={{
-                      fontSize:'15px', fontWeight:'700', color:'#c49a3c'
+                      fontSize:'15px', fontWeight:'700', color:'var(--color-brand-accent)'
                     }}>
                       LKR {parseFloat(application.amount_approved)
                         .toLocaleString('en-LK', {minimumFractionDigits:2})}
@@ -461,10 +461,10 @@ export default function TESApplicationDetail({
                 )}
                 {application.official_notes && (
                   <div>
-                    <div style={{fontSize:'10px', color:'#a09080'}}>
+                    <div style={{fontSize:'10px', color:'var(--color-text-muted)'}}>
                       LDC Notes
                     </div>
-                    <div style={{fontSize:'12px', color:'#e8d4a0'}}>
+                    <div style={{fontSize:'12px', color:'var(--color-brand-accent-lt)'}}>
                       {application.official_notes}
                     </div>
                   </div>
@@ -475,14 +475,14 @@ export default function TESApplicationDetail({
 
           <div style={{marginTop:'20px'}}>
             <h3 style={{
-              fontSize:'13px', fontWeight:'700', color:'#d4c9b0', 
-              borderBottom:'1px solid #4a4234', paddingBottom:'8px', marginBottom:'14px'
+              fontSize:'13px', fontWeight:'700', color:'var(--color-border-subtle)', 
+              borderBottom:'1px solid var(--color-border-heavy)', paddingBottom:'8px', marginBottom:'14px'
             }}>
               Official Decision
             </h3>
             
             <div style={{marginBottom:'16px'}}>
-              <div style={{fontSize:'10px', color:'#a09080', textTransform:'uppercase', marginBottom:'4px', letterSpacing:'0.5px'}}>
+              <div style={{fontSize:'10px', color:'var(--color-text-muted)', textTransform:'uppercase', marginBottom:'4px', letterSpacing:'0.5px'}}>
                 Current Status
               </div>
               <div style={{display:'inline-block'}}>
@@ -493,10 +493,10 @@ export default function TESApplicationDetail({
             {(!isAdmin || readOnly) ? (
               official.admin_notes && (
                 <div style={{marginBottom:'16px'}}>
-                  <div style={{fontSize:'10px', color:'#a09080', textTransform:'uppercase', marginBottom:'4px', letterSpacing:'0.5px'}}>
+                  <div style={{fontSize:'10px', color:'var(--color-text-muted)', textTransform:'uppercase', marginBottom:'4px', letterSpacing:'0.5px'}}>
                     Admin Notes
                   </div>
-                  <div style={{fontSize:'13px', color:'#e8d4a0', lineHeight:'1.5', background:'#2e2a22', padding:'10px', borderRadius:'6px', border:'1px solid #4a4234'}}>
+                  <div style={{fontSize:'13px', color:'var(--color-brand-accent-lt)', lineHeight:'1.5', background:'var(--color-brand-primary)', padding:'10px', borderRadius:'6px', border:'1px solid var(--color-border-heavy)'}}>
                     {official.admin_notes}
                   </div>
                 </div>
@@ -504,12 +504,12 @@ export default function TESApplicationDetail({
             ) : (
               <div>
                 <div style={{marginBottom:'16px'}}>
-                  <label style={{display:'block', fontSize:'11px', fontWeight:'600', color:'#a09080', marginBottom:'6px', textTransform:'uppercase'}}>
+                  <label style={{display:'block', fontSize:'11px', fontWeight:'600', color:'var(--color-text-muted)', marginBottom:'6px', textTransform:'uppercase'}}>
                     Admin Notes (Required for Rejection)
                   </label>
                   <textarea style={{
-                    width:'100%', boxSizing:'border-box', background:'#2e2a22',
-                    border:'1px solid #4a4234', color:'#f5edd8', borderRadius:'6px',
+                    width:'100%', boxSizing:'border-box', background:'var(--color-brand-primary)',
+                    border:'1px solid var(--color-border-heavy)', color:'var(--color-tint-warning)', borderRadius:'6px',
                     padding:'10px 12px', fontSize:'13px', minHeight:'80px', resize:'vertical', fontFamily:'inherit'
                   }}
                   placeholder="Enter notes or rejection reason..."
@@ -523,7 +523,7 @@ export default function TESApplicationDetail({
                     disabled={savingOfficial}
                     onClick={() => saveOfficialWithStatus('approved')}
                     style={{
-                      background: savingOfficial ? '#555' : '#2d6a4f',
+                      background: savingOfficial ? 'var(--color-border-subtle)' : 'var(--color-success)',
                       color:'#fff', border:'none', borderRadius:'6px',
                       padding:'10px 20px', fontSize:'13px', fontWeight:'700',
                       cursor: savingOfficial ? 'not-allowed' : 'pointer', fontFamily:'inherit'
@@ -541,7 +541,7 @@ export default function TESApplicationDetail({
                       saveOfficialWithStatus('rejected');
                     }}
                     style={{
-                      background: savingOfficial ? '#555' : '#9b2335',
+                      background: savingOfficial ? 'var(--color-border-subtle)' : 'var(--color-danger)',
                       color:'#fff', border:'none', borderRadius:'6px',
                       padding:'10px 20px', fontSize:'13px', fontWeight:'700',
                       cursor: savingOfficial ? 'not-allowed' : 'pointer', fontFamily:'inherit'
@@ -554,7 +554,7 @@ export default function TESApplicationDetail({
                     onClick={() => saveOfficialWithStatus('pending')}
                     style={{
                       background: 'transparent',
-                      color:'#a09080', border:'1px solid #4a4234', borderRadius:'6px',
+                      color:'var(--color-text-muted)', border:'1px solid var(--color-border-heavy)', borderRadius:'6px',
                       padding:'10px 20px', fontSize:'13px', fontWeight:'600',
                       cursor: savingOfficial ? 'not-allowed' : 'pointer', fontFamily:'inherit'
                     }}>

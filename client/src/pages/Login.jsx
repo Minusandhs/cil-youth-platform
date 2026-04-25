@@ -64,7 +64,7 @@ export default function Login() {
   return (
     <div style={{
       minHeight:'100vh',
-      background:'#faf8f3',
+      background:'var(--color-bg-page)',
       display:'flex',
       alignItems:'center',
       justifyContent:'center',
@@ -76,8 +76,8 @@ export default function Login() {
         <div style={{textAlign:'center', marginBottom:'32px'}}>
           <div style={{
             display:'inline-block',
-            background:'#1a1610',
-            color:'#c49a3c',
+            background:'var(--color-brand-primary)',
+            color:'var(--color-brand-accent-lt)',
             fontWeight:'700',
             fontSize:'11px',
             letterSpacing:'3px',
@@ -90,13 +90,13 @@ export default function Login() {
           <h1 style={{
             fontSize:'24px',
             fontWeight:'700',
-            color:'#1a1610',
+            color:'var(--color-text-heading)',
             letterSpacing:'-0.3px'
           }}>
             Youth Development Platform
           </h1>
           <p style={{
-            color:'#6b5e4a',
+            color:'var(--color-text-subdued)',
             fontSize:'13px',
             marginTop:'6px'
           }}>
@@ -106,17 +106,17 @@ export default function Login() {
 
         {/* Card */}
         <div style={{
-          background:'#fffef9',
-          border:'1px solid #d4c9b0',
+          background:'var(--color-bg-card)',
+          border:'1px solid var(--color-border-subtle)',
           borderRadius:'12px',
           padding:'32px',
-          boxShadow:'0 4px 24px rgba(26,22,16,0.08)'
+          boxShadow:'0 4px 24px rgba(0,0,0,0.08)'
         }}>
           <h2 style={{
             fontSize:'17px',
             fontWeight:'700',
             marginBottom:'20px',
-            color:'#1a1610'
+            color:'var(--color-text-heading)'
           }}>
             Sign In
           </h2>
@@ -124,11 +124,11 @@ export default function Login() {
           {/* Error Message */}
           {error && (
             <div style={{
-              background:'#f5e0e3',
-              border:'1px solid #9b2335',
+              background:'var(--color-tint-danger)',
+              border:'1px solid var(--color-danger)',
               borderRadius:'6px',
               padding:'10px 14px',
-              color:'#9b2335',
+              color:'var(--color-danger)',
               fontSize:'13px',
               marginBottom:'16px'
             }}>
@@ -145,7 +145,7 @@ export default function Login() {
                 display:'block',
                 fontSize:'11px',
                 fontWeight:'700',
-                color:'#3d3528',
+                color:'var(--color-text-heading)',
                 letterSpacing:'0.3px',
                 textTransform:'uppercase',
                 marginBottom:'6px'
@@ -160,11 +160,11 @@ export default function Login() {
                 style={{
                   width:'100%',
                   padding:'10px 12px',
-                  border:'1px solid #d4c9b0',
+                  border:'1px solid var(--color-border-subtle)',
                   borderRadius:'6px',
                   fontSize:'14px',
-                  color:'#1a1610',
-                  background:'#faf8f3',
+                  color:'var(--color-text-heading)',
+                  background:'var(--color-bg-page)',
                   outline:'none',
                   fontFamily:'inherit'
                 }}
@@ -177,7 +177,7 @@ export default function Login() {
                 display:'block',
                 fontSize:'11px',
                 fontWeight:'700',
-                color:'#3d3528',
+                color:'var(--color-text-heading)',
                 letterSpacing:'0.3px',
                 textTransform:'uppercase',
                 marginBottom:'6px'
@@ -192,11 +192,11 @@ export default function Login() {
                   style={{
                     width:'100%',
                     padding:'10px 12px',
-                    border:'1px solid #d4c9b0',
+                    border:'1px solid var(--color-border-subtle)',
                     borderRadius:'6px',
                     fontSize:'14px',
-                    color:'#1a1610',
-                    background:'#faf8f3',
+                    color:'var(--color-text-heading)',
+                    background:'var(--color-bg-page)',
                     outline:'none',
                     fontFamily:'inherit'
                   }}
@@ -204,7 +204,7 @@ export default function Login() {
                 <div style={{textAlign:'right', marginTop:'8px'}}>
                   <Link to="/forgot-password" style={{
                     fontSize:'12px',
-                    color:'#9b2335',
+                    color:'var(--color-danger)',
                     textDecoration:'none',
                     fontWeight:'600'
                   }}>
@@ -220,8 +220,8 @@ export default function Login() {
               style={{
                 width:'100%',
                 padding:'12px',
-                background: loading ? '#a09080' : '#1a1610',
-                color:'#c49a3c',
+                background: loading ? 'var(--color-border-subtle)' : 'var(--color-brand-primary)',
+                color:'var(--color-brand-accent-lt)',
                 border:'none',
                 borderRadius:'6px',
                 fontSize:'14px',
@@ -240,7 +240,7 @@ export default function Login() {
         {/* Footer */}
         <p style={{
           textAlign:'center',
-          color:'#a09080',
+          color:'var(--color-text-muted)',
           fontSize:'11px',
           marginTop:'20px'
         }}>

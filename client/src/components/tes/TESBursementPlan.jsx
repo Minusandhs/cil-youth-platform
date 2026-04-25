@@ -27,7 +27,7 @@ const sectionTitle = {
   fontSize:'14px', fontWeight:'700',
   marginBottom:'16px', paddingBottom:'10px',
   borderBottom:'1px solid var(--color-divider)',
-  color:'var(--color-brand-primary)',
+  color:'var(--color-text-heading)',
 };
 const labelStyle = {
   display:'block', fontSize:'11px', fontWeight:'700',
@@ -37,7 +37,7 @@ const labelStyle = {
 const inputStyle = {
   width:'100%', padding:'9px 11px',
   border:'1px solid var(--color-border-subtle)', borderRadius:'5px',
-  fontSize:'13px', color:'var(--color-brand-primary)',
+  fontSize:'13px', color:'var(--color-text-heading)',
   background:'var(--color-bg-page)', outline:'none', fontFamily:'inherit',
 };
 
@@ -165,7 +165,7 @@ export default function TESBursementPlan({ application, batch, readOnly, onBack 
           marginTop:'2px'
         }}>← Back</button>
         <div>
-          <div style={{fontSize:'17px', fontWeight:'700', color:'var(--color-brand-primary)'}}>
+          <div style={{fontSize:'17px', fontWeight:'700', color:'var(--color-text-heading)'}}>
             Disbursement Plan
           </div>
           <div style={{fontSize:'12px', color:'var(--color-text-subdued)', marginTop:'3px'}}>

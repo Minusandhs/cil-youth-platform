@@ -76,11 +76,11 @@ export default function TESManagement({ readOnly = false }) {
 
   function statusBadge(status) {
     const map = {
-      open      : { bg:'#d8ede4', color:'#2d6a4f', label:'Open'      },
-      closed    : { bg:'#f0ece2', color:'#6b5e4a', label:'Closed'    },
-      funded    : { bg:'#fdecd8', color:'#b85c00', label:'Funded'    },
-      completed : { bg:'#1a1610', color:'#c49a3c', label:'Completed' },
-      rejected  : { bg:'#f5e0e3', color:'#9b2335', label:'Rejected'  },
+      open      : { bg:'var(--color-tint-success)', color:'var(--color-success)', label:'Open'      },
+      closed    : { bg:'var(--color-bg-stripe)', color:'var(--color-text-subdued)', label:'Closed'    },
+      funded    : { bg:'var(--color-tint-warning)', color:'var(--color-warning)', label:'Funded'    },
+      completed : { bg:'var(--color-brand-primary)', color:'var(--color-brand-accent)', label:'Completed' },
+      rejected  : { bg:'var(--color-tint-danger)', color:'var(--color-danger)', label:'Rejected'  },
     };
     const s = map[status] || map.closed;
     return (
@@ -98,15 +98,15 @@ export default function TESManagement({ readOnly = false }) {
 
   const labelStyle = {
     display:'block', fontSize:'11px', fontWeight:'700',
-    color:'#3d3528', letterSpacing:'0.3px',
+    color:'var(--color-text-heading)', letterSpacing:'0.3px',
     textTransform:'uppercase', marginBottom:'5px'
   };
 
   const inputStyle = {
     width:'100%', padding:'9px 11px',
-    border:'1px solid #d4c9b0', borderRadius:'5px',
-    fontSize:'13px', color:'#1a1610',
-    background:'#faf8f3', outline:'none', fontFamily:'inherit'
+    border:'1px solid var(--color-border-subtle)', borderRadius:'5px',
+    fontSize:'13px', color:'var(--color-text-heading)',
+    background:'var(--color-bg-page)', outline:'none', fontFamily:'inherit'
   };
 
   // Active = open, closed, funded
@@ -120,7 +120,7 @@ export default function TESManagement({ readOnly = false }) {
   const visibleBatches = showOld ? batches : activeBatches;
 
   if (loading) return (
-    <div style={{padding:'32px', color:'#6b5e4a'}}>Loading...</div>
+    <div style={{padding:'32px', color:'var(--color-text-subdued)'}}>Loading...</div>
   );
 
   if (selBatch) {
@@ -147,7 +147,7 @@ export default function TESManagement({ readOnly = false }) {
           <h2 style={{fontSize:'20px', fontWeight:'700'}}>
             TES Batch Management
           </h2>
-          <p style={{color:'#6b5e4a', fontSize:'13px', marginTop:'2px'}}>
+          <p style={{color:'var(--color-text-subdued)', fontSize:'13px', marginTop:'2px'}}>
             Manage Tertiary Education Scholarship batches
           </p>
         </div>
@@ -157,7 +157,7 @@ export default function TESManagement({ readOnly = false }) {
             setEditBatch(null);
             setForm({ batch_name:'', application_end_date:'', update_notes:'' });
           }} style={{
-            background:'#1a1610', color:'#c49a3c', border:'none',
+            background:'var(--color-brand-primary)', color:'var(--color-brand-accent)', border:'none',
             borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
             fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
           }}>
@@ -168,23 +168,23 @@ export default function TESManagement({ readOnly = false }) {
 
       {error && (
         <div style={{
-          background:'#f5e0e3', border:'1px solid #9b2335',
+          background:'var(--color-tint-danger)', border:'1px solid var(--color-danger)',
           borderRadius:'6px', padding:'10px 14px',
-          color:'#9b2335', fontSize:'13px', marginBottom:'16px'
+          color:'var(--color-danger)', fontSize:'13px', marginBottom:'16px'
         }}>{error}</div>
       )}
       {success && (
         <div style={{
-          background:'#d8ede4', border:'1px solid #2d6a4f',
+          background:'var(--color-tint-success)', border:'1px solid var(--color-success)',
           borderRadius:'6px', padding:'10px 14px',
-          color:'#2d6a4f', fontSize:'13px', marginBottom:'16px'
+          color:'var(--color-success)', fontSize:'13px', marginBottom:'16px'
         }}>{success}</div>
       )}
 
       {/* Create Form */}
       {showForm && (
         <div style={{
-          background:'#fffef9', border:'1px solid #d4c9b0',
+          background:'var(--color-bg-card)', border:'1px solid var(--color-border-subtle)',
           borderRadius:'8px', padding:'20px', marginBottom:'24px'
         }}>
           <h3 style={{fontSize:'14px', fontWeight:'700', marginBottom:'16px'}}>
@@ -219,7 +219,7 @@ export default function TESManagement({ readOnly = false }) {
             </div>
               <div className="rsp-submit-row" style={{display:'flex', gap:'10px'}}>
                 <button type="submit" style={{
-                  background:'#2d6a4f', color:'#fff', border:'none',
+                  background:'var(--color-success)', color:'#fff', border:'none',
                   borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
                   fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
                 }}>
@@ -230,8 +230,8 @@ export default function TESManagement({ readOnly = false }) {
                   setEditBatch(null);
                   setForm({ batch_name:'', application_end_date:'', update_notes:'' });
                 }} style={{
-                  background:'transparent', color:'#6b5e4a',
-                  border:'1px solid #d4c9b0', borderRadius:'6px',
+                  background:'transparent', color:'var(--color-text-subdued)',
+                  border:'1px solid var(--color-border-subtle)', borderRadius:'6px',
                   padding:'10px 20px', fontSize:'13px',
                   cursor:'pointer', fontFamily:'inherit'
                 }}>Cancel</button>
@@ -245,14 +245,14 @@ export default function TESManagement({ readOnly = false }) {
         display:'flex', justifyContent:'space-between',
         alignItems:'center', marginBottom:'12px'
       }}>
-        <div style={{fontSize:'12px', color:'#6b5e4a'}}>
+        <div style={{fontSize:'12px', color:'var(--color-text-subdued)'}}>
           {activeBatches.length} active ·{' '}
           {oldBatches.length} completed/rejected
         </div>
         {oldBatches.length > 0 && (
           <button onClick={() => setShowOld(!showOld)} style={{
-            background:'transparent', border:'1px solid #d4c9b0',
-            color:'#6b5e4a', borderRadius:'5px', padding:'5px 12px',
+            background:'transparent', border:'1px solid var(--color-border-subtle)',
+            color:'var(--color-text-subdued)', borderRadius:'5px', padding:'5px 12px',
             fontSize:'11px', fontWeight:'600', cursor:'pointer',
             fontFamily:'inherit'
           }}>
@@ -266,14 +266,14 @@ export default function TESManagement({ readOnly = false }) {
       {/* Batches List */}
       {visibleBatches.length === 0 ? (
         <div style={{
-          background:'#fffef9', border:'1px solid #d4c9b0',
+          background:'var(--color-bg-card)', border:'1px solid var(--color-border-subtle)',
           borderRadius:'8px', padding:'40px', textAlign:'center'
         }}>
           <div style={{fontSize:'36px', marginBottom:'10px'}}>📋</div>
           <div style={{fontSize:'15px', fontWeight:'700', marginBottom:'6px'}}>
             No Batches Yet
           </div>
-          <div style={{color:'#6b5e4a', fontSize:'13px'}}>
+          <div style={{color:'var(--color-text-subdued)', fontSize:'13px'}}>
             Create your first TES batch to start accepting applications.
           </div>
         </div>
@@ -281,10 +281,10 @@ export default function TESManagement({ readOnly = false }) {
         <div style={{display:'grid', gap:'12px'}}>
           {visibleBatches.map(batch => (
             <div key={batch.id} style={{
-              background:'#fffef9',
+              background:'var(--color-bg-card)',
               border:`1px solid ${
                 ['completed','rejected'].includes(batch.status)
-                  ? '#e8e0d0' : '#d4c9b0'
+                  ? 'var(--color-divider)' : 'var(--color-border-subtle)'
               }`,
               borderRadius:'8px', padding:'16px 20px',
               opacity: ['completed','rejected'].includes(batch.status) ? 0.75 : 1
@@ -305,14 +305,14 @@ export default function TESManagement({ readOnly = false }) {
                     {isDeadlinePassed(batch.application_end_date) &&
                       batch.status === 'open' && (
                       <span style={{
-                        background:'#f5e0e3', color:'#9b2335',
+                        background:'var(--color-tint-danger)', color:'var(--color-danger)',
                         padding:'2px 8px', borderRadius:'8px',
                         fontSize:'10px', fontWeight:'700'
                       }}>Deadline Passed</span>
                     )}
                   </div>
                   <div style={{
-                    fontSize:'12px', color:'#6b5e4a',
+                    fontSize:'12px', color:'var(--color-text-subdued)',
                     display:'flex', gap:'16px', flexWrap:'wrap'
                   }}>
                     <span>
@@ -323,7 +323,7 @@ export default function TESManagement({ readOnly = false }) {
                       Deadline: {new Date(batch.application_end_date)
                         .toLocaleDateString('en-GB')}
                     </span>
-                    <span style={{fontWeight:'700', color:'#c49a3c'}}>
+                    <span style={{fontWeight:'700', color:'var(--color-brand-accent)'}}>
                       {batch.application_count} Applications
                     </span>
                     {batch.funded_date && (
@@ -335,7 +335,7 @@ export default function TESManagement({ readOnly = false }) {
                   </div>
                   {batch.update_notes && (
                     <div style={{
-                      fontSize:'12px', color:'#6b5e4a',
+                      fontSize:'12px', color:'var(--color-text-subdued)',
                       marginTop:'4px', fontStyle:'italic'
                     }}>
                       {batch.update_notes}
@@ -346,14 +346,14 @@ export default function TESManagement({ readOnly = false }) {
                 {/* Actions */}
                 <div className="rsp-submit-row" style={{display:'flex', gap:'6px', flexWrap:'wrap'}}>
                   <button onClick={() => setSelBatch(batch)} style={{
-                    background:'#f0ece2', color:'#3d3528',
-                    border:'1px solid #d4c9b0',
+                    background:'var(--color-bg-stripe)', color:'var(--color-text-heading)',
+                    border:'1px solid var(--color-border-subtle)',
                     borderRadius:'5px', padding:'6px 14px', fontSize:'12px',
                     fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
                   }}>View</button>
                   {!readOnly && (
                     <button onClick={() => openEdit(batch)} style={{
-                      background:'#dce9f5', color:'#1a4068', border:'none',
+                      background:'var(--color-tint-info)', color:'var(--color-info)', border:'none',
                       borderRadius:'5px', padding:'6px 14px', fontSize:'12px',
                       fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
                     }}>Edit</button>

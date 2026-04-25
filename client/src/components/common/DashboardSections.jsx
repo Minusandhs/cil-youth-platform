@@ -18,7 +18,7 @@ const card = {
 
 const sectionTitle = {
   fontSize: '15px', fontWeight: '700',
-  marginBottom: '16px', color: 'var(--color-brand-primary)',
+  marginBottom: '16px', color: 'var(--color-text-heading)',
   paddingBottom: '10px', borderBottom: '1px solid var(--color-divider)',
 };
 
@@ -174,7 +174,7 @@ export function HeroStats({ hero, isAdmin, loading }) {
       )}
       <div style={{ marginTop: '16px' }}>
         <StatCard label="TES Active Scholars" value={hero.tes_active_scholars}
-          color="#0e7c7b" loading={loading} sub="Approved on funded/completed batches" />
+          color="var(--color-stat-funds)" loading={loading} sub="Approved on funded/completed batches" />
       </div>
     </div>
   );
@@ -358,8 +358,8 @@ export function TesSection({ tes, isAdmin }) {
             Total Approved
           </div>
         </div>
-        <div style={statCardStyle('#0e7c7b')}>
-          <div style={{ fontSize: '22px', fontWeight: '700', color: '#0e7c7b', lineHeight: 1 }}>
+        <div style={statCardStyle('var(--color-stat-funds)')}>
+          <div style={{ fontSize: '22px', fontWeight: '700', color: 'var(--color-stat-funds)', lineHeight: 1 }}>
             {fmtLKR(tes.total_disbursed_lkr)}
           </div>
           <div style={{ fontSize: '11px', color: 'var(--color-text-subdued)', marginTop: '6px',
@@ -377,7 +377,7 @@ export function TesSection({ tes, isAdmin }) {
               { label: 'Pending',   value: tes.funnel.pending,   color: 'var(--color-brand-accent)' },
               { label: 'Approved',  value: tes.funnel.approved,  color: 'var(--color-success)' },
               { label: 'Funded',    value: tes.funnel.funded,    color: 'var(--color-info)' },
-              { label: 'Disbursed', value: tes.funnel.disbursed, color: '#0e7c7b' },
+              { label: 'Disbursed', value: tes.funnel.disbursed, color: 'var(--color-stat-funds)' },
             ].map((f, i, arr) => {
               const maxVal = Math.max(1, ...arr.map(x => x.value));
               const percent = pct(f.value, maxVal);
@@ -407,7 +407,7 @@ export function TesSection({ tes, isAdmin }) {
                 label={`${r.ldc_code} — ${r.ldc_name}`}
                 count={fmtLKR(r.disbursed)}
                 percent={pct(r.disbursed, max)}
-                color="#0e7c7b" />
+                color="var(--color-stat-funds)" />
             ));
           })()}
           {tes.by_ldc.every(r => r.disbursed === 0) && <div style={muted}>No disbursements yet.</div>}

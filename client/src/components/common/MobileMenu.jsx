@@ -91,7 +91,7 @@ export default function MobileMenu({
               width: '42px', height: '42px', borderRadius: '10px',
               background: 'var(--color-brand-accent)', display: 'flex',
               alignItems: 'center', justifyContent: 'center',
-              color: 'var(--color-brand-primary)', fontWeight: '700', fontSize: '18px'
+              color: 'var(--color-text-heading)', fontWeight: '700', fontSize: '18px'
             }}>
               {user?.full_name?.charAt(0) || <User size={22} />}
             </div>

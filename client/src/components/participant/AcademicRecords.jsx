@@ -274,46 +274,46 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
   // ── Style helpers ───────────────────────────────────────────────
   const labelStyle = {
     display:'block', fontSize:'11px', fontWeight:'700',
-    color:'#3d3528', letterSpacing:'0.3px',
+    color:'var(--color-text-heading)', letterSpacing:'0.3px',
     textTransform:'uppercase', marginBottom:'5px'
   };
 
   const inputStyle = {
     width:'100%', padding:'9px 11px',
-    border:'1px solid #d4c9b0', borderRadius:'5px',
-    fontSize:'13px', color:'#1a1610',
-    background:'#faf8f3', outline:'none', fontFamily:'inherit'
+    border:'1px solid var(--color-border-subtle)', borderRadius:'5px',
+    fontSize:'13px', color:'var(--color-text-heading)',
+    background:'var(--color-bg-page)', outline:'none', fontFamily:'inherit'
   };
 
   const sectionStyle = {
-    background:'#fffef9', border:'1px solid #d4c9b0',
+    background:'var(--color-bg-card)', border:'1px solid var(--color-border-subtle)',
     borderRadius:'8px', padding:'20px', marginBottom:'20px'
   };
 
   function gradeColor(grade) {
     const found = [...olGrades, ...alGrades].find(g => g.grade_name === grade);
-    if (found) return found.is_pass ? '#2d6a4f' : '#9b2335';
-    return '#1a1610';
+    if (found) return found.is_pass ? 'var(--color-success)' : 'var(--color-danger)';
+    return 'var(--color-brand-primary)';
   }
 
   if (loading) return (
-    <div style={{padding:'32px', color:'#6b5e4a'}}>Loading academic records...</div>
+    <div style={{padding:'32px', color:'var(--color-text-subdued)'}}>Loading academic records...</div>
   );
 
   return (
     <div>
       {error && (
         <div style={{
-          background:'#f5e0e3', border:'1px solid #9b2335',
+          background:'var(--color-tint-danger)', border:'1px solid var(--color-danger)',
           borderRadius:'6px', padding:'10px 14px',
-          color:'#9b2335', fontSize:'13px', marginBottom:'16px'
+          color:'var(--color-danger)', fontSize:'13px', marginBottom:'16px'
         }}>{error}</div>
       )}
       {success && (
         <div style={{
-          background:'#d8ede4', border:'1px solid #2d6a4f',
+          background:'var(--color-tint-success)', border:'1px solid var(--color-success)',
           borderRadius:'6px', padding:'10px 14px',
-          color:'#2d6a4f', fontSize:'13px', marginBottom:'16px'
+          color:'var(--color-success)', fontSize:'13px', marginBottom:'16px'
         }}>{success}</div>
       )}
 
@@ -324,9 +324,9 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
           { id:'al', label:'A/L Results' },
         ].map(t => (
           <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
-            background: activeTab === t.id ? '#1a1610' : 'transparent',
-            color: activeTab === t.id ? '#c49a3c' : '#6b5e4a',
-            border:'1px solid #d4c9b0', borderRadius:'6px',
+            background: activeTab === t.id ? 'var(--color-brand-primary)' : 'transparent',
+            color: activeTab === t.id ? 'var(--color-brand-accent)' : 'var(--color-text-subdued)',
+            border:'1px solid var(--color-border-subtle)', borderRadius:'6px',
             padding:'8px 20px', fontSize:'13px', fontWeight:'600',
             cursor:'pointer', fontFamily:'inherit'
           }}>{t.label}</button>
@@ -351,7 +351,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                 });
                 setShowOLForm(true);
               }} style={{
-                background:'#1a1610', color:'#c49a3c', border:'none',
+                background:'var(--color-brand-primary)', color:'var(--color-brand-accent)', border:'none',
                 borderRadius:'6px', padding:'9px 18px', fontSize:'13px',
                 fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
               }}>+ Add OL Result</button>
@@ -393,7 +393,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                     <input type="checkbox" id="ol_passed"
                       checked={olForm.passed}
                       onChange={e => setOlForm({...olForm, passed:e.target.checked})}
-                      style={{width:'16px', height:'16px', accentColor:'#2d6a4f'}} />
+                      style={{width:'16px', height:'16px', accentColor:'var(--color-success)'}} />
                     <label htmlFor="ol_passed" style={{fontSize:'13px', fontWeight:'700', cursor:'pointer'}}>
                       Overall Passed O/L
                     </label>
@@ -408,8 +408,8 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                   }}>
                     <label style={labelStyle}>Subjects & Grades</label>
                     <button type="button" onClick={addOLSubject} style={{
-                      background:'transparent', color:'#c49a3c',
-                      border:'1px dashed #c49a3c', borderRadius:'4px',
+                      background:'transparent', color:'var(--color-brand-accent)',
+                      border:'1px dashed var(--color-brand-accent)', borderRadius:'4px',
                       padding:'4px 12px', fontSize:'11px',
                       fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
                     }}>+ Add Subject</button>
@@ -445,7 +445,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                         ))}
                       </select>
                       <button type="button" onClick={() => removeOLSubject(i)} style={{
-                        background:'#f5e0e3', color:'#9b2335', border:'none',
+                        background:'var(--color-tint-danger)', color:'var(--color-danger)', border:'none',
                         borderRadius:'4px', padding:'8px 12px', fontSize:'13px',
                         cursor:'pointer', fontFamily:'inherit'
                       }}>✕</button>
@@ -458,14 +458,14 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                   <label style={labelStyle}>Plan after O/L (Multiple Option)</label>
                   <div style={{
                     display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))',
-                    gap:'10px', background:'#f5edd8', padding:'14px', borderRadius:'6px'
+                    gap:'10px', background:'var(--color-tint-warning)', padding:'14px', borderRadius:'6px'
                   }}>
                     {PLAN_AFTER_OL_OPTIONS.map(opt => (
                       <div key={opt} style={{display:'flex', alignItems:'center', gap:'8px'}}>
                         <input type="checkbox" id={`ol_plan_${opt}`}
                           checked={olForm.plan_after.includes(opt)}
                           onChange={() => togglePlan('ol', opt)}
-                          style={{accentColor:'#c49a3c'}} />
+                          style={{accentColor:'var(--color-brand-accent)'}} />
                         <label htmlFor={`ol_plan_${opt}`} style={{fontSize:'12px', cursor:'pointer'}}>{opt}</label>
                       </div>
                     ))}
@@ -485,7 +485,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                   <input type="checkbox" id="ol_verified"
                     checked={olForm.results_verified}
                     onChange={e => setOlForm({...olForm, results_verified:e.target.checked})}
-                    style={{width:'16px', height:'16px', accentColor:'#c49a3c'}} />
+                    style={{width:'16px', height:'16px', accentColor:'var(--color-brand-accent)'}} />
                   <label htmlFor="ol_verified" style={{fontSize:'13px', fontWeight:'600', cursor:'pointer'}}>Results Verified</label>
                 </div>
 
@@ -498,7 +498,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
 
                 <div style={{display:'flex', gap:'10px'}}>
                   <button type="submit" disabled={saving} style={{
-                    background: saving ? '#a09080' : '#2d6a4f',
+                    background: saving ? 'var(--color-border-subtle)' : 'var(--color-success)',
                     color:'#fff', border:'none', borderRadius:'6px',
                     padding:'10px 24px', fontSize:'13px', fontWeight:'700',
                     cursor: saving ? 'not-allowed' : 'pointer', fontFamily:'inherit'
@@ -506,7 +506,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                     {saving ? 'Saving...' : 'Save OL Result'}
                   </button>
                   <button type="button" onClick={() => { setShowOLForm(false); setEditOL(null); }}
-                    style={{background:'transparent', color:'#6b5e4a', border:'1px solid #d4c9b0', borderRadius:'6px', padding:'10px 20px', fontSize:'13px', cursor:'pointer', fontFamily:'inherit'}}>
+                    style={{background:'transparent', color:'var(--color-text-subdued)', border:'1px solid var(--color-border-subtle)', borderRadius:'6px', padding:'10px 20px', fontSize:'13px', cursor:'pointer', fontFamily:'inherit'}}>
                     Cancel
                   </button>
                 </div>
@@ -520,30 +520,30 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
               <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'14px'}}>
                 <div>
                   <div style={{fontSize:'16px', fontWeight:'700'}}>O/Level {result.exam_year}</div>
-                  <div style={{fontSize:'12px', color:'#6b5e4a', marginTop:'2px'}}>
+                  <div style={{fontSize:'12px', color:'var(--color-text-subdued)', marginTop:'2px'}}>
                     {result.passed ? 'PASSED' : 'NOT PASSED'} · 
                     {result.school_name && ` ${result.school_name} · `}
                     {result.index_number && ` Index: ${result.index_number}`}
                     {result.results_verified && (
-                      <span style={{marginLeft:'8px', background:'#d8ede4', color:'#2d6a4f', padding:'1px 7px', borderRadius:'8px', fontSize:'10px', fontWeight:'700'}}>Verified</span>
+                      <span style={{marginLeft:'8px', background:'var(--color-tint-success)', color:'var(--color-success)', padding:'1px 7px', borderRadius:'8px', fontSize:'10px', fontWeight:'700'}}>Verified</span>
                     )}
                   </div>
                   {result.plan_after?.length > 0 && (
-                    <div style={{fontSize:'11px', color:'#a09080', marginTop:'4px'}}>
+                    <div style={{fontSize:'11px', color:'var(--color-text-muted)', marginTop:'4px'}}>
                       Plan: {result.plan_after.join(', ')}
                     </div>
                   )}
                 </div>
                 {!readOnly && (
-                  <button onClick={() => openEditOL(result)} style={{background:'#dce9f5', color:'#1a4068', border:'none', borderRadius:'4px', padding:'6px 14px', fontSize:'12px', fontWeight:'600', cursor:'pointer', fontFamily:'inherit'}}>Edit</button>
+                  <button onClick={() => openEditOL(result)} style={{background:'var(--color-tint-info)', color:'var(--color-info)', border:'none', borderRadius:'4px', padding:'6px 14px', fontSize:'12px', fontWeight:'600', cursor:'pointer', fontFamily:'inherit'}}>Edit</button>
                 )}
               </div>
               <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))', gap:'8px'}}>
                 {result.subjects?.filter(s => s.subject_name).map((s, i) => (
-                  <div key={i} style={{background:'#f0ece2', borderRadius:'6px', padding:'8px 12px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                  <div key={i} style={{background:'var(--color-bg-stripe)', borderRadius:'6px', padding:'8px 12px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
                     <div>
                       <div style={{fontSize:'12px', fontWeight:'600'}}>{s.subject_name}</div>
-                      {s.is_core && <div style={{fontSize:'9px', color:'#a09080'}}>Core</div>}
+                      {s.is_core && <div style={{fontSize:'9px', color:'var(--color-text-muted)'}}>Core</div>}
                     </div>
                     <div style={{fontSize:'18px', fontWeight:'700', color: gradeColor(s.grade)}}>{s.grade}</div>
                   </div>
@@ -572,7 +572,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                   notes:'', subjects:[]
                 });
                 setShowALForm(true);
-              }} style={{background:'#1a1610', color:'#c49a3c', border:'none', borderRadius:'6px', padding:'9px 18px', fontSize:'13px', fontWeight:'700', cursor:'pointer', fontFamily:'inherit'}}>+ Add AL Result</button>
+              }} style={{background:'var(--color-brand-primary)', color:'var(--color-brand-accent)', border:'none', borderRadius:'6px', padding:'9px 18px', fontSize:'13px', fontWeight:'700', cursor:'pointer', fontFamily:'inherit'}}>+ Add AL Result</button>
             )}
           </div>
 
@@ -618,7 +618,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                     <input type="checkbox" id="al_passed"
                       checked={alForm.passed}
                       onChange={e => setAlForm({...alForm, passed:e.target.checked})}
-                      style={{width:'16px', height:'16px', accentColor:'#2d6a4f'}} />
+                      style={{width:'16px', height:'16px', accentColor:'var(--color-success)'}} />
                     <label htmlFor="al_passed" style={{fontSize:'13px', fontWeight:'700', cursor:'pointer'}}>
                       Overall Passed A/L
                     </label>
@@ -629,7 +629,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                 <div style={{marginBottom:'16px'}}>
                   <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'10px'}}>
                     <label style={labelStyle}>Main Subjects</label>
-                    <button type="button" onClick={() => addALSubject('main')} style={{background:'transparent', color:'#c49a3c', border:'1px dashed #c49a3c', borderRadius:'4px', padding:'4px 12px', fontSize:'11px', fontWeight:'600', cursor:'pointer', fontFamily:'inherit'}}>+ Add Main Subject</button>
+                    <button type="button" onClick={() => addALSubject('main')} style={{background:'transparent', color:'var(--color-brand-accent)', border:'1px dashed var(--color-brand-accent)', borderRadius:'4px', padding:'4px 12px', fontSize:'11px', fontWeight:'600', cursor:'pointer', fontFamily:'inherit'}}>+ Add Main Subject</button>
                   </div>
                   {alForm.subjects.map((s, i) => s.subject_type !== 'main' ? null : (
                     <div key={i} style={{display:'grid', gridTemplateColumns:'2fr 1fr auto', gap:'10px', marginBottom:'8px', alignItems:'center'}}>
@@ -643,7 +643,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                         <option value="">Grade</option>
                         {alGrades.map(g => <option key={g.id} value={g.grade_name}>{g.grade_name} — {g.description}</option>)}
                       </select>
-                      <button type="button" onClick={() => removeALSubject(i)} style={{background:'#f5e0e3', color:'#9b2335', border:'none', borderRadius:'4px', padding:'8px 12px', fontSize:'13px', cursor:'pointer', fontFamily:'inherit'}}>✕</button>
+                      <button type="button" onClick={() => removeALSubject(i)} style={{background:'var(--color-tint-danger)', color:'var(--color-danger)', border:'none', borderRadius:'4px', padding:'8px 12px', fontSize:'13px', cursor:'pointer', fontFamily:'inherit'}}>✕</button>
                     </div>
                   ))}
                 </div>
@@ -652,7 +652,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                 <div style={{marginBottom:'16px'}}>
                   <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'10px'}}>
                     <label style={labelStyle}>General Subjects</label>
-                    <button type="button" onClick={() => addALSubject('general')} style={{background:'transparent', color:'#c49a3c', border:'1px dashed #c49a3c', borderRadius:'4px', padding:'4px 12px', fontSize:'11px', fontWeight:'600', cursor:'pointer', fontFamily:'inherit'}}>+ Add General Subject</button>
+                    <button type="button" onClick={() => addALSubject('general')} style={{background:'transparent', color:'var(--color-brand-accent)', border:'1px dashed var(--color-brand-accent)', borderRadius:'4px', padding:'4px 12px', fontSize:'11px', fontWeight:'600', cursor:'pointer', fontFamily:'inherit'}}>+ Add General Subject</button>
                   </div>
                   {alForm.subjects.map((s, i) => s.subject_type !== 'general' ? null : (
                     <div key={i} style={{display:'grid', gridTemplateColumns:'2fr 1fr auto', gap:'10px', marginBottom:'8px', alignItems:'center'}}>
@@ -666,7 +666,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                         <option value="">Grade</option>
                         {alGrades.map(g => <option key={g.id} value={g.grade_name}>{g.grade_name} — {g.description}</option>)}
                       </select>
-                      <button type="button" onClick={() => removeALSubject(i)} style={{background:'#f5e0e3', color:'#9b2335', border:'none', borderRadius:'4px', padding:'8px 12px', fontSize:'13px', cursor:'pointer', fontFamily:'inherit'}}>✕</button>
+                      <button type="button" onClick={() => removeALSubject(i)} style={{background:'var(--color-tint-danger)', color:'var(--color-danger)', border:'none', borderRadius:'4px', padding:'8px 12px', fontSize:'13px', cursor:'pointer', fontFamily:'inherit'}}>✕</button>
                     </div>
                   ))}
                 </div>
@@ -676,14 +676,14 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                   <label style={labelStyle}>Plan after A/L (Multiple Option)</label>
                   <div style={{
                     display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(200px, 1fr))',
-                    gap:'10px', background:'#f5edd8', padding:'14px', borderRadius:'6px'
+                    gap:'10px', background:'var(--color-tint-warning)', padding:'14px', borderRadius:'6px'
                   }}>
                     {PLAN_AFTER_AL_OPTIONS.map(opt => (
                       <div key={opt} style={{display:'flex', alignItems:'center', gap:'8px'}}>
                         <input type="checkbox" id={`al_plan_${opt}`}
                           checked={alForm.plan_after.includes(opt)}
                           onChange={() => togglePlan('al', opt)}
-                          style={{accentColor:'#c49a3c'}} />
+                          style={{accentColor:'var(--color-brand-accent)'}} />
                         <label htmlFor={`al_plan_${opt}`} style={{fontSize:'12px', cursor:'pointer'}}>{opt}</label>
                       </div>
                     ))}
@@ -703,7 +703,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                   <input type="checkbox" id="al_verified"
                     checked={alForm.results_verified}
                     onChange={e => setAlForm({...alForm, results_verified:e.target.checked})}
-                    style={{width:'16px', height:'16px', accentColor:'#c49a3c'}} />
+                    style={{width:'16px', height:'16px', accentColor:'var(--color-brand-accent)'}} />
                   <label htmlFor="al_verified" style={{fontSize:'13px', fontWeight:'600', cursor:'pointer'}}>Results Verified</label>
                 </div>
 
@@ -715,9 +715,9 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                 </div>
 
                 {/* University Selection */}
-                <div style={{background:'#f5edd8', border:'1px solid #e8d4a0', borderRadius:'6px', padding:'14px', marginBottom:'16px'}}>
+                <div style={{background:'var(--color-tint-warning)', border:'1px solid var(--color-brand-accent-lt)', borderRadius:'6px', padding:'14px', marginBottom:'16px'}}>
                   <div style={{display:'flex', alignItems:'center', gap:'10px', marginBottom: alForm.university_selected ? '12px' : '0'}}>
-                    <input type="checkbox" id="uni_selected" checked={alForm.university_selected} onChange={e => setAlForm({...alForm, university_selected:e.target.checked})} style={{width:'16px', height:'16px', accentColor:'#c49a3c'}} />
+                    <input type="checkbox" id="uni_selected" checked={alForm.university_selected} onChange={e => setAlForm({...alForm, university_selected:e.target.checked})} style={{width:'16px', height:'16px', accentColor:'var(--color-brand-accent)'}} />
                     <label htmlFor="uni_selected" style={{fontSize:'13px', fontWeight:'600', cursor:'pointer'}}>Selected for University</label>
                   </div>
                   {alForm.university_selected && (
@@ -735,8 +735,8 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                 </div>
 
                 <div style={{display:'flex', gap:'10px'}}>
-                  <button type="submit" disabled={saving} style={{background: saving ? '#a09080' : '#2d6a4f', color:'#fff', border:'none', borderRadius:'6px', padding:'10px 24px', fontSize:'13px', fontWeight:'700', cursor: saving ? 'not-allowed' : 'pointer', fontFamily:'inherit'}}>{saving ? 'Saving...' : 'Save AL Result'}</button>
-                  <button type="button" onClick={() => { setShowALForm(false); setEditAL(null); }} style={{background:'transparent', color:'#6b5e4a', border:'1px solid #d4c9b0', borderRadius:'6px', padding:'10px 20px', fontSize:'13px', cursor:'pointer', fontFamily:'inherit'}}>Cancel</button>
+                  <button type="submit" disabled={saving} style={{background: saving ? 'var(--color-border-subtle)' : 'var(--color-success)', color:'#fff', border:'none', borderRadius:'6px', padding:'10px 24px', fontSize:'13px', fontWeight:'700', cursor: saving ? 'not-allowed' : 'pointer', fontFamily:'inherit'}}>{saving ? 'Saving...' : 'Save AL Result'}</button>
+                  <button type="button" onClick={() => { setShowALForm(false); setEditAL(null); }} style={{background:'transparent', color:'var(--color-text-subdued)', border:'1px solid var(--color-border-subtle)', borderRadius:'6px', padding:'10px 20px', fontSize:'13px', cursor:'pointer', fontFamily:'inherit'}}>Cancel</button>
                 </div>
               </form>
             </div>
@@ -747,25 +747,25 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
               <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'14px'}}>
                 <div>
                   <div style={{fontSize:'16px', fontWeight:'700'}}>A/Level {result.exam_year}</div>
-                  <div style={{fontSize:'12px', color:'#6b5e4a', marginTop:'2px'}}>
+                  <div style={{fontSize:'12px', color:'var(--color-text-subdued)', marginTop:'2px'}}>
                     {result.passed ? 'PASSED' : 'NOT PASSED'} · {result.stream} · {result.z_score && ` Z-Score: ${result.z_score}`}
                   </div>
                   {result.plan_after?.length > 0 && (
-                    <div style={{fontSize:'11px', color:'#a09080', marginTop:'4px'}}>
+                    <div style={{fontSize:'11px', color:'var(--color-text-muted)', marginTop:'4px'}}>
                       Plan: {result.plan_after.join(', ')}
                     </div>
                   )}
                 </div>
                 {!readOnly && (
-                  <button onClick={() => openEditAL(result)} style={{background:'#dce9f5', color:'#1a4068', border:'none', borderRadius:'4px', padding:'6px 14px', fontSize:'12px', fontWeight:'600', cursor:'pointer', fontFamily:'inherit'}}>Edit</button>
+                  <button onClick={() => openEditAL(result)} style={{background:'var(--color-tint-info)', color:'var(--color-info)', border:'none', borderRadius:'4px', padding:'6px 14px', fontSize:'12px', fontWeight:'600', cursor:'pointer', fontFamily:'inherit'}}>Edit</button>
                 )}
               </div>
               <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))', gap:'8px'}}>
                 {result.subjects?.filter(s => s.subject_name).map((s, i) => (
-                  <div key={i} style={{background: s.subject_type === 'general' ? '#dce9f5' : '#f0ece2', borderRadius:'6px', padding:'8px 12px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                  <div key={i} style={{background: s.subject_type === 'general' ? 'var(--color-tint-info)' : 'var(--color-bg-stripe)', borderRadius:'6px', padding:'8px 12px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
                     <div>
                       <div style={{fontSize:'12px', fontWeight:'600'}}>{s.subject_name}</div>
-                      <div style={{fontSize:'9px', color:'#a09080'}}>{s.subject_type === 'general' ? 'General' : 'Main'}</div>
+                      <div style={{fontSize:'9px', color:'var(--color-text-muted)'}}>{s.subject_type === 'general' ? 'General' : 'Main'}</div>
                     </div>
                     <div style={{fontSize:'18px', fontWeight:'700', color: gradeColor(s.grade)}}>{s.grade}</div>
                   </div>

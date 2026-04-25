@@ -15,19 +15,19 @@ function fmtDate(d) {
 }
 
 const card = {
-  background: '#fffef9', border: '1px solid #d4c9b0',
+  background: 'var(--color-bg-card)', border: '1px solid var(--color-border-subtle)',
   borderRadius: '8px', padding: '20px',
   boxShadow: '0 2px 8px rgba(26,22,16,0.06)',
 };
 
 const sectionTitle = {
   fontSize: '15px', fontWeight: '700',
-  marginBottom: '16px', color: '#1a1610',
-  paddingBottom: '10px', borderBottom: '1px solid #e8e0d0',
+  marginBottom: '16px', color: 'var(--color-text-heading)',
+  paddingBottom: '10px', borderBottom: '1px solid var(--color-divider)',
 };
 
 const statCard = (color) => ({
-  background: '#fffef9', border: '1px solid #d4c9b0',
+  background: 'var(--color-bg-card)', border: '1px solid var(--color-border-subtle)',
   borderRadius: '8px', padding: '18px 20px',
   boxShadow: '0 2px 8px rgba(26,22,16,0.06)',
   borderTop: `3px solid ${color}`,
@@ -178,7 +178,7 @@ export default function LDCOverview() {
       <h2 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '4px' }}>
         Dashboard Overview
       </h2>
-      <p style={{ color: '#6b5e4a', fontSize: '13px', marginBottom: '28px' }}>
+      <p style={{ color: 'var(--color-text-subdued)', fontSize: '13px', marginBottom: '28px' }}>
         {user?.ldc_code} — {user?.ldc_name || 'LDC'} summary.
       </p>
 
@@ -186,38 +186,38 @@ export default function LDCOverview() {
       <div style={{ marginBottom: '32px' }}>
         <div style={sectionTitle}>Summary</div>
         <div className="rsp-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px' }}>
-          <div style={statCard('#1a4068')}>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: '#1a4068', lineHeight: 1 }}>
+          <div style={statCard('var(--color-brand-accent)')}>
+            <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--color-brand-accent)', lineHeight: 1 }}>
               {loading ? '…' : fmt(stats?.participants)}
             </div>
-            <div style={{ fontSize: '11px', color: '#6b5e4a', marginTop: '6px',
+            <div style={{ fontSize: '11px', color: 'var(--color-text-subdued)', marginTop: '6px',
               fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
               Active Participants
             </div>
           </div>
-          <div style={statCard('#9b2335')}>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: '#9b2335', lineHeight: 1 }}>
+          <div style={statCard('var(--color-brand-accent)')}>
+            <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--color-brand-accent)', lineHeight: 1 }}>
               {loading ? '…' : fmt(stats?.inactive_participants)}
             </div>
-            <div style={{ fontSize: '11px', color: '#6b5e4a', marginTop: '6px',
+            <div style={{ fontSize: '11px', color: 'var(--color-text-subdued)', marginTop: '6px',
               fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
               Inactive Participants
             </div>
           </div>
-          <div style={statCard('#2d6a4f')}>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: '#2d6a4f', lineHeight: 1 }}>
+          <div style={statCard('var(--color-brand-accent)')}>
+            <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--color-brand-accent)', lineHeight: 1 }}>
               {loading ? '…' : fmt(stats?.active_male)}
             </div>
-            <div style={{ fontSize: '11px', color: '#6b5e4a', marginTop: '6px',
+            <div style={{ fontSize: '11px', color: 'var(--color-text-subdued)', marginTop: '6px',
               fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
               Active Male
             </div>
           </div>
-          <div style={statCard('#5a3e8a')}>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: '#5a3e8a', lineHeight: 1 }}>
+          <div style={statCard('var(--color-brand-accent)')}>
+            <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--color-brand-accent)', lineHeight: 1 }}>
               {loading ? '…' : fmt(stats?.active_female)}
             </div>
-            <div style={{ fontSize: '11px', color: '#6b5e4a', marginTop: '6px',
+            <div style={{ fontSize: '11px', color: 'var(--color-text-subdued)', marginTop: '6px',
               fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
               Active Female
             </div>
@@ -230,7 +230,7 @@ export default function LDCOverview() {
         <div style={sectionTitle}>Participant Information</div>
 
         {loading ? (
-          <div style={{ padding: '32px', textAlign: 'center', color: '#6b5e4a', fontSize: '13px' }}>
+          <div style={{ padding: '32px', textAlign: 'center', color: 'var(--color-text-subdued)', fontSize: '13px' }}>
             Loading...
           </div>
         ) : overview ? (
@@ -239,14 +239,14 @@ export default function LDCOverview() {
 
               {/* Status breakdown */}
               <div style={card}>
-                <div style={{ fontSize: '13px', fontWeight: '700', marginBottom: '14px', color: '#3d3528' }}>
+                <div style={{ fontSize: '13px', fontWeight: '700', marginBottom: '14px', color: 'var(--color-text-heading)' }}>
                   Participant Status
-                  <span style={{ marginLeft: '8px', color: '#a09080', fontWeight: '400', fontSize: '12px' }}>
+                  <span style={{ marginLeft: '8px', color: 'var(--color-text-muted)', fontWeight: '400', fontSize: '12px' }}>
                     ({fmt(overview.total_participants)} total)
                   </span>
                 </div>
                 {overview.status_breakdown.length === 0 ? (
-                  <div style={{ color: '#a09080', fontSize: '13px' }}>No data</div>
+                  <div style={{ color: 'var(--color-text-muted)', fontSize: '13px' }}>No data</div>
                 ) : (
                   overview.status_breakdown.map(row => {
                     const pct = Math.round((row.count / totalStatus) * 100);
@@ -255,15 +255,15 @@ export default function LDCOverview() {
                       <div key={row.status} style={{ marginBottom: '10px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between',
                           fontSize: '12px', marginBottom: '4px' }}>
-                          <span style={{ color: '#3d3528', fontWeight: '600' }}>
+                          <span style={{ color: 'var(--color-text-heading)', fontWeight: '600' }}>
                             {statusLabel(row.status)}
                           </span>
-                          <span style={{ color: '#6b5e4a', fontWeight: '700' }}>
+                          <span style={{ color: 'var(--color-text-subdued)', fontWeight: '700' }}>
                             {fmt(row.count)}{' '}
-                            <span style={{ color: '#a09080', fontWeight: '400' }}>({pct}%)</span>
+                            <span style={{ color: 'var(--color-text-muted)', fontWeight: '400' }}>({pct}%)</span>
                           </span>
                         </div>
-                        <div style={{ height: '6px', background: '#f0ece2', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ height: '6px', background: 'var(--color-bg-stripe)', borderRadius: '3px', overflow: 'hidden' }}>
                           <div style={{ width: `${pct}%`, height: '100%',
                             background: color, borderRadius: '3px', transition: 'width 0.4s' }} />
                         </div>
@@ -275,23 +275,23 @@ export default function LDCOverview() {
 
               {/* Personal Stats */}
               <div style={card}>
-                  <div style={{ fontSize: '13px', fontWeight: '700', marginBottom: '14px', color: '#3d3528' }}>
+                  <div style={{ fontSize: '13px', fontWeight: '700', marginBottom: '14px', color: 'var(--color-text-heading)' }}>
                     Personal Information
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                     {[
-                      { label: 'Married',           value: overview.married,      color: '#c49a3c' },
-                      { label: 'Has Children',       value: overview.has_children, color: '#2d6a4f' },
-                      { label: 'Pregnant',           value: overview.pregnant,     color: '#9b2335' },
-                      { label: 'Living Outside LDC', value: overview.outside_ldc,  color: '#1a4068' },
+                      { label: 'Married',           value: overview.married,      color: 'var(--color-brand-accent)' },
+                      { label: 'Has Children',       value: overview.has_children, color: 'var(--color-brand-accent)' },
+                      { label: 'Pregnant',           value: overview.pregnant,     color: 'var(--color-brand-accent)' },
+                      { label: 'Living Outside LDC', value: overview.outside_ldc,  color: 'var(--color-brand-accent)' },
                     ].map(s => (
-                      <div key={s.label} style={{ background: '#faf8f3',
-                        border: '1px solid #e8e0d0', borderRadius: '6px',
+                      <div key={s.label} style={{ background: 'var(--color-bg-page)',
+                        border: '1px solid var(--color-divider)', borderRadius: '6px',
                         padding: '12px', textAlign: 'center' }}>
                         <div style={{ fontSize: '22px', fontWeight: '700', color: s.color }}>
                           {fmt(s.value)}
                         </div>
-                        <div style={{ fontSize: '10px', color: '#6b5e4a', marginTop: '4px',
+                        <div style={{ fontSize: '10px', color: 'var(--color-text-subdued)', marginTop: '4px',
                           textTransform: 'uppercase', letterSpacing: '0.3px', fontWeight: '600' }}>
                           {s.label}
                         </div>
@@ -343,7 +343,7 @@ export default function LDCOverview() {
                     disabled={!!exporting}
                     style={{ width: '100%', padding: '9px 11px',
                       border: '1px solid var(--color-border-subtle)', borderRadius: '5px',
-                      fontSize: '13px', color: 'var(--color-brand-primary)',
+                      fontSize: '13px', color: 'var(--color-text-heading)',
                       background: 'var(--color-bg-page)', outline: 'none', fontFamily: 'inherit',
                       cursor: exporting ? 'not-allowed' : 'pointer' }}>
                     {EXPORT_OPTIONS.map(opt => (
@@ -359,7 +359,7 @@ export default function LDCOverview() {
                 <button
                   onClick={() => selected?.fn()}
                   disabled={!!exporting}
-                  style={{ background: exporting ? 'var(--color-text-muted)' : 'var(--color-brand-primary)',
+                  style={{ background: exporting ? 'var(--color-border-subtle)' : 'var(--color-brand-primary)',
                     color: 'var(--color-brand-accent)', border: 'none', borderRadius: '6px',
                     padding: '10px 24px', fontSize: '13px', fontWeight: '700',
                     cursor: exporting ? 'not-allowed' : 'pointer',

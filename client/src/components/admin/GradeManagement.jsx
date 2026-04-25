@@ -57,17 +57,17 @@ export default function GradeManagement({ readOnly = false }) {
 
   const labelStyle = {
     display:'block', fontSize:'11px', fontWeight:'700',
-    color:'#3d3528', letterSpacing:'0.3px',
+    color:'var(--color-text-heading)', letterSpacing:'0.3px',
     textTransform:'uppercase', marginBottom:'5px'
   };
   const inputStyle = {
     width:'100%', padding:'9px 11px',
-    border:'1px solid #d4c9b0', borderRadius:'5px',
-    fontSize:'13px', color:'#1a1610',
-    background:'#faf8f3', outline:'none', fontFamily:'inherit'
+    border:'1px solid var(--color-border-subtle)', borderRadius:'5px',
+    fontSize:'13px', color:'var(--color-text-heading)',
+    background:'var(--color-bg-page)', outline:'none', fontFamily:'inherit'
   };
 
-  if (loading) return <div style={{padding:'32px', color:'#6b5e4a'}}>Loading...</div>;
+  if (loading) return <div style={{padding:'32px', color:'var(--color-text-subdued)'}}>Loading...</div>;
 
   return (
     <div>
@@ -77,13 +77,13 @@ export default function GradeManagement({ readOnly = false }) {
       }}>
         <div>
           <h2 style={{fontSize:'20px', fontWeight:'700'}}>Exam Grade Management</h2>
-          <p style={{color:'#6b5e4a', fontSize:'13px', marginTop:'2px'}}>
+          <p style={{color:'var(--color-text-subdued)', fontSize:'13px', marginTop:'2px'}}>
             Manage OL and AL exam grade master list
           </p>
         </div>
         {!readOnly && (
           <button onClick={() => setShowForm(!showForm)} style={{
-            background:'#1a1610', color:'#c49a3c', border:'none',
+            background:'var(--color-brand-primary)', color:'var(--color-brand-accent)', border:'none',
             borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
             fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
           }}>
@@ -94,23 +94,23 @@ export default function GradeManagement({ readOnly = false }) {
 
       {error && (
         <div style={{
-          background:'#f5e0e3', border:'1px solid #9b2335',
+          background:'var(--color-tint-danger)', border:'1px solid var(--color-danger)',
           borderRadius:'6px', padding:'10px 14px',
-          color:'#9b2335', fontSize:'13px', marginBottom:'16px'
+          color:'var(--color-danger)', fontSize:'13px', marginBottom:'16px'
         }}>{error}</div>
       )}
       {success && (
         <div style={{
-          background:'#d8ede4', border:'1px solid #2d6a4f',
+          background:'var(--color-tint-success)', border:'1px solid var(--color-success)',
           borderRadius:'6px', padding:'10px 14px',
-          color:'#2d6a4f', fontSize:'13px', marginBottom:'16px'
+          color:'var(--color-success)', fontSize:'13px', marginBottom:'16px'
         }}>{success}</div>
       )}
 
       {/* Add Form */}
       {showForm && (
         <div style={{
-          background:'#fffef9', border:'1px solid #d4c9b0',
+          background:'var(--color-bg-card)', border:'1px solid var(--color-border-subtle)',
           borderRadius:'8px', padding:'20px', marginBottom:'24px'
         }}>
           <h3 style={{fontSize:'14px', fontWeight:'700', marginBottom:'16px'}}>
@@ -155,7 +155,7 @@ export default function GradeManagement({ readOnly = false }) {
               <input type="checkbox" id="is_pass"
                 checked={form.is_pass}
                 onChange={e => setForm({...form, is_pass:e.target.checked})}
-                style={{width:'16px', height:'16px', accentColor:'#c49a3c'}} />
+                style={{width:'16px', height:'16px', accentColor:'var(--color-brand-accent)'}} />
               <label htmlFor="is_pass" style={{
                 fontSize:'13px', fontWeight:'600', cursor:'pointer'
               }}>
@@ -164,7 +164,7 @@ export default function GradeManagement({ readOnly = false }) {
             </div>
             <div className="rsp-submit-row" style={{display:'flex'}}>
               <button type="submit" style={{
-                background:'#2d6a4f', color:'#fff', border:'none',
+                background:'var(--color-success)', color:'#fff', border:'none',
                 borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
                 fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
               }}>
@@ -182,9 +182,9 @@ export default function GradeManagement({ readOnly = false }) {
           { value:'al', label:'A/L Grades' },
         ].map(t => (
           <button key={t.value} onClick={() => setFilterType(t.value)} style={{
-            background: filterType === t.value ? '#1a1610' : 'transparent',
-            color: filterType === t.value ? '#c49a3c' : '#6b5e4a',
-            border:'1px solid #d4c9b0', borderRadius:'6px',
+            background: filterType === t.value ? 'var(--color-brand-primary)' : 'transparent',
+            color: filterType === t.value ? 'var(--color-brand-accent)' : 'var(--color-text-subdued)',
+            border:'1px solid var(--color-border-subtle)', borderRadius:'6px',
             padding:'8px 18px', fontSize:'13px', fontWeight:'600',
             cursor:'pointer', fontFamily:'inherit'
           }}>
@@ -197,13 +197,13 @@ export default function GradeManagement({ readOnly = false }) {
       <div className="rsp-card-wrap">
         <table className="rsp-card-table" style={{width:'100%', borderCollapse:'collapse', fontSize:'13px'}}>
           <thead>
-            <tr style={{background:'#f0ece2'}}>
+            <tr style={{background:'var(--color-bg-stripe)'}}>
               {['Grade','Type','Description','Pass/Fail','Order','Status','Action'].map(h => (
                 <th key={h} style={{
                   padding:'10px 14px', textAlign:'left',
                   fontSize:'10.5px', fontWeight:'700',
                   textTransform:'uppercase', letterSpacing:'0.4px',
-                  color:'#3d3528', borderBottom:'1px solid #d4c9b0'
+                  color:'var(--color-text-heading)', borderBottom:'1px solid var(--color-border-subtle)'
                 }}>{h}</th>
               ))}
             </tr>
@@ -211,47 +211,47 @@ export default function GradeManagement({ readOnly = false }) {
           <tbody>
             {grades.map(g => (
               <tr key={g.id} style={{
-                borderBottom:'1px solid #e8e0d0',
+                borderBottom:'1px solid var(--color-divider)',
                 opacity: g.is_active ? 1 : 0.5
               }}>
                 <td data-label="Grade" style={{padding:'10px 14px'}}>
                   <span style={{
                     fontSize:'18px', fontWeight:'700',
-                    color: g.is_pass ? '#2d6a4f' : '#9b2335'
+                    color: g.is_pass ? 'var(--color-success)' : 'var(--color-danger)'
                   }}>
                     {g.grade_name}
                   </span>
                 </td>
                 <td data-label="Type" style={{padding:'10px 14px'}}>
                   <span style={{
-                    background: g.grade_type === 'ol' ? '#d8ede4' : '#dce9f5',
-                    color: g.grade_type === 'ol' ? '#2d6a4f' : '#1a4068',
+                    background: g.grade_type === 'ol' ? 'var(--color-tint-success)' : 'var(--color-tint-info)',
+                    color: g.grade_type === 'ol' ? 'var(--color-success)' : 'var(--color-info)',
                     padding:'2px 8px', borderRadius:'10px',
                     fontSize:'10px', fontWeight:'700'
                   }}>
                     {g.grade_type.toUpperCase()}
                   </span>
                 </td>
-                <td data-label="Description" style={{padding:'10px 14px', color:'#6b5e4a'}}>
+                <td data-label="Description" style={{padding:'10px 14px', color:'var(--color-text-subdued)'}}>
                   {g.description || '—'}
                 </td>
                 <td data-label="Pass/Fail" style={{padding:'10px 14px'}}>
                   <span style={{
-                    background: g.is_pass ? '#d8ede4' : '#f5e0e3',
-                    color: g.is_pass ? '#2d6a4f' : '#9b2335',
+                    background: g.is_pass ? 'var(--color-tint-success)' : 'var(--color-tint-danger)',
+                    color: g.is_pass ? 'var(--color-success)' : 'var(--color-danger)',
                     padding:'2px 8px', borderRadius:'10px',
                     fontSize:'10px', fontWeight:'700'
                   }}>
                     {g.is_pass ? 'Pass' : 'Fail'}
                   </span>
                 </td>
-                <td data-label="Order" style={{padding:'10px 14px', color:'#6b5e4a'}}>
+                <td data-label="Order" style={{padding:'10px 14px', color:'var(--color-text-subdued)'}}>
                   {g.display_order}
                 </td>
                 <td data-label="Status" style={{padding:'10px 14px'}}>
                   <span style={{
-                    background: g.is_active ? '#d8ede4' : '#f5e0e3',
-                    color: g.is_active ? '#2d6a4f' : '#9b2335',
+                    background: g.is_active ? 'var(--color-tint-success)' : 'var(--color-tint-danger)',
+                    color: g.is_active ? 'var(--color-success)' : 'var(--color-danger)',
                     padding:'2px 8px', borderRadius:'10px',
                     fontSize:'10px', fontWeight:'700'
                   }}>
@@ -261,8 +261,8 @@ export default function GradeManagement({ readOnly = false }) {
                 <td data-label="Action" style={{padding:'10px 14px'}}>
                   {!readOnly && (
                     <button onClick={() => toggleActive(g)} style={{
-                      background: g.is_active ? '#f5e0e3' : '#d8ede4',
-                      color: g.is_active ? '#9b2335' : '#2d6a4f',
+                      background: g.is_active ? 'var(--color-tint-danger)' : 'var(--color-tint-success)',
+                      color: g.is_active ? 'var(--color-danger)' : 'var(--color-success)',
                       border:'none', borderRadius:'4px',
                       padding:'4px 10px', fontSize:'11px',
                       fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
@@ -279,8 +279,8 @@ export default function GradeManagement({ readOnly = false }) {
 
       <div style={{
         marginTop:'16px', padding:'12px 16px',
-        background:'#fdecd8', border:'1px solid #b85c00',
-        borderRadius:'6px', fontSize:'12px', color:'#b85c00'
+        background:'var(--color-tint-warning)', border:'1px solid var(--color-warning)',
+        borderRadius:'6px', fontSize:'12px', color:'var(--color-warning)'
       }}>
         Note: Deactivating a grade removes it from new entries but
         preserves all existing results that used that grade.

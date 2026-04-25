@@ -9,7 +9,7 @@ const labelStyle = {
 const inputStyle = {
   width: '100%', padding: '9px 11px',
   border: '1px solid var(--color-border-subtle)', borderRadius: '5px',
-  fontSize: '13px', color: 'var(--color-brand-primary)',
+  fontSize: '13px', color: 'var(--color-text-heading)',
   background: 'var(--color-bg-page)', outline: 'none', fontFamily: 'inherit'
 };
 const cardStyle = {
@@ -49,35 +49,35 @@ function printBlankForm(participant) {
 <style>
   @page { size: A4; margin: 18mm 20mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; color: #1a1610; font-size: 12px; height: 100%; }
+  body { font-family: Arial, sans-serif; color: var(--color-brand-primary); font-size: 12px; height: 100%; }
   .page { display: flex; flex-direction: column; min-height: 247mm; }
   .header { display: flex; justify-content: space-between; align-items: flex-start;
-            border-bottom: 3px solid #1a1610; padding-bottom: 10px; margin-bottom: 14px; }
+            border-bottom: 3px solid var(--color-brand-primary); padding-bottom: 10px; margin-bottom: 14px; }
   .header-left .org { font-size: 9px; font-weight: 700; letter-spacing: 2px;
-                      text-transform: uppercase; color: #6b5e4a; margin-bottom: 3px; }
+                      text-transform: uppercase; color: var(--color-text-subdued); margin-bottom: 3px; }
   .header-left .title { font-size: 19px; font-weight: 700; letter-spacing: -0.5px; }
-  .badge { background: #1a1610; color: #c49a3c; font-size: 9px; font-weight: 700;
+  .badge { background: var(--color-brand-primary); color: var(--color-brand-accent); font-size: 9px; font-weight: 700;
            letter-spacing: 1.5px; padding: 5px 11px; border-radius: 3px; }
   .info-row { display: flex; border: 1px solid #ccc; border-radius: 5px;
               overflow: hidden; margin-bottom: 10px; }
   .info-cell { flex: 1; padding: 8px 12px; border-right: 1px solid #ccc; }
   .info-cell:last-child { border-right: none; }
   .info-cell .lbl { font-size: 8px; font-weight: 700; text-transform: uppercase;
-                    letter-spacing: 0.5px; color: #6b5e4a; margin-bottom: 2px; }
+                    letter-spacing: 0.5px; color: var(--color-text-subdued); margin-bottom: 2px; }
   .info-cell .val { font-size: 12px; font-weight: 700; }
   .info-cell .write-line { border-bottom: 1px solid #999; min-height: 20px; }
   .section { border: 1px solid #ccc; border-radius: 5px; margin-bottom: 8px; overflow: hidden; flex: 1; }
   .section.grow { display: flex; flex-direction: column; }
-  .section-label { background: #f0ece2; padding: 6px 12px; font-size: 8px; font-weight: 700;
-                   text-transform: uppercase; letter-spacing: 0.8px; color: #3d3528;
+  .section-label { background: var(--color-bg-stripe); padding: 6px 12px; font-size: 8px; font-weight: 700;
+                   text-transform: uppercase; letter-spacing: 0.8px; color: var(--color-text-heading);
                    border-bottom: 1px solid #ccc; }
   .section-body { padding: 8px 12px; flex: 1; display: flex; flex-direction: column; gap: 0; }
   .bl { flex: 1; border-bottom: 1px solid #ddd; min-height: 18px; }
   .footer { margin-top: 12px; border-top: 1px solid #ccc; padding-top: 8px;
-            display: flex; justify-content: space-between; font-size: 10px; color: #6b5e4a; }
+            display: flex; justify-content: space-between; font-size: 10px; color: var(--color-text-subdued); }
   .sig-row { display: flex; gap: 16px; margin-top: 10px; }
   .sig-cell { flex: 1; border-bottom: 1px solid #999; padding-bottom: 2px; }
-  .sig-lbl { font-size: 8px; text-transform: uppercase; letter-spacing: 0.5px; color: #6b5e4a; margin-top: 4px; }
+  .sig-lbl { font-size: 8px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-text-subdued); margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -259,7 +259,7 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
         alignItems: 'center', marginBottom: '20px'
       }}>
         <div>
-          <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--color-brand-primary)' }}>
+          <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--color-text-heading)' }}>
             Home Visits
           </h2>
           <p style={{ color: 'var(--color-text-subdued)', fontSize: '13px', marginTop: '2px' }}>
@@ -296,7 +296,7 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
           <div style={{
             fontSize: '14px', fontWeight: '700', marginBottom: '16px',
             paddingBottom: '10px', borderBottom: '1px solid var(--color-divider)',
-            color: 'var(--color-brand-primary)'
+            color: 'var(--color-text-heading)'
           }}>Log New Visit</div>
           <form onSubmit={handleCreate}>
             <div className="rsp-grid-3" style={{
@@ -381,7 +381,7 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
                 <form onSubmit={e => handleEdit(e, visit.id)}>
                   <div style={{
                     fontSize: '13px', fontWeight: '700', marginBottom: '14px',
-                    color: 'var(--color-brand-primary)'
+                    color: 'var(--color-text-heading)'
                   }}>Edit Visit</div>
                   <div className="rsp-grid-3" style={{
                     display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
@@ -453,7 +453,7 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--color-brand-primary)' }}>
+                        <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--color-text-heading)' }}>
                           {formatDate(visit.visited_date)}
                         </span>
                         {visit.visited_time && (
@@ -468,7 +468,7 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
                         </span>
                       </div>
                       {visit.created_by_name && (
-                        <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '3px' }}>
+                        <div style={{ fontSize: '11px', color: 'var(--color-text-subdued)', marginTop: '3px' }}>
                           Logged by {visit.created_by_name}
                         </div>
                       )}
@@ -516,7 +516,7 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
                             letterSpacing: '0.5px', color: 'var(--color-text-subdued)', marginBottom: '4px'
                           }}>{label}</div>
                           <div style={{
-                            fontSize: '13px', color: value ? 'var(--color-brand-primary)' : 'var(--color-text-muted)',
+                            fontSize: '13px', color: value ? 'var(--color-text-heading)' : 'var(--color-text-placeholder)',
                             lineHeight: '1.6', whiteSpace: 'pre-wrap'
                           }}>
                             {value || '—'}

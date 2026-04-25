@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import PrivateRoute from './components/PrivateRoute';
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
@@ -11,8 +12,9 @@ import ParticipantProfile from './pages/ParticipantProfile';
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
         <Toaster
           position="top-right"
           toastOptions={{
@@ -50,12 +52,13 @@ export default function App() {
             }}>
               <div style={{textAlign:'center'}}>
                 <div style={{fontSize:'64px', marginBottom:'16px'}}>404</div>
-                <div style={{color:'#6b5e4a', fontSize:'16px'}}>Page not found</div>
+                <div style={{color:'var(--color-text-subdued)', fontSize:'16px'}}>Page not found</div>
               </div>
             </div>
           }/>
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

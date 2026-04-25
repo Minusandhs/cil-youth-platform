@@ -82,7 +82,7 @@ export const CURRENT_STATUS = {
   },
   employed_part: {
     label: 'Employed — Part Time',
-    color: '#9b6e2a',
+    color: 'var(--color-warning)',
     fields: [
       { key: 'current_institution', label: 'Employer', placeholder: 'Company name' },
       { key: 'current_course', label: 'Job Title', placeholder: 'e.g. Cashier' },
@@ -108,7 +108,7 @@ export const CURRENT_STATUS = {
   },
   unemployed_not: {
     label: 'NEET - Not in Education, Employment and Training',
-    color: '#7a1a2a',
+    color: 'var(--color-danger)',
     fields: [
       { key: 'current_course', label: 'Reason', placeholder: 'Reasons for NEET (Not in Education, Employment, or Training)' },
     ],

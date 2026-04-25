@@ -110,7 +110,7 @@ export default function NeedsRisks({ participantId, readOnly = false }) {
     fontSize: '14px', fontWeight: '700',
     marginBottom: '16px', paddingBottom: '10px',
     borderBottom: '1px solid var(--color-divider)',
-    color: 'var(--color-brand-primary)',
+    color: 'var(--color-text-heading)',
     display: 'flex', alignItems: 'center', gap: '8px',
   };
 
@@ -123,7 +123,7 @@ export default function NeedsRisks({ participantId, readOnly = false }) {
   const inputStyle = {
     width: '100%', padding: '9px 11px',
     border: '1px solid var(--color-border-subtle)', borderRadius: '5px',
-    fontSize: '13px', color: 'var(--color-brand-primary)',
+    fontSize: '13px', color: 'var(--color-text-heading)',
     background: 'var(--color-bg-page)', outline: 'none', fontFamily: 'inherit',
     boxSizing: 'border-box',
   };
@@ -151,7 +151,7 @@ export default function NeedsRisks({ participantId, readOnly = false }) {
 
   const tdStyle = {
     padding: '10px 12px', fontSize: '13px',
-    color: 'var(--color-brand-primary)',
+    color: 'var(--color-text-heading)',
     borderBottom: '1px solid var(--color-divider)',
     verticalAlign: 'middle',
   };

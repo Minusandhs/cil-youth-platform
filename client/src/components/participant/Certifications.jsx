@@ -114,15 +114,15 @@ export default function Certifications({ participantId, readOnly = false }) {
 
   const labelStyle = {
     display:'block', fontSize:'11px', fontWeight:'700',
-    color:'#3d3528', letterSpacing:'0.3px',
+    color:'var(--color-text-heading)', letterSpacing:'0.3px',
     textTransform:'uppercase', marginBottom:'5px'
   };
 
   const inputStyle = {
     width:'100%', padding:'9px 11px',
-    border:'1px solid #d4c9b0', borderRadius:'5px',
-    fontSize:'13px', color:'#1a1610',
-    background:'#faf8f3', outline:'none', fontFamily:'inherit'
+    border:'1px solid var(--color-border-subtle)', borderRadius:'5px',
+    fontSize:'13px', color:'var(--color-text-heading)',
+    background:'var(--color-bg-page)', outline:'none', fontFamily:'inherit'
   };
 
   function formatDate(d) {
@@ -136,7 +136,7 @@ export default function Certifications({ participantId, readOnly = false }) {
   }
 
   if (loading) return (
-    <div style={{padding:'32px', color:'#6b5e4a'}}>
+    <div style={{padding:'32px', color:'var(--color-text-subdued)'}}>
       Loading certifications...
     </div>
   );
@@ -145,16 +145,16 @@ export default function Certifications({ participantId, readOnly = false }) {
     <div>
       {error && (
         <div style={{
-          background:'#f5e0e3', border:'1px solid #9b2335',
+          background:'var(--color-tint-danger)', border:'1px solid var(--color-danger)',
           borderRadius:'6px', padding:'10px 14px',
-          color:'#9b2335', fontSize:'13px', marginBottom:'16px'
+          color:'var(--color-danger)', fontSize:'13px', marginBottom:'16px'
         }}>{error}</div>
       )}
       {success && (
         <div style={{
-          background:'#d8ede4', border:'1px solid #2d6a4f',
+          background:'var(--color-tint-success)', border:'1px solid var(--color-success)',
           borderRadius:'6px', padding:'10px 14px',
-          color:'#2d6a4f', fontSize:'13px', marginBottom:'16px'
+          color:'var(--color-success)', fontSize:'13px', marginBottom:'16px'
         }}>{success}</div>
       )}
 
@@ -167,13 +167,13 @@ export default function Certifications({ participantId, readOnly = false }) {
           <h3 style={{fontSize:'16px', fontWeight:'700'}}>
             Certifications & Qualifications
           </h3>
-          <p style={{color:'#6b5e4a', fontSize:'13px', marginTop:'2px'}}>
+          <p style={{color:'var(--color-text-subdued)', fontSize:'13px', marginTop:'2px'}}>
             {certs.length} certification{certs.length !== 1 ? 's' : ''} recorded
           </p>
         </div>
         {!showForm && !readOnly && (
           <button onClick={openCreate} style={{
-            background:'#1a1610', color:'#c49a3c', border:'none',
+            background:'var(--color-brand-primary)', color:'var(--color-brand-accent)', border:'none',
             borderRadius:'6px', padding:'9px 18px', fontSize:'13px',
             fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
           }}>+ Add Certification</button>
@@ -183,7 +183,7 @@ export default function Certifications({ participantId, readOnly = false }) {
       {/* Form */}
       {showForm && (
         <div style={{
-          background:'#fffef9', border:'1px solid #d4c9b0',
+          background:'var(--color-bg-card)', border:'1px solid var(--color-border-subtle)',
           borderRadius:'8px', padding:'20px', marginBottom:'24px'
         }}>
           <h4 style={{fontSize:'14px', fontWeight:'700', marginBottom:'16px'}}>
@@ -269,7 +269,7 @@ export default function Certifications({ participantId, readOnly = false }) {
               <input type="checkbox" id="cert_verified"
                 checked={form.results_verified}
                 onChange={e => setForm({...form, results_verified:e.target.checked})}
-                style={{width:'16px', height:'16px', accentColor:'#c49a3c'}} />
+                style={{width:'16px', height:'16px', accentColor:'var(--color-brand-accent)'}} />
               <label htmlFor="cert_verified" style={{
                 fontSize:'13px', fontWeight:'600', cursor:'pointer'
               }}>Certificate Verified</label>
@@ -285,7 +285,7 @@ export default function Certifications({ participantId, readOnly = false }) {
             {/* Buttons */}
             <div className="rsp-submit-row" style={{display:'flex', gap:'10px'}}>
               <button type="submit" disabled={saving} style={{
-                background: saving ? '#a09080' : '#2d6a4f',
+                background: saving ? 'var(--color-border-subtle)' : 'var(--color-success)',
                 color:'#fff', border:'none', borderRadius:'6px',
                 padding:'10px 24px', fontSize:'13px', fontWeight:'700',
                 cursor: saving ? 'not-allowed' : 'pointer',
@@ -294,8 +294,8 @@ export default function Certifications({ participantId, readOnly = false }) {
                 {saving ? 'Saving...' : editCert ? 'Save Changes' : 'Add Certification'}
               </button>
               <button type="button" onClick={cancelForm} style={{
-                background:'transparent', color:'#6b5e4a',
-                border:'1px solid #d4c9b0', borderRadius:'6px',
+                background:'transparent', color:'var(--color-text-subdued)',
+                border:'1px solid var(--color-border-subtle)', borderRadius:'6px',
                 padding:'10px 20px', fontSize:'13px',
                 cursor:'pointer', fontFamily:'inherit'
               }}>Cancel</button>
@@ -307,14 +307,14 @@ export default function Certifications({ participantId, readOnly = false }) {
       {/* Certifications Cards */}
       {certs.length === 0 && !showForm ? (
         <div style={{
-          background:'#fffef9', border:'1px solid #d4c9b0',
+          background:'var(--color-bg-card)', border:'1px solid var(--color-border-subtle)',
           borderRadius:'8px', padding:'40px', textAlign:'center'
         }}>
           <div style={{fontSize:'36px', marginBottom:'10px'}}>🎓</div>
           <div style={{fontSize:'15px', fontWeight:'700', marginBottom:'6px'}}>
             No Certifications Yet
           </div>
-          <div style={{color:'#6b5e4a', fontSize:'13px'}}>
+          <div style={{color:'var(--color-text-subdued)', fontSize:'13px'}}>
             Click "+ Add Certification" to record qualifications.
           </div>
         </div>
@@ -326,8 +326,8 @@ export default function Certifications({ participantId, readOnly = false }) {
         }}>
           {certs.map(cert => (
             <div key={cert.id} style={{
-              background:'#fffef9',
-              border:`1px solid ${isExpired(cert.expiry_date) ? '#9b2335' : '#d4c9b0'}`,
+              background:'var(--color-bg-card)',
+              border:`1px solid ${isExpired(cert.expiry_date) ? 'var(--color-danger)' : 'var(--color-border-subtle)'}`,
               borderRadius:'8px', padding:'16px',
               position:'relative'
             }}>
@@ -337,7 +337,7 @@ export default function Certifications({ participantId, readOnly = false }) {
                 alignItems:'flex-start', marginBottom:'8px'
               }}>
                 <span style={{
-                  background:'#dce9f5', color:'#1a4068',
+                  background:'var(--color-tint-info)', color:'var(--color-info)',
                   padding:'2px 8px', borderRadius:'10px',
                   fontSize:'10px', fontWeight:'700'
                 }}>
@@ -346,7 +346,7 @@ export default function Certifications({ participantId, readOnly = false }) {
                 </span>
                 {cert.results_verified && (
                   <span style={{
-                    background:'#d8ede4', color:'#2d6a4f',
+                    background:'var(--color-tint-success)', color:'var(--color-success)',
                     padding:'2px 8px', borderRadius:'10px',
                     fontSize:'10px', fontWeight:'700'
                   }}>✓ Verified</span>
@@ -356,7 +356,7 @@ export default function Certifications({ participantId, readOnly = false }) {
               {/* Name */}
               <div style={{
                 fontSize:'14px', fontWeight:'700',
-                marginBottom:'4px', color:'#1a1610'
+                marginBottom:'4px', color:'var(--color-text-heading)'
               }}>
                 {cert.cert_name}
               </div>
@@ -364,7 +364,7 @@ export default function Certifications({ participantId, readOnly = false }) {
               {/* Issuing Body */}
               {cert.issuing_body && (
                 <div style={{
-                  fontSize:'12px', color:'#6b5e4a', marginBottom:'8px'
+                  fontSize:'12px', color:'var(--color-text-subdued)', marginBottom:'8px'
                 }}>
                   {cert.issuing_body}
                 </div>
@@ -376,23 +376,23 @@ export default function Certifications({ participantId, readOnly = false }) {
                 marginBottom:'12px'
               }}>
                 {cert.issued_date && (
-                  <div style={{fontSize:'11px', color:'#a09080'}}>
-                    Issued: <strong style={{color:'#1a1610'}}>
+                  <div style={{fontSize:'11px', color:'var(--color-text-muted)'}}>
+                    Issued: <strong style={{color:'var(--color-text-heading)'}}>
                       {formatDate(cert.issued_date)}
                     </strong>
                   </div>
                 )}
                 {cert.expiry_date && (
                   <div style={{fontSize:'11px',
-                    color: isExpired(cert.expiry_date) ? '#9b2335' : '#a09080'
+                    color: isExpired(cert.expiry_date) ? 'var(--color-danger)' : 'var(--color-text-muted)'
                   }}>
                     Expires: <strong>{formatDate(cert.expiry_date)}</strong>
                     {isExpired(cert.expiry_date) && ' (Expired)'}
                   </div>
                 )}
                 {cert.grade_result && (
-                  <div style={{fontSize:'11px', color:'#a09080'}}>
-                    Grade: <strong style={{color:'#2d6a4f'}}>
+                  <div style={{fontSize:'11px', color:'var(--color-text-muted)'}}>
+                    Grade: <strong style={{color:'var(--color-success)'}}>
                       {cert.grade_result}
                     </strong>
                   </div>
@@ -402,7 +402,7 @@ export default function Certifications({ participantId, readOnly = false }) {
               {/* Notes */}
               {cert.notes && (
                 <div style={{
-                  fontSize:'11px', color:'#6b5e4a',
+                  fontSize:'11px', color:'var(--color-text-subdued)',
                   fontStyle:'italic', marginBottom:'12px'
                 }}>
                   {cert.notes}
@@ -413,12 +413,12 @@ export default function Certifications({ participantId, readOnly = false }) {
               {!readOnly && (
                 <div style={{display:'flex', gap:'8px'}}>
                   <button onClick={() => openEdit(cert)} style={{
-                    background:'#dce9f5', color:'#1a4068', border:'none',
+                    background:'var(--color-tint-info)', color:'var(--color-info)', border:'none',
                     borderRadius:'4px', padding:'5px 12px', fontSize:'11px',
                     fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
                   }}>Edit</button>
                   <button onClick={() => handleDelete(cert)} style={{
-                    background:'#f5e0e3', color:'#9b2335', border:'none',
+                    background:'var(--color-tint-danger)', color:'var(--color-danger)', border:'none',
                     borderRadius:'4px', padding:'5px 12px', fontSize:'11px',
                     fontWeight:'600', cursor:'pointer', fontFamily:'inherit'
                   }}>Delete</button>

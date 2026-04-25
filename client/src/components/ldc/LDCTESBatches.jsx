@@ -23,12 +23,12 @@ export default function LDCTESBatches() {
 
   function statusBadge(status) {
     const map = {
-      open      : { bg:'#d8ede4', color:'#2d6a4f', label:'Open'      },
-      reviewing : { bg:'#f0ece2', color:'#6b5e4a', label:'Reviewing' },
-      approved  : { bg:'#dce9f5', color:'#1a4068', label:'Approved'  },
-      funded    : { bg:'#fdecd8', color:'#b85c00', label:'Funded'    },
-      completed : { bg:'#1a1610', color:'#c49a3c', label:'Completed' },
-      rejected  : { bg:'#f5e0e3', color:'#9b2335', label:'Rejected'  },
+      open      : { bg:'var(--color-tint-success)', color:'var(--color-success)', label:'Open'      },
+      reviewing : { bg:'var(--color-bg-stripe)', color:'var(--color-text-subdued)', label:'Reviewing' },
+      approved  : { bg:'var(--color-tint-info)', color:'var(--color-info)', label:'Approved'  },
+      funded    : { bg:'var(--color-tint-warning)', color:'var(--color-warning)', label:'Funded'    },
+      completed : { bg:'var(--color-brand-primary)', color:'var(--color-brand-accent)', label:'Completed' },
+      rejected  : { bg:'var(--color-tint-danger)', color:'var(--color-danger)', label:'Rejected'  },
     };
     const s = map[status] || map.reviewing;
     return (
@@ -49,7 +49,7 @@ export default function LDCTESBatches() {
   }
 
   if (loading) return (
-    <div style={{padding:'32px', color:'#6b5e4a'}}>Loading batches...</div>
+    <div style={{padding:'32px', color:'var(--color-text-subdued)'}}>Loading batches...</div>
   );
 
   if (selBatch) {
@@ -66,29 +66,29 @@ export default function LDCTESBatches() {
     <div>
       <div style={{marginBottom:'20px'}}>
         <h2 style={{fontSize:'20px', fontWeight:'700'}}>TES Batches</h2>
-        <p style={{color:'#6b5e4a', fontSize:'13px', marginTop:'2px'}}>
+        <p style={{color:'var(--color-text-subdued)', fontSize:'13px', marginTop:'2px'}}>
           View and submit applications for open TES batches
         </p>
       </div>
 
       {error && (
         <div style={{
-          background:'#f5e0e3', border:'1px solid #9b2335',
+          background:'var(--color-tint-danger)', border:'1px solid var(--color-danger)',
           borderRadius:'6px', padding:'10px 14px',
-          color:'#9b2335', fontSize:'13px', marginBottom:'16px'
+          color:'var(--color-danger)', fontSize:'13px', marginBottom:'16px'
         }}>{error}</div>
       )}
 
       {batches.length === 0 ? (
         <div style={{
-          background:'#fffef9', border:'1px solid #d4c9b0',
+          background:'var(--color-bg-card)', border:'1px solid var(--color-border-subtle)',
           borderRadius:'8px', padding:'40px', textAlign:'center'
         }}>
           <div style={{fontSize:'36px', marginBottom:'10px'}}>📋</div>
           <div style={{fontSize:'15px', fontWeight:'700', marginBottom:'6px'}}>
             No Batches Available
           </div>
-          <div style={{color:'#6b5e4a', fontSize:'13px'}}>
+          <div style={{color:'var(--color-text-subdued)', fontSize:'13px'}}>
             No TES batches have been created yet.
             Check back later or contact the admin.
           </div>
@@ -103,8 +103,8 @@ export default function LDCTESBatches() {
 
             return (
                 <div key={batch.id} style={{
-                  background:'#fffef9',
-                  border:`1px solid ${canApply ? '#2d6a4f' : isActive ? '#d4c9b0' : '#e8e0d0'}`,
+                  background:'var(--color-bg-card)',
+                  border:`1px solid ${canApply ? 'var(--color-success)' : isActive ? 'var(--color-border-subtle)' : 'var(--color-divider)'}`,
                   borderRadius:'8px', padding:'16px 20px',
                   opacity: isActive ? 1 : 0.75
                 }}>
@@ -123,7 +123,7 @@ export default function LDCTESBatches() {
                       {statusBadge(batch.status)}
                       {canApply && (
                         <span style={{
-                          background:'#d8ede4', color:'#2d6a4f',
+                          background:'var(--color-tint-success)', color:'var(--color-success)',
                           padding:'2px 8px', borderRadius:'8px',
                           fontSize:'10px', fontWeight:'700'
                         }}>Accepting Applications</span>
@@ -131,7 +131,7 @@ export default function LDCTESBatches() {
                     </div>
 
                     <div style={{
-                      fontSize:'12px', color:'#6b5e4a',
+                      fontSize:'12px', color:'var(--color-text-subdued)',
                       display:'flex', gap:'16px', flexWrap:'wrap'
                     }}>
                       <span>
@@ -145,19 +145,19 @@ export default function LDCTESBatches() {
                       {isOpen && (
                         <span style={{
                           fontWeight:'700',
-                          color: deadlinePassed ? '#9b2335' : '#2d6a4f'
+                          color: deadlinePassed ? 'var(--color-danger)' : 'var(--color-success)'
                         }}>
                           {daysLeft(batch.application_end_date)}
                         </span>
                       )}
-                      <span style={{color:'#c49a3c', fontWeight:'700'}}>
+                      <span style={{color:'var(--color-brand-accent)', fontWeight:'700'}}>
                         {batch.application_count} Applications
                       </span>
                     </div>
 
                     {batch.update_notes && (
                       <div style={{
-                        fontSize:'12px', color:'#6b5e4a',
+                        fontSize:'12px', color:'var(--color-text-subdued)',
                         marginTop:'6px', fontStyle:'italic'
                       }}>
                         {batch.update_notes}
@@ -168,8 +168,8 @@ export default function LDCTESBatches() {
                   <button
                     onClick={() => setSelBatch(batch)}
                     style={{
-                      background: canApply ? '#1a1610' : '#f0ece2',
-                      color: canApply ? '#c49a3c' : '#6b5e4a',
+                      background: canApply ? 'var(--color-brand-primary)' : 'var(--color-bg-stripe)',
+                      color: canApply ? 'var(--color-brand-accent)' : 'var(--color-text-subdued)',
                       border:'none', borderRadius:'6px',
                       padding:'8px 18px', fontSize:'12px',
                       fontWeight:'700', cursor:'pointer',

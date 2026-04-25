@@ -19,7 +19,7 @@ export default function ReferenceData({ readOnly = false }) {
       {/* Sub-tab bar — scrollable on mobile */}
       <div style={{
         display: 'flex', gap: '4px',
-        borderBottom: '2px solid #e8e0d0',
+        borderBottom: '2px solid var(--color-divider)',
         marginBottom: '24px',
         overflowX: 'auto',
         WebkitOverflowScrolling: 'touch',
@@ -34,12 +34,12 @@ export default function ReferenceData({ readOnly = false }) {
               background: 'transparent',
               border: 'none',
               borderBottom: active === t.id
-                ? '2px solid #c49a3c' : '2px solid transparent',
+                ? '2px solid var(--color-brand-accent)' : '2px solid transparent',
               marginBottom: '-2px',
               padding: '8px 18px',
               fontSize: '13px',
               fontWeight: active === t.id ? '700' : '500',
-              color: active === t.id ? '#c49a3c' : '#6b5e4a',
+              color: active === t.id ? 'var(--color-brand-accent)' : 'var(--color-text-subdued)',
               cursor: 'pointer',
               fontFamily: 'inherit',
               transition: 'all 0.15s',

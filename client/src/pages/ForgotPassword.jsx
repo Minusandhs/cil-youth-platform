@@ -28,7 +28,7 @@ export default function ForgotPassword() {
   return (
     <div style={{
       minHeight:'100vh',
-      background:'#faf8f3',
+      background:'var(--color-bg-page)',
       display:'flex',
       alignItems:'center',
       justifyContent:'center',
@@ -40,8 +40,8 @@ export default function ForgotPassword() {
         <div style={{textAlign:'center', marginBottom:'32px'}}>
           <div style={{
             display:'inline-block',
-            background:'#1a1610',
-            color:'#c49a3c',
+            background:'var(--color-brand-primary)',
+            color:'var(--color-brand-accent-lt)',
             fontWeight:'700',
             fontSize:'11px',
             letterSpacing:'3px',
@@ -54,13 +54,13 @@ export default function ForgotPassword() {
           <h1 style={{
             fontSize:'24px',
             fontWeight:'700',
-            color:'#1a1610',
+            color:'var(--color-text-heading)',
             letterSpacing:'-0.3px'
           }}>
             Recovery
           </h1>
           <p style={{
-            color:'#6b5e4a',
+            color:'var(--color-text-subdued)',
             fontSize:'13px',
             marginTop:'6px'
           }}>
@@ -70,17 +70,17 @@ export default function ForgotPassword() {
 
         {/* Card */}
         <div style={{
-          background:'#fffef9',
-          border:'1px solid #d4c9b0',
+          background:'var(--color-bg-card)',
+          border:'1px solid var(--color-border-subtle)',
           borderRadius:'12px',
           padding:'32px',
-          boxShadow:'0 4px 24px rgba(26,22,16,0.08)'
+          boxShadow:'0 4px 24px rgba(0,0,0,0.08)'
         }}>
           <h2 style={{
             fontSize:'17px',
             fontWeight:'700',
             marginBottom:'20px',
-            color:'#1a1610'
+            color:'var(--color-text-heading)'
           }}>
             Forgot Password
           </h2>
@@ -88,11 +88,11 @@ export default function ForgotPassword() {
           {/* Success Message */}
           {message && (
             <div style={{
-              background:'#e0f5e8',
-              border:'1px solid #239b56',
+              background:'var(--color-tint-success)',
+              border:'1px solid var(--color-success)',
               borderRadius:'6px',
               padding:'10px 14px',
-              color:'#239b56',
+              color:'var(--color-success)',
               fontSize:'13px',
               marginBottom:'16px'
             }}>
@@ -103,11 +103,11 @@ export default function ForgotPassword() {
           {/* Error Message */}
           {error && (
             <div style={{
-              background:'#f5e0e3',
-              border:'1px solid #9b2335',
+              background:'var(--color-tint-danger)',
+              border:'1px solid var(--color-danger)',
               borderRadius:'6px',
               padding:'10px 14px',
-              color:'#9b2335',
+              color:'var(--color-danger)',
               fontSize:'13px',
               marginBottom:'16px'
             }}>
@@ -122,7 +122,7 @@ export default function ForgotPassword() {
                   display:'block',
                   fontSize:'11px',
                   fontWeight:'700',
-                  color:'#3d3528',
+                  color:'var(--color-text-heading)',
                   letterSpacing:'0.3px',
                   textTransform:'uppercase',
                   marginBottom:'6px'
@@ -138,11 +138,11 @@ export default function ForgotPassword() {
                   style={{
                     width:'100%',
                     padding:'10px 12px',
-                    border:'1px solid #d4c9b0',
+                    border:'1px solid var(--color-border-subtle)',
                     borderRadius:'6px',
                     fontSize:'14px',
-                    color:'#1a1610',
-                    background:'#faf8f3',
+                    color:'var(--color-text-heading)',
+                    background:'var(--color-bg-page)',
                     outline:'none',
                     fontFamily:'inherit'
                   }}
@@ -155,8 +155,8 @@ export default function ForgotPassword() {
                 style={{
                   width:'100%',
                   padding:'12px',
-                  background: loading ? '#a09080' : '#1a1610',
-                  color:'#c49a3c',
+                  background: loading ? 'var(--color-border-subtle)' : 'var(--color-brand-primary)',
+                  color:'var(--color-brand-accent-lt)',
                   border:'none',
                   borderRadius:'6px',
                   fontSize:'14px',
@@ -171,16 +171,16 @@ export default function ForgotPassword() {
             </form>
           ) : (
             <div style={{textAlign:'center', marginTop:'8px'}}>
-              <p style={{fontSize:'13px', color:'#6b5e4a', marginBottom:'16px'}}>
+              <p style={{fontSize:'13px', color:'var(--color-text-subdued)', marginBottom:'16px'}}>
                 Please check your inbox (and spam folder) for instructions.
               </p>
             </div>
           )}
 
-          <div style={{marginTop:'24px', textAlign:'center', borderTop:'1px solid #eee', paddingTop:'16px'}}>
+          <div style={{marginTop:'24px', textAlign:'center', borderTop:'1px solid var(--color-divider)', paddingTop:'16px'}}>
              <Link to="/login" style={{
                fontSize:'13px',
-               color:'#9b2335',
+               color:'var(--color-danger)',
                textDecoration:'none',
                fontWeight:'600'
              }}>
@@ -192,7 +192,7 @@ export default function ForgotPassword() {
         {/* Footer */}
         <p style={{
           textAlign:'center',
-          color:'#a09080',
+          color:'var(--color-text-muted)',
           fontSize:'11px',
           marginTop:'20px'
         }}>
