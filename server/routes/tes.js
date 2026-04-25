@@ -5,7 +5,7 @@ const express = require('express');
 const { query, transaction } = require('../config/database');
 const { verifyToken } = require('../middleware/auth');
 const { requireSuperAdmin } = require('../middleware/roleCheck');
-const { VALID } = require('../constants');
+const { VALID } = require('../config/dropdowns');
 const { sendTESRejectionEmail } = require('../utils/notifications');
 
 const router = express.Router();
@@ -229,7 +229,6 @@ router.post('/applications', verifyToken, async (req, res) => {
     const {
       batch_id, participant_id,
       contact_number, email, nic_number, guardian_name,
-      lang_english, lang_sinhala, lang_tamil,
       institution_name, institution_type, course_name,
       course_duration, course_year, course_start_date,
       course_end_date, registration_number,
@@ -248,12 +247,6 @@ router.post('/applications', verifyToken, async (req, res) => {
     }
 
     // ── Enum validation ──────────────────────────────────────────
-    if (lang_english    && !VALID.langLevel.includes(lang_english))
-      return res.status(400).json({ error: `Invalid lang_english: ${lang_english}` });
-    if (lang_sinhala    && !VALID.langLevel.includes(lang_sinhala))
-      return res.status(400).json({ error: `Invalid lang_sinhala: ${lang_sinhala}` });
-    if (lang_tamil      && !VALID.langLevel.includes(lang_tamil))
-      return res.status(400).json({ error: `Invalid lang_tamil: ${lang_tamil}` });
     if (institution_type && !VALID.instType.includes(institution_type))
       return res.status(400).json({ error: `Invalid institution_type: ${institution_type}` });
 
@@ -273,7 +266,6 @@ router.post('/applications', verifyToken, async (req, res) => {
       `INSERT INTO tes_applications (
         batch_id, participant_id, ldc_id, submitted_by,
         contact_number, email, nic_number, guardian_name,
-        lang_english, lang_sinhala, lang_tamil,
         institution_name, institution_type, course_name,
         course_duration, course_year, course_start_date,
         course_end_date, registration_number,
@@ -284,15 +276,14 @@ router.post('/applications', verifyToken, async (req, res) => {
         doc_nic, doc_recommendation, commitment_confirmed,
         amount_approved, official_notes
       ) VALUES (
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,
-        $15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,
-        $26,$27,$28,$29,$30,$31,$32,$33,$34
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,
+        $12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,
+        $23,$24,$25,$26,$27,$28,$29,$30,$31
       ) RETURNING *`,
       [
         batch_id, participant_id, ldc_id, req.user.id,
         contact_number || null, email || null,
         nic_number || null, guardian_name || null,
-        lang_english || null, lang_sinhala || null, lang_tamil || null,
         institution_name || null, institution_type || null,
         course_name || null, course_duration || null,
         course_year || null, course_start_date || null,
@@ -323,7 +314,6 @@ router.put('/applications/:id', verifyToken, async (req, res) => {
   try {
     const {
       contact_number, email, nic_number, guardian_name,
-      lang_english, lang_sinhala, lang_tamil,
       institution_name, institution_type, course_name,
       course_duration, course_year, course_start_date,
       course_end_date, registration_number,
@@ -336,12 +326,6 @@ router.put('/applications/:id', verifyToken, async (req, res) => {
     } = req.body;
 
     // ── Enum validation ──────────────────────────────────────────
-    if (lang_english    && !VALID.langLevel.includes(lang_english))
-      return res.status(400).json({ error: `Invalid lang_english: ${lang_english}` });
-    if (lang_sinhala    && !VALID.langLevel.includes(lang_sinhala))
-      return res.status(400).json({ error: `Invalid lang_sinhala: ${lang_sinhala}` });
-    if (lang_tamil      && !VALID.langLevel.includes(lang_tamil))
-      return res.status(400).json({ error: `Invalid lang_tamil: ${lang_tamil}` });
     if (institution_type && !VALID.instType.includes(institution_type))
       return res.status(400).json({ error: `Invalid institution_type: ${institution_type}` });
 
@@ -376,27 +360,24 @@ router.put('/applications/:id', verifyToken, async (req, res) => {
       `UPDATE tes_applications SET
         contact_number          = $1,  email                   = $2,
         nic_number              = $3,  guardian_name           = $4,
-        lang_english            = $5,  lang_sinhala            = $6,
-        lang_tamil              = $7,  institution_name        = $8,
-        institution_type        = $9,  course_name             = $10,
-        course_duration         = $11, course_year             = $12,
-        course_start_date       = $13, course_end_date         = $14,
-        registration_number     = $15, financial_justification = $16,
-        community_contribution  = $17,
-        fee_tuition             = $18, fee_materials           = $19,
-        family_contribution     = $20, requested_amount        = $21,
-        doc_application_form    = $22, doc_certificates        = $23,
-        doc_admission_letter    = $24, doc_income_proof        = $25,
-        doc_nic                 = $26, doc_recommendation      = $27,
-        commitment_confirmed    = $28,
-        amount_approved         = $29, official_notes          = $30,
-        approval_status         = $31,
+        institution_name        = $5,  institution_type        = $6,
+        course_name             = $7,  course_duration         = $8,
+        course_year             = $9,  course_start_date       = $10,
+        course_end_date         = $11, registration_number     = $12,
+        financial_justification = $13, community_contribution  = $14,
+        fee_tuition             = $15, fee_materials           = $16,
+        family_contribution     = $17, requested_amount        = $18,
+        doc_application_form    = $19, doc_certificates        = $20,
+        doc_admission_letter    = $21, doc_income_proof        = $22,
+        doc_nic                 = $23, doc_recommendation      = $24,
+        commitment_confirmed    = $25,
+        amount_approved         = $26, official_notes          = $27,
+        approval_status         = $28,
         updated_at              = NOW()
-       WHERE id = $32 RETURNING *`,
+       WHERE id = $29 RETURNING *`,
       [
         contact_number || null, email || null,
         nic_number || null, guardian_name || null,
-        lang_english || null, lang_sinhala || null, lang_tamil || null,
         institution_name || null, institution_type || null,
         course_name || null, course_duration || null,
         course_year || null, course_start_date || null,
@@ -616,7 +597,6 @@ router.get('/batches/:id/export', verifyToken, async (req, res) => {
         cp.holland_primary, cp.holland_secondary, cp.holland_tertiary,
         cp.career_choice_1, cp.career_choice_2, cp.career_choice_3,
         a.contact_number, a.email, a.nic_number, a.guardian_name,
-        a.lang_english, a.lang_sinhala, a.lang_tamil,
         a.institution_name, a.institution_type, a.course_name,
         a.course_duration, a.course_year,
         a.course_start_date, a.course_end_date,

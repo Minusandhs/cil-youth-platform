@@ -21,7 +21,6 @@ export default function TESApplicationForm({
 
   const emptyForm = {
     contact_number:'', email:'', nic_number:'', guardian_name:'',
-    lang_english:'', lang_sinhala:'', lang_tamil:'',
     institution_name:'', institution_type:'', course_name:'',
     course_duration:'', course_year:'', course_start_date:'',
     course_end_date:'', registration_number:'',
@@ -40,9 +39,6 @@ export default function TESApplicationForm({
     email                  : existingApp.email                || '',
     nic_number             : existingApp.nic_number           || '',
     guardian_name          : existingApp.guardian_name        || '',
-    lang_english           : existingApp.lang_english         || '',
-    lang_sinhala           : existingApp.lang_sinhala         || '',
-    lang_tamil             : existingApp.lang_tamil           || '',
     institution_name       : existingApp.institution_name     || '',
     institution_type       : existingApp.institution_type     || '',
     course_name            : existingApp.course_name          || '',
@@ -500,92 +496,6 @@ export default function TESApplicationForm({
                   onChange={e => setForm({...form, guardian_name:e.target.value})}
                   required />
               </div>
-            </div>
-          </div>
-
-          {/* Language Proficiency */}
-          <div style={sectionStyle}>
-            <div style={secTitle}>Language Proficiency</div>
-
-            {/* Desktop: matrix table */}
-            <div className="rsp-hide-mobile" style={{overflowX:'auto', WebkitOverflowScrolling:'touch'}}>
-            <table style={{width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'380px'}}>
-              <thead>
-                <tr style={{background:'#f0ece2'}}>
-                  <th style={{
-                    padding:'8px 12px', textAlign:'left',
-                    fontSize:'11px', fontWeight:'700',
-                    textTransform:'uppercase', letterSpacing:'0.4px',
-                    color:'#3d3528', borderBottom:'1px solid #d4c9b0',
-                    width:'120px'
-                  }}>Language</th>
-                  {options.langLevels.map(l => (
-                    <th key={l.value} style={{
-                      padding:'8px 12px', textAlign:'center',
-                      fontSize:'11px', fontWeight:'700',
-                      textTransform:'uppercase', letterSpacing:'0.4px',
-                      color:'#3d3528', borderBottom:'1px solid #d4c9b0'
-                    }}>{l.label}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { key:'lang_english', label:'English' },
-                  { key:'lang_sinhala', label:'Sinhala' },
-                  { key:'lang_tamil',   label:'Tamil'   },
-                ].map(lang => (
-                  <tr key={lang.key} style={{borderBottom:'1px solid #e8e0d0'}}>
-                    <td style={{padding:'10px 12px', fontWeight:'600'}}>
-                      {lang.label}
-                    </td>
-                    {options.langLevels.map(level => (
-                      <td key={level.value} style={{padding:'10px 12px', textAlign:'center'}}>
-                        <input type="radio" name={lang.key} value={level.value}
-                          checked={form[lang.key] === level.value}
-                          onChange={() => setForm({...form, [lang.key]:level.value})}
-                          style={{
-                            width:'16px', height:'16px',
-                            accentColor:'#c49a3c', cursor:'pointer'
-                          }} />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            </div>
-
-            {/* Mobile: language name row + full-width dropdown below */}
-            <div className="rsp-show-mobile-only" style={{display:'flex', flexDirection:'column', gap:'12px'}}>
-              {[
-                { key:'lang_english', label:'English' },
-                { key:'lang_sinhala', label:'Sinhala' },
-                { key:'lang_tamil',   label:'Tamil'   },
-              ].map(lang => (
-                <div key={lang.key} style={{paddingBottom:'12px', borderBottom:'1px solid var(--color-divider)'}}>
-                  <div style={{
-                    fontSize:'12px', fontWeight:'700', color:'var(--color-text-heading)',
-                    textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:'6px'
-                  }}>
-                    {lang.label}
-                  </div>
-                  <select
-                    value={form[lang.key] || ''}
-                    onChange={e => setForm({...form, [lang.key]: e.target.value || null})}
-                    style={{
-                      width:'100%', padding:'9px 11px',
-                      border:'1px solid var(--color-border-subtle)', borderRadius:'5px',
-                      fontSize:'13px', color:'var(--color-brand-primary)',
-                      background:'var(--color-bg-page)', fontFamily:'inherit'
-                    }}>
-                    <option value="">— None —</option>
-                    {options.langLevels.map(l => (
-                      <option key={l.value} value={l.value}>{l.label}</option>
-                    ))}
-                  </select>
-                </div>
-              ))}
             </div>
           </div>
 

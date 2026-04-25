@@ -76,7 +76,7 @@ export default function ParticipantProfile() {
     { id: 'certs', label: 'Certifications', icon: Award },
     { id: 'development', label: 'Development Plan', icon: TrendingUp },
     { id: 'career', label: 'Career', icon: Briefcase },
-    { id: 'talents', label: 'Talents', icon: Star },
+    { id: 'talents', label: 'Talents & Skills', icon: Star },
     { id: 'needs_risks', label: 'Needs & Risks', icon: AlertTriangle },
     { id: 'home_visits', label: 'Home Visits', icon: Home },
     { id: 'tes', label: 'TES History', icon: FileText },

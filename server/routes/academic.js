@@ -4,7 +4,7 @@
 const express = require('express');
 const { query, transaction } = require('../config/database');
 const { verifyToken, userOwnsParticipant } = require('../middleware/auth');
-const { VALID } = require('../constants');
+const { VALID } = require('../config/dropdowns');
 
 const router = express.Router();
 

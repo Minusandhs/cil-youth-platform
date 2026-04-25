@@ -643,7 +643,7 @@ export function TalentsSection({ talents }) {
   if (!talents) return null;
   return (
     <div style={{ marginBottom: '32px' }}>
-      <div style={sectionTitle}>Talents</div>
+      <div style={sectionTitle}>Talents & Skills</div>
       <div style={card}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' }}>
           <div style={miniCard}>

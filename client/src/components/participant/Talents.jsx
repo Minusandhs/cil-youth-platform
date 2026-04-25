@@ -75,7 +75,7 @@ export default function Talents({ participantId, readOnly = false }) {
       const res = await api.get(`/api/talents/${participantId}`);
       setEntries(res.data);
       setForm(EMPTY_FORM);
-      setSuccess('Talent recorded.');
+      setSuccess('Entry recorded.');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to record talent');
@@ -182,7 +182,7 @@ export default function Talents({ participantId, readOnly = false }) {
       {/* ── New Entry Form ──────────────────────────────────────── */}
       {!readOnly && (
         <div style={card}>
-          <div style={secTitle}>Record New Talent</div>
+          <div style={secTitle}>Record New Entry</div>
 
           {error && (
             <div style={{
@@ -297,9 +297,9 @@ export default function Talents({ participantId, readOnly = false }) {
       {/* ── Talents Log ──────────────────────────────────────────── */}
       <div style={card}>
         <div style={secTitle}>
-          Recorded Talents
+          Recorded Talents & Skills
           <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: '400' }}>
-            {entries.length} talent{entries.length !== 1 ? 's' : ''}
+            {entries.length} entr{entries.length !== 1 ? 'ies' : 'y'}
           </span>
         </div>
 

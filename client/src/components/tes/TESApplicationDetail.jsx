@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
 import TESApplicationForm from './TESApplicationForm';
-import { useConstants } from '../../lib/useConstants';
 
 export default function TESApplicationDetail({
   application, batch, isAdmin, readOnly = false, onBack, onUpdate
 }) {
-  const options = useConstants();
   const [editing,        setEditing       ] = useState(false);
   const [savingOfficial, setSavingOfficial] = useState(false);
   const [error,          setError         ] = useState('');
@@ -243,99 +241,6 @@ export default function TESApplicationDetail({
           <InfoRow label="Guardian"     value={application.guardian_name} />
         </div>
       </div>
-
-      {/* Language */}
-      {(application.lang_english || application.lang_sinhala ||
-        application.lang_tamil) && (
-        <div style={sectionStyle}>
-          <div style={secTitle}>Language Proficiency</div>
-
-          {/* Desktop: matrix table */}
-          <div className="rsp-hide-mobile">
-          <div style={{overflowX:'auto'}}>
-          <table style={{
-            width:'100%', borderCollapse:'collapse', fontSize:'13px', minWidth:'360px'
-          }}>
-            <thead>
-              <tr style={{background:'#f0ece2'}}>
-                <th style={{
-                  padding:'7px 12px', textAlign:'left',
-                  fontSize:'10px', fontWeight:'700',
-                  textTransform:'uppercase', color:'#3d3528',
-                  borderBottom:'1px solid #d4c9b0', width:'100px'
-                }}>Language</th>
-                {options.langLevels.map(l => (
-                  <th key={l.value} style={{
-                    padding:'7px 12px', textAlign:'center',
-                    fontSize:'10px', fontWeight:'700',
-                    textTransform:'uppercase', color:'#3d3528',
-                    borderBottom:'1px solid #d4c9b0'
-                  }}>{l.label}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { key:'lang_english', label:'English' },
-                { key:'lang_sinhala', label:'Sinhala' },
-                { key:'lang_tamil',   label:'Tamil'   },
-              ].map(lang => (
-                <tr key={lang.key} style={{borderBottom:'1px solid #e8e0d0'}}>
-                  <td style={{padding:'8px 12px', fontWeight:'600'}}>
-                    {lang.label}
-                  </td>
-                  {options.langLevels.map(level => (
-                    <td key={level.value} style={{
-                      padding:'8px 12px', textAlign:'center'
-                    }}>
-                      {application[lang.key] === level.value ? (
-                        <span style={{
-                          background:'#c49a3c', color:'#fff',
-                          padding:'2px 10px', borderRadius:'8px',
-                          fontSize:'11px', fontWeight:'700'
-                        }}>
-                          {level.label}
-                        </span>
-                      ) : (
-                        <span style={{color:'#e8e0d0', fontSize:'16px'}}>○</span>
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          </div>
-          </div>
-
-          {/* Mobile: language label row + badge below */}
-          <div className="rsp-show-mobile-only" style={{display:'flex', flexDirection:'column', gap:'12px'}}>
-            {[
-              { key:'lang_english', label:'English' },
-              { key:'lang_sinhala', label:'Sinhala' },
-              { key:'lang_tamil',   label:'Tamil'   },
-            ].filter(lang => application[lang.key]).map((lang, i, arr) => (
-              <div key={lang.key} style={{
-                paddingBottom:'12px',
-                borderBottom: i < arr.length - 1 ? '1px solid var(--color-divider)' : 'none'
-              }}>
-                <div style={{
-                  fontSize:'12px', fontWeight:'700', color:'var(--color-text-heading)',
-                  textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:'6px'
-                }}>{lang.label}</div>
-                <span style={{
-                  background:'var(--color-brand-accent)', color:'var(--color-brand-primary)',
-                  padding:'4px 14px', borderRadius:'8px',
-                  fontSize:'12px', fontWeight:'700', display:'inline-block'
-                }}>
-                  {application[lang.key].charAt(0).toUpperCase() +
-                   application[lang.key].slice(1)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Institution */}
       <div style={sectionStyle}>

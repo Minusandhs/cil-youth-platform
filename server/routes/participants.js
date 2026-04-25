@@ -5,7 +5,7 @@ const express = require('express');
 const { query, transaction } = require('../config/database');
 const { verifyToken } = require('../middleware/auth');
 const { requireSuperAdmin } = require('../middleware/roleCheck');
-const { VALID } = require('../constants');
+const { VALID } = require('../config/dropdowns');
 
 const router = express.Router();
 

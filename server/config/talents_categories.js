@@ -31,6 +31,7 @@ module.exports = {
       { value: 'critical_think',  label: 'Critical Thinking' },
       { value: 'problem_solving', label: 'Complex Problem-Solving' },
       { value: 'strategic_think', label: 'Strategic Thinking' },
+      { value: 'goal_setting',    label: 'Goal Setting' },
     ],
   },
 
@@ -58,12 +59,13 @@ module.exports = {
   social: {
     label: 'Social & Emotional Intelligence',
     talents: [
-      { value: 'empathy',         label: 'Empathy & Awareness' },
-      { value: 'teamwork',        label: 'Teamwork & Collaboration' },
-      { value: 'emotional',       label: 'Emotional Regulation' },
-      { value: 'networking',      label: 'Networking' },
-      { value: 'mentorship',      label: 'Mentorship' },
-      { value: 'growth_mindset',  label: 'Growth Mindset'}
+      { value: 'empathy',           label: 'Empathy & Awareness' },
+      { value: 'teamwork',          label: 'Teamwork & Collaboration' },
+      { value: 'emotional',         label: 'Emotional Regulation' },
+      { value: 'networking',        label: 'Networking' },
+      { value: 'mentorship',        label: 'Mentorship' },
+      { value: 'growth_mindset',    label: 'Growth Mindset' },
+      { value: 'active_listening',  label: 'Active Listening' },
     ],
   },
 
@@ -71,10 +73,12 @@ module.exports = {
   communication: {
     label: 'Communication & Leadership',
     talents: [
-      { value: 'public_speaking',    label: 'Public Speaking' },
-      { value: 'debate_persuasion',  label: 'Debating & Persuasion' },
-      { value: 'org_leadership',     label: 'Organizational Leadership' },
-      { value: 'conflict_resolution',label: 'Conflict Resolution' },
+      { value: 'public_speaking',     label: 'Public Speaking' },
+      { value: 'debate_persuasion',   label: 'Debating & Persuasion' },
+      { value: 'org_leadership',      label: 'Leadership' },
+      { value: 'conflict_resolution', label: 'Conflict Resolution' },
+      { value: 'advocacy',            label: 'Advocacy' },
+      { value: 'event_planning',      label: 'Event Planning' },
     ],
   },
 
@@ -82,10 +86,16 @@ module.exports = {
   athletic: {
     label: 'Athletic & Physical Skills',
     talents: [
-      { value: 'kinesthetic',  label: 'Kinesthetic Control' },
-      { value: 'endurance',    label: 'Endurance & Stamina' },
-      { value: 'balance',      label: 'Balance & Agility' },
-      { value: 'reflexes',     label: 'Reflexes' },
+      { value: 'kinesthetic',       label: 'Kinesthetic Control' },
+      { value: 'endurance',         label: 'Endurance & Stamina' },
+      { value: 'balance',           label: 'Balance & Agility' },
+      { value: 'sports',            label: 'Sports' },
+      { value: 'sports_criket',     label: 'Sports Criket' },
+      { value: 'sports_athletics',  label: 'Sports Athletics' },
+      { value: 'sports_football',   label: 'Sports Football' },
+      { value: 'sports_vollyball',  label: 'Sports Vollyball' },
+      { value: 'sports_basketball', label: 'Sports Basketball' },
+      { value: 'sports_others',     label: 'Sports Others' },
     ],
   },
 
@@ -97,6 +107,16 @@ module.exports = {
       { value: 'culinary',       label: 'Culinary Arts' },
       { value: 'basic_mechanics',label: 'Basic Mechanics' },
       { value: 'multilingual',   label: 'Multilingualism' },
+    ],
+  },
+
+  // ── 8. Language Proficiency ──────────────────────────────────
+  language: {
+    label: 'Language Proficiency',
+    talents: [
+      { value: 'english', label: 'English' },
+      { value: 'sinhala', label: 'Sinhala' },
+      { value: 'tamil',   label: 'Tamil'   },
     ],
   },
 

@@ -16,7 +16,7 @@ const {
   AL_STREAM_OPTIONS,
   AL_MEDIUM_OPTIONS,
   PLAN_STATUS_OPTIONS,
-} = require('../constants');
+} = require('../config/dropdowns');
 
 const router = express.Router();
 
