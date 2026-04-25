@@ -12,6 +12,7 @@ export default function UserManagement({ readOnly = false }) {
   const [showPwForm, setShowPwForm] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [form, setForm] = useState({
     username: '', password: '', full_name: '', email: '', role: 'ldc_staff', ldc_id: ''
   });
@@ -113,7 +114,7 @@ export default function UserManagement({ readOnly = false }) {
       await api.put(`/api/auth/users/${user.id}`, {
         full_name: user.full_name,
         is_active: !user.is_active,
-        ldc_id   : user.ldc_id
+        ldc_id: user.ldc_id
       });
       setSuccess(`User ${!user.is_active ? 'activated' : 'deactivated'} successfully`);
       loadData();
@@ -154,6 +155,13 @@ export default function UserManagement({ readOnly = false }) {
     <div style={{ padding: '32px', color: 'var(--color-text-subdued)' }}>Loading...</div>
   );
 
+  const filteredUsers = users.filter(u =>
+    u.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (u.email || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (u.ldc_code || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div>
       <div className="rsp-section-header" style={{
@@ -161,18 +169,18 @@ export default function UserManagement({ readOnly = false }) {
         alignItems: 'center', marginBottom: '20px'
       }}>
         <div>
-          <h2 style={{ color:'var(--color-text-heading)', fontSize: '20px', fontWeight: '700' }}>User Management</h2>
+          <h2 style={{ color: 'var(--color-text-heading)', fontSize: '20px', fontWeight: '700' }}>User Management</h2>
           <p style={{ color: 'var(--color-text-subdued)', fontSize: '13px', marginTop: '2px' }}>
             Create and manage LDC staff accounts
           </p>
         </div>
         {!readOnly && (
-          <div style={{display:'flex', gap:'10px'}}>
+          <div style={{ display: 'flex', gap: '10px' }}>
 
             <button onClick={openCreate} style={{
-              background:'var(--color-brand-primary)', color:'var(--color-brand-accent)', border:'none',
-              borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
-              fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+              background: 'var(--color-brand-primary)', color: 'var(--color-brand-accent)', border: 'none',
+              borderRadius: '6px', padding: '10px 18px', fontSize: '13px',
+              fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit'
             }}>
               + New User
             </button>
@@ -330,6 +338,17 @@ export default function UserManagement({ readOnly = false }) {
         </div>
       )}
 
+      {/* Search Bar */}
+      <div style={{ marginBottom: '16px' }}>
+        <input 
+          type="text"
+          placeholder="Search users by name, email, username, or LDC code..."
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          style={{ ...inputStyle, width: '100%', maxWidth: '400px' }}
+        />
+      </div>
+
       {/* Users Table */}
       <div className="rsp-card-wrap">
         <div className="rsp-table-wrap">
@@ -348,7 +367,7 @@ export default function UserManagement({ readOnly = false }) {
               </tr>
             </thead>
             <tbody>
-              {users.map(u => (
+              {filteredUsers.map(u => (
                 <tr key={u.id} style={{
                   borderBottom: '1px solid var(--color-divider)',
                   background: u.is_active ? 'transparent' : 'rgba(155,35,53,0.02)',
@@ -395,33 +414,33 @@ export default function UserManagement({ readOnly = false }) {
                           fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit'
                         }}>Edit</button>
 
-                        <button onClick={() => { setShowPwForm(u); setShowForm(false); setError(''); setSuccess(''); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+                        <button onClick={() => { setShowPwForm(u); setShowForm(false); setError(''); setSuccess(''); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                           style={{
-                            background:'var(--color-tint-warning)', color:'var(--color-warning)', border:'none',
-                            borderRadius:'4px', padding:'4px 10px', fontSize:'11px',
-                            fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+                            background: 'var(--color-tint-warning)', color: 'var(--color-warning)', border: 'none',
+                            borderRadius: '4px', padding: '4px 10px', fontSize: '11px',
+                            fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit'
                           }}>Reset PW</button>
 
                         {u.id !== currentUser?.id && (
-                          <button onClick={() => toggleActive(u)} 
+                          <button onClick={() => toggleActive(u)}
                             style={{
                               background: u.is_active ? 'var(--color-tint-danger)' : 'var(--color-tint-success)',
                               color: u.is_active ? 'var(--color-danger)' : 'var(--color-success)',
-                              border:'none', borderRadius:'4px', padding:'4px 10px',
-                              fontSize:'11px', fontWeight:'700',
-                              cursor:'pointer', fontFamily:'inherit'
+                              border: 'none', borderRadius: '4px', padding: '4px 10px',
+                              fontSize: '11px', fontWeight: '700',
+                              cursor: 'pointer', fontFamily: 'inherit'
                             }}>
                             {u.is_active ? 'Deactivate' : 'Reactivate'}
                           </button>
                         )}
 
                         {u.id !== currentUser?.id && (
-                          <button onClick={() => handleDeleteUser(u)} 
+                          <button onClick={() => handleDeleteUser(u)}
                             style={{
-                              background:'rgba(155,35,53,0.1)', color:'var(--color-danger)',
-                              border:'none', borderRadius:'4px', padding:'4px 10px',
-                              fontSize:'11px', fontWeight:'700',
-                              cursor:'pointer', fontFamily:'inherit'
+                              background: 'rgba(155,35,53,0.1)', color: 'var(--color-danger)',
+                              border: 'none', borderRadius: '4px', padding: '4px 10px',
+                              fontSize: '11px', fontWeight: '700',
+                              cursor: 'pointer', fontFamily: 'inherit'
                             }}>
                             Delete
                           </button>
@@ -434,9 +453,9 @@ export default function UserManagement({ readOnly = false }) {
             </tbody>
           </table>
         </div>
-        {users.length === 0 && (
+        {filteredUsers.length === 0 && (
           <div style={{ padding: '32px', textAlign: 'center', color: 'var(--color-text-subdued)' }}>
-            No users found. Create your first LDC staff account.
+            {searchQuery ? `No users match "${searchQuery}"` : 'No users found. Create your first LDC staff account.'}
           </div>
         )}
       </div>

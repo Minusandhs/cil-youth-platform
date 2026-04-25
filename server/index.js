@@ -8,6 +8,7 @@ const express         = require('express');
 const cors            = require('cors');
 const helmet          = require('helmet');
 const rateLimit       = require('express-rate-limit');
+const cron            = require('node-cron');
 const { testConnection } = require('./config/database');
 
 // ── Import Routes ────────────────────────────────────────────────
@@ -28,6 +29,7 @@ const talentsRoutes      = require('./routes/talents');
 const careerRoutes       = require('./routes/career');
 const dashboardRoutes    = require('./routes/dashboard');
 const { verifyConnection } = require('./config/email');
+const { refreshAllSnapshots } = require('./utils/dashboardSnapshot');
 
 // ── Initialize App ───────────────────────────────────────────────
 const app  = express();
@@ -139,6 +141,17 @@ async function startServer() {
 
     // Verify Email service
     await verifyConnection();
+
+    // Start the dashboard snapshot cron job (1:00 AM Sri Lanka Time)
+    cron.schedule('0 1 * * *', () => {
+      console.log('[Cron] Running scheduled dashboard snapshot refresh (1:00 AM LK time)');
+      refreshAllSnapshots().catch(err => {
+        console.error('[Cron] Dashboard snapshot refresh failed:', err);
+      });
+    }, {
+      scheduled: true,
+      timezone: 'Asia/Colombo'
+    });
 
     app.listen(PORT, () => {
       console.log('================================================');

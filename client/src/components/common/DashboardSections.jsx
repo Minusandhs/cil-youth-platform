@@ -715,8 +715,8 @@ export function DataCompletenessSection({ completeness }) {
       {completeness.per_ldc.length > 0 && (
         <div style={card}>
           <div style={subTitle}>Per-LDC Breakdown</div>
-          <div className="rsp-table-wrap">
-            <table className="rsp-card-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px', minWidth: '600px' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid var(--color-divider)', textAlign: 'left' }}>
                   <th style={{ padding: '8px', color: 'var(--color-text-heading)', fontWeight: '700' }}>LDC</th>
