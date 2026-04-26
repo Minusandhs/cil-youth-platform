@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../lib/api';
+import { exportToCsv } from '../../lib/csvExport';
 import TESApplicationForm from './TESApplicationForm';
 import TESApplicationDetail from './TESApplicationDetail';
 import TESBursementPlan from './TESBursementPlan';
@@ -98,9 +99,6 @@ export default function TESBatchDetail({ batch, onBack, onBatchUpdate, isAdmin, 
       const res = await api.get(`/api/tes/batches/${batch.id}/export`);
       const data = res.data;
 
-      // Build Excel using SheetJS
-      const XLSX = await import('https://cdn.sheetjs.com/xlsx-0.20.1/package/xlsx.mjs');
-
       const rows = data.map(a => ({
         'Participant ID'          : a.pid,
         'Full Name'               : a.full_name,
@@ -160,11 +158,9 @@ export default function TESBatchDetail({ batch, onBack, onBatchUpdate, isAdmin, 
         'Official Notes'          : a.official_notes || '',
       }));
 
-      const ws = XLSX.utils.json_to_sheet(rows);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Applications');
-      XLSX.writeFile(wb, `TES_${batch.batch_name}_${new Date().toLocaleDateString('en-GB').replace(/\//g,'-')}.xlsx`);
-      setSuccess('Excel file exported successfully');
+      const datePart = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+      exportToCsv(`TES_${batch.batch_name}_${datePart}.csv`, rows);
+      setSuccess('CSV file exported successfully');
     } catch (err) {
       setError('Export failed: ' + err.message);
     } finally {
@@ -347,7 +343,7 @@ export default function TESBatchDetail({ batch, onBack, onBatchUpdate, isAdmin, 
             fontWeight:'600', cursor: exporting ? 'not-allowed' : 'pointer',
             fontFamily:'inherit'
           }}>
-            {exporting ? 'Exporting...' : 'Export Excel'}
+            {exporting ? 'Exporting...' : 'Export CSV'}
           </button>
 
           {/* Add Application — LDC only, batch open, deadline not passed */}

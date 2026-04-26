@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import api from '../../lib/api';
 import { statusLabel } from '../../lib/constants';
 import { useDashboardSummary } from '../../lib/useDashboardSummary';
+import { exportToCsv } from '../../lib/csvExport';
 import {
   HeroStats, ParticipantDemographics, AcademicSection,
   DevelopmentSection, NeedsRisksSection, HomeVisitsSection, TalentsSection,
@@ -40,13 +41,10 @@ export default function LDCOverview() {
     setExportError('');
     try {
       const res = await api.get(endpoint);
-      const XLSX = await import('https://cdn.sheetjs.com/xlsx-0.20.1/package/xlsx.mjs');
       const rows = buildRows(res.data);
-      const ws = XLSX.utils.json_to_sheet(rows);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Data');
       const ldcCode = user?.ldc_code || 'LDC';
-      XLSX.writeFile(wb, `${filename}_${ldcCode}_${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.xlsx`);
+      const datePart = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+      exportToCsv(`${filename}_${ldcCode}_${datePart}.csv`, rows);
     } catch (e) {
       setExportError('Export failed: ' + e.message);
     } finally {
@@ -132,17 +130,107 @@ export default function LDCOverview() {
   function exportDevelopment() {
     doExport('development', '/api/participants/export/development', data =>
       data.map(d => ({
-        'Participant ID': d.participant_id, 'Full Name': d.full_name, 'LDC': d.ldc_code,
-        'Plan Year': d.plan_year, 'Spiritual Goal': d.spiritual_goal || '',
-        'Academic Goal': d.academic_goal || '', 'Social Goal': d.social_goal || '',
-        'Vocational Goal': d.vocational_goal || '', 'Health Goal': d.health_goal || '',
-        'Actions': d.actions || '', 'Resources Needed': d.resources_needed || '',
-        'Timeline': d.timeline || '', 'Progress Status': d.progress_status || '',
-        'Completion %': d.completion_rate ?? '', 'Primary Mentor': d.primary_mentor || '',
-        'Mentor Contact': d.mentor_contact || '',
-        'Last Reviewed': fmtDate(d.last_reviewed), 'Next Review': fmtDate(d.next_review),
+        'Participant ID'       : d.participant_id,
+        'Full Name'            : d.full_name,
+        'LDC'                  : d.ldc_code,
+        'Plan Year'            : d.plan_year,
+        'Spiritual Goal'       : d.spiritual_goal || '',
+        'Academic Goal'        : d.academic_goal || '',
+        'Social Goal'          : d.social_goal || '',
+        'Vocational Goal'      : d.vocational_goal || '',
+        'Health Goal'          : d.health_goal || '',
+        'Primary Mentor'       : d.primary_mentor || '',
+        'Progress Status'      : d.progress_status || '',
+        'Completion %'         : d.completion_rate ?? '',
+        'Action Items'         : d.action_items || '',
+        'Mentor Conversations' : d.conversation_count ?? 0,
+        'Last Conversation'    : fmtDate(d.last_conversation_date),
+        'Next Meeting'         : fmtDate(d.next_meeting_date),
+        'Created'              : fmtDate(d.created_at),
+        'Updated'              : fmtDate(d.updated_at),
       })),
       'Development_Plans'
+    );
+  }
+
+  function exportCareer() {
+    doExport('career', '/api/participants/export/career', data =>
+      data.map(c => ({
+        'Participant ID'      : c.participant_id,
+        'Full Name'           : c.full_name,
+        'LDC'                 : c.ldc_code,
+        'Career Aspiration'   : c.career_aspiration || '',
+        'Aspired Industry'    : c.aspired_industry || '',
+        'Long Term Plan'      : c.long_term_plan || '',
+        'Further Education'   : c.further_education ? 'Yes' : 'No',
+        'Education Details'   : c.education_details || '',
+        'Interested to Apply' : c.interested_to_apply ? 'Yes' : 'No',
+        'Preferred Industry'  : c.interest_industry || '',
+        'Job Interest Notes'  : c.interest_notes || '',
+        'Holland Code'        : [c.holland_primary, c.holland_secondary, c.holland_tertiary]
+                                  .filter(Boolean).join('') || '',
+        'Career Choice 1'     : c.career_choice_1 || '',
+        'Career Choice 2'     : c.career_choice_2 || '',
+        'Career Choice 3'     : c.career_choice_3 || '',
+        'Readiness Checklist' : c.readiness_checklist || '',
+        'Created'             : fmtDate(c.created_at),
+        'Updated'             : fmtDate(c.updated_at),
+      })),
+      'Career_Plans'
+    );
+  }
+
+  function exportTalents() {
+    doExport('talents', '/api/participants/export/talents', data =>
+      data.map(t => ({
+        'Participant ID' : t.participant_id,
+        'Full Name'      : t.full_name,
+        'LDC'            : t.ldc_code,
+        'Category'       : t.category || '',
+        'Talent'         : t.talent || '',
+        'Level'          : t.level || '',
+        'Notes'          : t.notes || '',
+        'Recorded'       : fmtDate(t.created_at),
+        'Last Updated'   : fmtDate(t.updated_at),
+      })),
+      'Talents_and_Skills'
+    );
+  }
+
+  function exportNeedsRisks() {
+    doExport('needs_risks', '/api/participants/export/needs-risks', data =>
+      data.map(n => ({
+        'Participant ID' : n.participant_id,
+        'Full Name'      : n.full_name,
+        'LDC'            : n.ldc_code,
+        'Type'           : n.type || '',
+        'Category'       : n.category || '',
+        'Severity'       : n.severity || '',
+        'Status'         : n.status || '',
+        'Notes'          : n.notes || '',
+        'Logged'         : fmtDate(n.created_at),
+        'Last Updated'   : fmtDate(n.updated_at),
+      })),
+      'Needs_and_Risks'
+    );
+  }
+
+  function exportHomeVisits() {
+    doExport('home_visits', '/api/participants/export/home-visits', data =>
+      data.map(v => ({
+        'Participant ID'    : v.participant_id,
+        'Full Name'         : v.full_name,
+        'LDC'               : v.ldc_code,
+        'Visit Date'        : fmtDate(v.visited_date),
+        'Visit Time'        : v.visited_time || '',
+        'Purpose'           : v.purpose || '',
+        'People in Home'    : v.people_in_home || '',
+        'Discussion Points' : v.discussion_points || '',
+        'Suggestions'       : v.suggestions || '',
+        'Visited By'        : v.visited_by || '',
+        'Recorded'          : fmtDate(v.created_at),
+      })),
+      'Home_Visits'
     );
   }
 
@@ -194,7 +282,11 @@ export default function LDCOverview() {
           { key: 'participants',   label: 'Participants',      fn: exportParticipants,   note: 'Personal info + OL/AL/Certs condensed' },
           { key: 'academic',       label: 'Academic Records',  fn: exportAcademic,       note: 'Full OL & AL subject detail' },
           { key: 'certifications', label: 'Certifications',    fn: exportCertifications, note: 'All certifications detail' },
-          { key: 'development',    label: 'Development Plans', fn: exportDevelopment,    note: 'Goals, progress, mentors' },
+          { key: 'development',    label: 'Development Plans', fn: exportDevelopment,    note: 'Goals, action items, mentor conversations' },
+          { key: 'career',         label: 'Career Plans',      fn: exportCareer,         note: 'Aspirations, Holland code, readiness checklist' },
+          { key: 'talents',        label: 'Talents & Skills',  fn: exportTalents,        note: 'Categories, talents, proficiency levels' },
+          { key: 'needs_risks',    label: 'Needs & Risks',     fn: exportNeedsRisks,     note: 'Type, category, severity, status' },
+          { key: 'home_visits',    label: 'Home Visits',       fn: exportHomeVisits,     note: 'Visit logs with discussion points' },
         ];
         const selected = EXPORT_OPTIONS.find(o => o.key === exportType);
         return (

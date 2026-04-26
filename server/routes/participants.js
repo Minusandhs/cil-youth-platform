@@ -240,6 +240,9 @@ router.get('/export/certifications', verifyToken, async (req, res) => {
 });
 
 // ── GET /api/participants/export/development ─────────────────────
+// Schema redesigned in migration 020: actions/resources_needed/timeline/
+// mentor_contact/last_reviewed/next_review are gone. Action items now live
+// in development_plan_action_items, mentor conversations in mentor_conversations.
 router.get('/export/development', verifyToken, async (req, res) => {
   try {
     const ldc_id = req.user.role === 'ldc_staff' ? req.user.ldc_id : req.query.ldc_id || null;
@@ -249,14 +252,148 @@ router.get('/export/development', verifyToken, async (req, res) => {
     const result = await query(
       `SELECT p.participant_id, p.full_name, l.ldc_id AS ldc_code,
               d.plan_year, d.spiritual_goal, d.academic_goal, d.social_goal,
-              d.vocational_goal, d.health_goal, d.actions, d.resources_needed,
-              d.timeline, d.progress_status, d.completion_rate,
-              d.primary_mentor, d.mentor_contact, d.last_reviewed, d.next_review
+              d.vocational_goal, d.health_goal, d.primary_mentor,
+              d.progress_status, d.completion_rate,
+              (SELECT string_agg(
+                  ai.goal_type || ': ' || ai.action ||
+                  ' [' || ai.status || ']' ||
+                  CASE WHEN ai.due_date IS NOT NULL
+                       THEN ' (due ' || to_char(ai.due_date, 'YYYY-MM-DD') || ')'
+                       ELSE ''
+                  END,
+                  ' | ' ORDER BY ai.created_at)
+                FROM development_plan_action_items ai
+                WHERE ai.plan_id = d.id) AS action_items,
+              (SELECT COUNT(*) FROM mentor_conversations mc WHERE mc.plan_id = d.id) AS conversation_count,
+              (SELECT mc.conversation_date FROM mentor_conversations mc
+                WHERE mc.plan_id = d.id
+                ORDER BY mc.conversation_date DESC LIMIT 1) AS last_conversation_date,
+              (SELECT mc.next_meeting_date FROM mentor_conversations mc
+                WHERE mc.plan_id = d.id
+                ORDER BY mc.conversation_date DESC LIMIT 1) AS next_meeting_date,
+              d.created_at, d.updated_at
        FROM development_plans d
        JOIN participants p ON d.participant_id = p.id
        JOIN ldcs l ON p.ldc_id = l.id
        WHERE p.is_active = true ${ldcWhere}
        ORDER BY l.ldc_id, p.full_name, d.plan_year DESC`,
+      params
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Export failed' });
+  }
+});
+
+// ── GET /api/participants/export/career ──────────────────────────
+// One row per participant career plan, with the readiness checklist
+// flattened into a single string column.
+router.get('/export/career', verifyToken, async (req, res) => {
+  try {
+    const ldc_id = req.user.role === 'ldc_staff' ? req.user.ldc_id : req.query.ldc_id || null;
+    const params = ldc_id ? [ldc_id] : [];
+    const ldcWhere = ldc_id ? 'AND p.ldc_id = $1' : '';
+
+    const result = await query(
+      `SELECT p.participant_id, p.full_name, l.ldc_id AS ldc_code,
+              cp.career_aspiration, cp.aspired_industry, cp.long_term_plan,
+              cp.further_education, cp.education_details,
+              cp.interested_to_apply, cp.interest_industry, cp.interest_notes,
+              cp.holland_primary, cp.holland_secondary, cp.holland_tertiary,
+              cp.career_choice_1, cp.career_choice_2, cp.career_choice_3,
+              (SELECT string_agg(
+                  r.item || ':' || CASE WHEN r.completed THEN 'done' ELSE 'pending' END,
+                  ', ' ORDER BY r.item)
+                FROM participant_career_readiness r
+                WHERE r.participant_id = p.id) AS readiness_checklist,
+              cp.created_at, cp.updated_at
+       FROM participants p
+       JOIN ldcs l ON p.ldc_id = l.id
+       JOIN participant_career_plans cp ON cp.participant_id = p.id
+       WHERE p.is_active = true ${ldcWhere}
+       ORDER BY l.ldc_id, p.full_name`,
+      params
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Export failed' });
+  }
+});
+
+// ── GET /api/participants/export/talents ─────────────────────────
+// One row per (participant, talent) entry.
+router.get('/export/talents', verifyToken, async (req, res) => {
+  try {
+    const ldc_id = req.user.role === 'ldc_staff' ? req.user.ldc_id : req.query.ldc_id || null;
+    const params = ldc_id ? [ldc_id] : [];
+    const ldcWhere = ldc_id ? 'AND p.ldc_id = $1' : '';
+
+    const result = await query(
+      `SELECT p.participant_id, p.full_name, l.ldc_id AS ldc_code,
+              t.category, t.talent, t.level, t.notes,
+              t.created_at, t.updated_at
+       FROM participant_talents t
+       JOIN participants p ON t.participant_id = p.id
+       JOIN ldcs l ON p.ldc_id = l.id
+       WHERE p.is_active = true ${ldcWhere}
+       ORDER BY l.ldc_id, p.full_name, t.category, t.talent`,
+      params
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Export failed' });
+  }
+});
+
+// ── GET /api/participants/export/needs-risks ─────────────────────
+// One row per needs/risks entry.
+router.get('/export/needs-risks', verifyToken, async (req, res) => {
+  try {
+    const ldc_id = req.user.role === 'ldc_staff' ? req.user.ldc_id : req.query.ldc_id || null;
+    const params = ldc_id ? [ldc_id] : [];
+    const ldcWhere = ldc_id ? 'AND p.ldc_id = $1' : '';
+
+    const result = await query(
+      `SELECT p.participant_id, p.full_name, l.ldc_id AS ldc_code,
+              nr.type, nr.category, nr.severity, nr.status, nr.notes,
+              nr.created_at, nr.updated_at
+       FROM participant_needs_risks nr
+       JOIN participants p ON nr.participant_id = p.id
+       JOIN ldcs l ON p.ldc_id = l.id
+       WHERE p.is_active = true ${ldcWhere}
+       ORDER BY l.ldc_id, p.full_name, nr.created_at DESC`,
+      params
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Export failed' });
+  }
+});
+
+// ── GET /api/participants/export/home-visits ─────────────────────
+// One row per home visit, with the recording staff member's name.
+router.get('/export/home-visits', verifyToken, async (req, res) => {
+  try {
+    const ldc_id = req.user.role === 'ldc_staff' ? req.user.ldc_id : req.query.ldc_id || null;
+    const params = ldc_id ? [ldc_id] : [];
+    const ldcWhere = ldc_id ? 'AND p.ldc_id = $1' : '';
+
+    const result = await query(
+      `SELECT p.participant_id, p.full_name, l.ldc_id AS ldc_code,
+              v.visited_date, v.visited_time, v.purpose,
+              v.people_in_home, v.discussion_points, v.suggestions,
+              u.full_name AS visited_by,
+              v.created_at, v.updated_at
+       FROM participant_home_visits v
+       JOIN participants p ON v.participant_id = p.id
+       JOIN ldcs l ON p.ldc_id = l.id
+       LEFT JOIN users u ON u.id = v.created_by
+       WHERE p.is_active = true ${ldcWhere}
+       ORDER BY l.ldc_id, p.full_name, v.visited_date DESC`,
       params
     );
     res.json(result.rows);
