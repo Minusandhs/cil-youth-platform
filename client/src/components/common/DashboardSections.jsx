@@ -193,7 +193,7 @@ function Donut({ segments, size = 140 }) {
         return el;
       })}
       <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central"
-        style={{ fontSize: '20px', fontWeight: '700', fill: 'var(--color-brand-primary)' }}>
+        style={{ fontSize: '20px', fontWeight: '700', fill: 'var(--color-info)' }}>
         {total}
       </text>
     </svg>
