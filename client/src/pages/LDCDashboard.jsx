@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { LayoutDashboard, Users, Award, Key, LogOut, Menu } from 'lucide-react';
 import LDCOverview from '../components/ldc/LDCOverview';
 import LDCParticipantList from '../components/ldc/LDCParticipantList';
@@ -12,7 +12,9 @@ import ThemeToggle from '../components/common/ThemeToggle';
 export default function LDCDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'overview';
+  const setActiveTab = (id) => setSearchParams({ tab: id }, { replace: true });
   const [showChangePw, setShowChangePw] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 

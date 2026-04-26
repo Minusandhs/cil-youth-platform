@@ -101,7 +101,7 @@ export default function ParticipantProfile() {
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
         <div style={{ color: 'var(--color-danger)', fontSize: '16px' }}>{error}</div>
-        <button onClick={() => fromAdmin ? navigate('/admin') : navigate(-1)} style={{
+        <button onClick={() => fromAdmin ? navigate('/admin?tab=participants') : navigate(-1)} style={{
           background: 'var(--color-brand-accent-lt)', color: 'var(--color-text-heading)',
           border: 'none', borderRadius: '20px',
           padding: '6px 16px', cursor: 'pointer',
@@ -130,7 +130,7 @@ export default function ParticipantProfile() {
         }}>
           {/* Row 1 left: Back + CIL badge */}
           <div className="rsp-header-cil" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button onClick={() => fromAdmin ? navigate('/admin') : navigate(-1)}
+            <button onClick={() => fromAdmin ? navigate('/admin?tab=participants') : navigate(-1)}
               className="rsp-header-btn"
               style={{
                 background: 'var(--color-brand-accent-lt)', color: 'var(--color-text-heading)',

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Settings, Database, 
   RefreshCw, FileText, Award, Key, LogOut, Menu
@@ -19,7 +19,9 @@ import TESManagement from '../components/admin/TESManagement';
 export default function AdminDashboard() {
   const { user, logout, isNationalAdmin } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'overview';
+  const setActiveTab = (id) => setSearchParams({ tab: id }, { replace: true });
   const [showChangePw, setShowChangePw] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
