@@ -16,7 +16,6 @@ import HomeVisits from '../components/participant/HomeVisits';
 import Talents from '../components/participant/Talents';
 import Career from '../components/participant/Career';
 import MobileMenu from '../components/common/MobileMenu';
-import ThemeToggle from '../components/common/ThemeToggle';
 
 export default function ParticipantProfile() {
   const { id } = useParams();
@@ -173,7 +172,6 @@ export default function ParticipantProfile() {
 
           {/* Right: mobile ☰ */}
           <div className="rsp-header-actions">
-            <ThemeToggle />
             <button
               className="rsp-show-mobile-only"
               onClick={() => setMenuOpen(true)}

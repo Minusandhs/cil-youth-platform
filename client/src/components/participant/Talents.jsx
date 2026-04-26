@@ -4,11 +4,11 @@ import api from '../../lib/api';
 const EMPTY_FORM = { category: '', talent: '', level: 'emerging', notes: '' };
 
 const LEVEL_META = {
-  emerging:   { label: 'Emerging',   bg: 'var(--color-tint-warning)', color: 'var(--color-warning)' },
-  developing: { label: 'Developing', bg: 'var(--color-tint-info)',    color: 'var(--color-info)' },
+  emerging: { label: 'Emerging', bg: 'var(--color-tint-warning)', color: 'var(--color-warning)' },
+  developing: { label: 'Developing', bg: 'var(--color-tint-info)', color: 'var(--color-info)' },
   proficient: { label: 'Proficient', bg: 'var(--color-tint-success)', color: 'var(--color-success)' },
-  advanced:   { label: 'Advanced',   bg: 'var(--color-success)',      color: '#fff' },
-  mastery:    { label: 'Mastery',    bg: 'var(--color-brand-primary)',color: 'var(--color-brand-accent)' },
+  advanced: { label: 'Advanced', bg: 'var(--color-success)', color: '#fff' },
+  mastery: { label: 'Mastery', bg: 'var(--color-brand-primary)', color: 'var(--color-brand-accent)' },
 };
 
 function Badge({ meta }) {
@@ -31,15 +31,27 @@ function formatDate(d) {
 }
 
 export default function Talents({ participantId, readOnly = false }) {
-  const [entries,   setEntries  ] = useState([]);
-  const [config,    setConfig   ] = useState({ LEVELS: [] });
-  const [loading,   setLoading  ] = useState(true);
-  const [saving,    setSaving   ] = useState(false);
-  const [updating,  setUpdating ] = useState(null); // entry id being patched
-  const [expanded,  setExpanded ] = useState(null); // entry id with history open
-  const [error,     setError    ] = useState('');
-  const [success,   setSuccess  ] = useState('');
-  const [form,      setForm     ] = useState(EMPTY_FORM);
+  const [entries, setEntries] = useState([]);
+  const [config, setConfig] = useState({ LEVELS: [] });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [updating, setUpdating] = useState(null); // entry id being patched
+  const [expanded, setExpanded] = useState(null); // entry id with history open
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [showForm, setShowForm] = useState(false);
+
+  function openCreate() {
+    setForm(EMPTY_FORM);
+    setShowForm(true);
+    setError(''); setSuccess('');
+  }
+
+  function cancelForm() {
+    setShowForm(false);
+    setError(''); setSuccess('');
+  }
 
   useEffect(() => { loadAll(); }, [participantId]);
 
@@ -76,6 +88,7 @@ export default function Talents({ participantId, readOnly = false }) {
       setEntries(res.data);
       setForm(EMPTY_FORM);
       setSuccess('Entry recorded.');
+      setShowForm(false);
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to record talent');
@@ -179,10 +192,29 @@ export default function Talents({ participantId, readOnly = false }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
+      {/* ── Header with Add Button ──────────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-2">
+        <div>
+          <h3 style={{fontSize:'16px', fontWeight:'700'}}>
+            Talents & Skills
+          </h3>
+          <p style={{color:'var(--color-text-subdued)', fontSize:'13px', marginTop:'2px'}}>
+            {entries.length} entr{entries.length !== 1 ? 'ies' : 'y'} recorded
+          </p>
+        </div>
+        {!showForm && !readOnly && (
+          <button onClick={openCreate} className="w-full md:w-auto" style={{
+            background:'var(--color-brand-primary)', color:'var(--color-brand-accent)', border:'none',
+            borderRadius:'6px', padding:'9px 18px', fontSize:'13px',
+            fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
+          }}>+ Add Entry</button>
+        )}
+      </div>
+
       {/* ── New Entry Form ──────────────────────────────────────── */}
-      {!readOnly && (
+      {showForm && !readOnly && (
         <div style={card}>
-          <div style={secTitle}>Record New Entry</div>
+          <div style={secTitle}>Talents & Skills: Log New Entry</div>
 
           {error && (
             <div style={{
@@ -283,8 +315,8 @@ export default function Talents({ participantId, readOnly = false }) {
               <button type="submit" disabled={saving} className="w-full md:w-auto" style={{ ...btnPrimary, opacity: saving ? 0.7 : 1 }}>
                 {saving ? 'Saving...' : 'Save Talent'}
               </button>
-              <button type="button" className="w-full md:w-auto" style={btnGhost} onClick={() => { setForm(EMPTY_FORM); setError(''); }}>
-                Clear
+              <button type="button" className="w-full md:w-auto" style={btnGhost} onClick={cancelForm}>
+                Cancel
               </button>
             </div>
           </form>

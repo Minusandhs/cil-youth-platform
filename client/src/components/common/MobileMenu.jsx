@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { X, User } from 'lucide-react';
+import { X, User, Sun, Moon } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
 
 /**
  * A modern, industry-standard mobile drawer menu.
@@ -21,6 +22,9 @@ export default function MobileMenu({
   onTabChange,
   userActions = []
 }) {
+  const { resolved, toggle } = useTheme();
+  const isDark = resolved === 'dark';
+
   // Lock body scroll and handle ESC key while open
   useEffect(() => {
     if (!isOpen) return;
@@ -249,6 +253,53 @@ export default function MobileMenu({
               </button>
             );
           })}
+
+          {/* Theme Toggle in Mobile Menu */}
+          <button
+            onClick={toggle}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: 'calc(100% - 16px)',
+              margin: '0 8px',
+              textAlign: 'left',
+              padding: '11px 14px',
+              background: 'transparent',
+              borderRadius: '8px',
+              border: 'none',
+              color: 'var(--color-text-muted)',
+              fontSize: '14px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              transition: 'background 0.15s ease',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-header-active-bg)'}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ flexShrink: 0, opacity: 0.7 }}>
+                {isDark ? <Moon size={18} /> : <Sun size={18} />}
+              </div>
+              Dark Mode
+            </div>
+            
+            {/* Toggle Switch Visual */}
+            <div style={{
+              width: '32px', height: '18px', borderRadius: '10px',
+              background: isDark ? 'var(--color-brand-accent)' : 'var(--color-header-active-bg)',
+              position: 'relative', transition: 'background 0.2s'
+            }}>
+              <div style={{
+                width: '14px', height: '14px', borderRadius: '50%',
+                background: isDark ? 'var(--color-brand-primary)' : '#fff',
+                position: 'absolute', top: '2px',
+                left: isDark ? '16px' : '2px', transition: 'left 0.2s',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+              }} />
+            </div>
+          </button>
         </div>
       </div>
 

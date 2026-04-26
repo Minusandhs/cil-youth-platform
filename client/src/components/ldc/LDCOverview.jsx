@@ -179,11 +179,11 @@ export default function LDCOverview() {
         actionItems={summary?.action_items}
       />
 
-      {/* ── SECTION 6: Needs & Risks ─────────────────────────────── */}
-      <NeedsRisksSection needsRisks={summary?.needs_risks} />
-
-      {/* ── SECTION 7: Home Visits ───────────────────────────────── */}
+      {/* ── SECTION 6: Home Visits ───────────────────────────────── */}
       <HomeVisitsSection homeVisits={summary?.home_visits} />
+
+      {/* ── SECTION 7: Needs & Risks ─────────────────────────────── */}
+      <NeedsRisksSection needsRisks={summary?.needs_risks} />
 
       {/* ── SECTION 8: Talents & Skills ──────────────────────────── */}
       <TalentsSection talents={summary?.talents} />

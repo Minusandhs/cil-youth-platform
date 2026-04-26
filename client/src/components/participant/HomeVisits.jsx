@@ -176,6 +176,18 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
   const [expanded,  setExpanded ] = useState({});
   const [editId,    setEditId   ] = useState(null);
   const [editForm,  setEditForm ] = useState(EMPTY_FORM);
+  const [showForm,  setShowForm ] = useState(false);
+
+  function openCreate() {
+    setForm(EMPTY_FORM);
+    setShowForm(true);
+    setError(''); setSuccess('');
+  }
+
+  function cancelForm() {
+    setShowForm(false);
+    setError(''); setSuccess('');
+  }
 
   useEffect(() => { loadVisits(); }, [participantId]);
 
@@ -200,6 +212,7 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
       setSuccess('Visit logged successfully');
       setForm(EMPTY_FORM);
       setExpanded(prev => ({ ...prev, [res.data.id]: true }));
+      setShowForm(false);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to log visit');
     } finally {
@@ -263,13 +276,23 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
             Record and review home visit reports
           </p>
         </div>
-        <button onClick={() => printBlankForm(participant)} className="w-full md:w-auto justify-center md:justify-start" style={{
-          background: 'transparent', color: 'var(--color-text-subdued)',
-          border: '1px solid var(--color-border-subtle)', borderRadius: '6px',
-          padding: '8px 14px', fontSize: '12px', fontWeight: '600',
-          cursor: 'pointer', fontFamily: 'inherit',
-          display: 'flex', alignItems: 'center', gap: '6px'
-        }}>⬇ Print Blank Form</button>
+        <div className="flex flex-col md:flex-row gap-2.5 w-full md:w-auto">
+          <button onClick={() => printBlankForm(participant)} className="w-full md:w-auto justify-center md:justify-start" style={{
+            background: 'transparent', color: 'var(--color-text-subdued)',
+            border: '1px solid var(--color-border-subtle)', borderRadius: '6px',
+            padding: '8px 14px', fontSize: '12px', fontWeight: '600',
+            cursor: 'pointer', fontFamily: 'inherit',
+            display: 'flex', alignItems: 'center', gap: '6px'
+          }}>⬇ Print Blank Form</button>
+          
+          {!showForm && !readOnly && (
+            <button onClick={openCreate} className="w-full md:w-auto" style={{
+              background: 'var(--color-brand-primary)', color: 'var(--color-brand-accent)',
+              border: 'none', borderRadius: '6px', padding: '8px 14px', fontSize: '12px', fontWeight: '700',
+              cursor: 'pointer', fontFamily: 'inherit'
+            }}>+ Add Visit</button>
+          )}
+        </div>
       </div>
 
       {error && (
@@ -288,7 +311,7 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
       )}
 
       {/* Log Visit Form */}
-      {!readOnly && (
+      {showForm && !readOnly && (
         <div style={{ ...cardStyle, marginBottom: '24px' }}>
           <div style={{
             fontSize: '14px', fontWeight: '700', marginBottom: '16px',
@@ -347,6 +370,11 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
               }}>
                 {saving ? 'Saving...' : 'Log Visit'}
               </button>
+              <button type="button" onClick={cancelForm} className="w-full md:w-auto" style={{
+                background: 'transparent', color: 'var(--color-text-subdued)',
+                border: '1px solid var(--color-border-subtle)', borderRadius: '6px',
+                padding: '10px 24px', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit'
+              }}>Cancel</button>
             </div>
           </form>
         </div>

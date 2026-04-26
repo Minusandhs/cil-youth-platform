@@ -167,6 +167,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
   const [savingItem,   setSavingItem  ] = useState(false);
 
   // Conversations
+  const [showAddConv,  setShowAddConv ] = useState(false);
   const [convForm,     setConvForm    ] = useState(emptyConv);
   const [savingConv,   setSavingConv  ] = useState(false);
   const [deletingConv, setDeletingConv] = useState(null);
@@ -218,6 +219,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
       setPlan(null);
     } finally {
       setLoading(false);
+      setShowAddConv(false);
     }
   }, [participantId, selYear]);
 
@@ -325,6 +327,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
       // Update plan's completion_rate locally
       setPlan(prev => ({ ...prev, completion_rate: convForm.completion_rate }));
       setConvForm(emptyConv);
+      setShowAddConv(false);
       notify('Conversation saved.');
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to save conversation');
@@ -752,14 +755,21 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
           {/* ── Mentor Conversations ───────────────────────────── */}
           <div style={card}>
             <div style={secTitle}>
-              Mentor Conversations
-              <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: '400', textTransform: 'none' }}>
-                {conversations.length} record{conversations.length !== 1 ? 's' : ''}
-              </span>
+              <div>
+                Mentor Conversations
+                <span style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: '400', textTransform: 'none', marginLeft: '8px' }}>
+                  {conversations.length} record{conversations.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              {!readOnly && !showAddConv && (
+                <button onClick={() => setShowAddConv(true)} style={btnPrimary}>
+                  + Add Conversation
+                </button>
+              )}
             </div>
 
             {/* Add conversation form */}
-            {!readOnly && (
+            {!readOnly && showAddConv && (
               <div style={{
                 background: 'var(--color-bg-highlight)',
                 border: '1px solid var(--color-border-subtle)',
@@ -809,8 +819,11 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                     <button type="submit" disabled={savingConv} className="w-full md:w-auto" style={btnSuccess}>
                       {savingConv ? 'Saving...' : 'Save Conversation'}
                     </button>
-                    <button type="button" onClick={() => setConvForm(emptyConv)} className="w-full md:w-auto" style={btnGhost}>
-                      Clear
+                    <button type="button" onClick={() => {
+                      setConvForm(emptyConv);
+                      setShowAddConv(false);
+                    }} className="w-full md:w-auto" style={btnGhost}>
+                      Cancel
                     </button>
                   </div>
                 </form>

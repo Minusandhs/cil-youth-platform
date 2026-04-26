@@ -3,11 +3,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, Settings, Database, 
-  RefreshCw, FileText, Award, Key, LogOut, Menu
+  RefreshCw, FileText, Award, Key, LogOut, Menu, User
 } from 'lucide-react';
 import ChangePasswordModal from '../components/common/ChangePasswordModal';
 import MobileMenu from '../components/common/MobileMenu';
-import ThemeToggle from '../components/common/ThemeToggle';
+import UserDropdown from '../components/common/UserDropdown';
 import AdminOverview    from '../components/admin/AdminOverview';
 import UserManagement   from '../components/admin/UserManagement';
 import LDCManagement    from '../components/admin/LDCManagement';
@@ -86,35 +86,24 @@ export default function AdminDashboard() {
           </div>
 
           {/* Right: desktop buttons + mobile ☰ */}
-          <div className="rsp-header-actions">
-            <ThemeToggle />
-            <span className="rsp-hide-mobile" style={{fontSize:'12px', color:'var(--color-text-on-dark)', whiteSpace:'nowrap'}}>
-              {user?.full_name}
-            </span>
-            <button onClick={() => setShowChangePw(true)} className="rsp-header-btn rsp-hide-mobile" style={{
-              background:'transparent', border:'1px solid var(--color-border-heavy)',
-              color:'var(--color-text-on-dark)', padding:'6px 14px', borderRadius:'5px',
-              fontSize:'12px', cursor:'pointer', fontFamily:'inherit',
-              whiteSpace:'nowrap'
-            }}>Change Password</button>
-            <button onClick={handleLogout} className="rsp-header-btn rsp-hide-mobile" style={{
-              background:'transparent', border:'1px solid var(--color-border-heavy)',
-              color:'var(--color-text-on-dark)', padding:'6px 14px', borderRadius:'5px',
-              fontSize:'12px', cursor:'pointer', fontFamily:'inherit',
-              whiteSpace:'nowrap'
-            }}>Sign Out</button>
-            {/* Mobile ☰ — highly visible, hidden on desktop */}
-            <button
-              className="rsp-show-mobile-only"
-              onClick={() => setMenuOpen(true)}
-              style={{
-                background: 'transparent',
-                border:'1px solid var(--color-brand-accent-lt)',
-                color: 'var(--color-brand-accent-lt)',
-                borderRadius:'6px', padding:'6px 8px',
-                cursor:'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}
-            ><Menu size={20} /></button>
+          <div className="rsp-header-actions flex items-center gap-3 md:gap-4">
+            
+            {/* Desktop Only: User Dropdown */}
+            <UserDropdown 
+              label={user?.full_name || 'Super Administrator'}
+              actions={userActions}
+            />
+
+            {/* Always visible: Mobile Menu */}
+            <div className="flex items-center gap-3">
+              <button
+                className="md:hidden flex items-center justify-center p-1.5 border border-brand-accent-lt text-brand-accent-lt rounded-md cursor-pointer bg-transparent"
+                onClick={() => setMenuOpen(true)}
+              >
+                <Menu size={20} />
+              </button>
+            </div>
+
           </div>
         </div>
         <div style={{

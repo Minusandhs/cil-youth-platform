@@ -18,7 +18,7 @@ export default function ChangePasswordModal({ onClose }) {
     }
     setSaving(true);
     try {
-      await api.put('/auth/me/password', {
+      await api.put('/api/auth/me/password', {
         current_password: form.current_password,
         new_password: form.new_password,
       });
