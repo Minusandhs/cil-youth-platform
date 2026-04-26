@@ -225,9 +225,7 @@ export default function TESApplicationDetail({
       {/* Personal */}
       <div style={sectionStyle}>
         <div style={secTitle}>Personal Information</div>
-        <div className="rsp-grid-3" style={{
-          display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'16px'
-        }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <InfoRow label="Full Name"    value={application.full_name} />
           <InfoRow label="Participant ID" value={application.pid} />
           <InfoRow label="Gender"       value={application.gender} />
@@ -245,9 +243,7 @@ export default function TESApplicationDetail({
       {/* Institution */}
       <div style={sectionStyle}>
         <div style={secTitle}>Institution & Course</div>
-        <div className="rsp-grid-2" style={{
-          display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px'
-        }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InfoRow label="Institution"     value={application.institution_name} />
           <InfoRow label="Type"            value={application.institution_type} />
           <InfoRow label="Course"          value={application.course_name} />
@@ -274,10 +270,7 @@ export default function TESApplicationDetail({
         application.financial_justification) && (
         <div style={sectionStyle}>
           <div style={secTitle}>Financial Information</div>
-          <div className="rsp-grid-4" style={{
-            display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr',
-            gap:'12px', marginBottom:'14px'
-          }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3.5">
             {[
               { label:'Tuition Fee',         value: application.fee_tuition        },
               { label:'Materials/Books/Exam', value: application.fee_materials      },

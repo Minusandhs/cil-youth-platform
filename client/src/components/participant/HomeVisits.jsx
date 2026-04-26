@@ -254,10 +254,7 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
   return (
     <div>
       {/* Section header */}
-      <div className="rsp-section-header" style={{
-        display: 'flex', justifyContent: 'space-between',
-        alignItems: 'center', marginBottom: '20px'
-      }}>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-8">
         <div>
           <h2 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--color-text-heading)' }}>
             Home Visits
@@ -266,7 +263,7 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
             Record and review home visit reports
           </p>
         </div>
-        <button onClick={() => printBlankForm(participant)} style={{
+        <button onClick={() => printBlankForm(participant)} className="w-full md:w-auto justify-center md:justify-start" style={{
           background: 'transparent', color: 'var(--color-text-subdued)',
           border: '1px solid var(--color-border-subtle)', borderRadius: '6px',
           padding: '8px 14px', fontSize: '12px', fontWeight: '600',
@@ -299,10 +296,7 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
             color: 'var(--color-text-heading)'
           }}>Log New Visit</div>
           <form onSubmit={handleCreate}>
-            <div className="rsp-grid-3" style={{
-              display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
-              gap: '14px', marginBottom: '14px'
-            }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 mb-3.5">
               <div>
                 <label style={labelStyle}>Visit Date *</label>
                 <input type="date" style={inputStyle} required
@@ -344,8 +338,8 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
                 value={form.suggestions}
                 onChange={e => setForm({ ...form, suggestions: e.target.value })} />
             </div>
-            <div className="rsp-submit-row" style={{ display: 'flex', gap: '10px' }}>
-              <button type="submit" disabled={saving} style={{
+            <div className="flex flex-col md:flex-row gap-2.5">
+              <button type="submit" disabled={saving} className="w-full md:w-auto" style={{
                 background: 'var(--color-brand-primary)', color: 'var(--color-brand-accent)',
                 border: 'none', borderRadius: '6px', padding: '10px 24px',
                 fontSize: '13px', fontWeight: '700', cursor: saving ? 'not-allowed' : 'pointer',
@@ -383,10 +377,7 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
                     fontSize: '13px', fontWeight: '700', marginBottom: '14px',
                     color: 'var(--color-text-heading)'
                   }}>Edit Visit</div>
-                  <div className="rsp-grid-3" style={{
-                    display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
-                    gap: '14px', marginBottom: '14px'
-                  }}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 mb-3.5">
                     <div>
                       <label style={labelStyle}>Visit Date *</label>
                       <input type="date" style={inputStyle} required
@@ -424,13 +415,13 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
                       value={editForm.suggestions}
                       onChange={e => setEditForm({ ...editForm, suggestions: e.target.value })} />
                   </div>
-                  <div className="rsp-submit-row" style={{ display: 'flex', gap: '10px' }}>
-                    <button type="submit" style={{
+                  <div className="flex flex-col md:flex-row gap-2.5">
+                    <button type="submit" className="w-full md:w-auto" style={{
                       background: 'var(--color-success)', color: '#fff',
                       border: 'none', borderRadius: '6px', padding: '9px 22px',
                       fontSize: '13px', fontWeight: '700', cursor: 'pointer', fontFamily: 'inherit'
                     }}>Save Changes</button>
-                    <button type="button" onClick={() => setEditId(null)} style={{
+                    <button type="button" onClick={() => setEditId(null)} className="w-full md:w-auto" style={{
                       background: 'transparent', color: 'var(--color-text-subdued)',
                       border: '1px solid var(--color-border-subtle)', borderRadius: '6px',
                       padding: '9px 18px', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit'
@@ -474,7 +465,7 @@ export default function HomeVisits({ participantId, participant, readOnly }) {
                       )}
                     </button>
 
-                    <div className="rsp-submit-row" style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                    <div className="flex gap-1.5 shrink-0">
                       {!readOnly && (
                         <>
                           <button onClick={() => { startEdit(visit); setExpanded(p => ({ ...p, [visit.id]: false })); }} style={{

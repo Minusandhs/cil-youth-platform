@@ -193,10 +193,7 @@ export default function NeedsRisks({ participantId, readOnly = false }) {
 
           <form onSubmit={handleSave}>
             {/* Row 1: Type | Category | Severity */}
-            <div className="rsp-grid-3" style={{
-              display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '12px',
-              marginBottom: '12px',
-            }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_2fr_1fr] gap-3 mb-3">
               <div>
                 <label style={labelStyle}>Type</label>
                 <select
@@ -260,11 +257,11 @@ export default function NeedsRisks({ participantId, readOnly = false }) {
             </div>
 
             {/* Row 3: Actions */}
-            <div className="rsp-submit-row" style={{ display: 'flex', gap: '10px' }}>
-              <button type="submit" disabled={saving} style={{ ...btnPrimary, opacity: saving ? 0.7 : 1 }}>
+            <div className="flex flex-col md:flex-row gap-2.5">
+              <button type="submit" disabled={saving} className="w-full md:w-auto" style={{ ...btnPrimary, opacity: saving ? 0.7 : 1 }}>
                 {saving ? 'Saving...' : 'Save Entry'}
               </button>
-              <button type="button" style={btnGhost} onClick={() => { setForm(EMPTY_FORM); setError(''); }}>
+              <button type="button" className="w-full md:w-auto" style={btnGhost} onClick={() => { setForm(EMPTY_FORM); setError(''); }}>
                 Clear
               </button>
             </div>

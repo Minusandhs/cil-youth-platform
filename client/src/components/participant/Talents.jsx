@@ -201,10 +201,7 @@ export default function Talents({ participantId, readOnly = false }) {
 
           <form onSubmit={handleSave}>
             {/* Row 1: Category | Talent | Level */}
-            <div className="rsp-grid-3" style={{
-              display: 'grid', gridTemplateColumns: '1fr 1.5fr 1fr', gap: '12px',
-              marginBottom: '12px',
-            }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1.5fr_1fr] gap-3 mb-3">
               <div>
                 <label style={labelStyle}>Category</label>
                 <select
@@ -282,11 +279,11 @@ export default function Talents({ participantId, readOnly = false }) {
             </div>
 
             {/* Row 3: Actions */}
-            <div className="rsp-submit-row" style={{ display: 'flex', gap: '10px' }}>
-              <button type="submit" disabled={saving} style={{ ...btnPrimary, opacity: saving ? 0.7 : 1 }}>
+            <div className="flex flex-col md:flex-row gap-2.5">
+              <button type="submit" disabled={saving} className="w-full md:w-auto" style={{ ...btnPrimary, opacity: saving ? 0.7 : 1 }}>
                 {saving ? 'Saving...' : 'Save Talent'}
               </button>
-              <button type="button" style={btnGhost} onClick={() => { setForm(EMPTY_FORM); setError(''); }}>
+              <button type="button" className="w-full md:w-auto" style={btnGhost} onClick={() => { setForm(EMPTY_FORM); setError(''); }}>
                 Clear
               </button>
             </div>

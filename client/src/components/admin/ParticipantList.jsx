@@ -89,10 +89,7 @@ export default function ParticipantList({ readOnly = false }) {
 
   return (
     <div>
-      <div className="rsp-section-header" style={{
-        display:'flex', justifyContent:'space-between',
-        alignItems:'center', marginBottom:'20px'
-      }}>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-8">
         <div>
           <h2 style={{fontSize:'20px', fontWeight:'700'}}>Participants</h2>
           <p style={{color:'var(--color-text-subdued)', fontSize:'13px', marginTop:'2px'}}>

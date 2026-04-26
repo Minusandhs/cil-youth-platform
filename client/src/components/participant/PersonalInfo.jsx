@@ -296,7 +296,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           {/* Personal & Family Status (includes Family Background) */}
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>Personal & Family Status</div>
-            <div className="rsp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 32px' }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-0 md:gap-x-8">
               <ViewField inline label="Marital Status" value={maritalLabel(form.marital_status)} />
               <ViewField inline label="Number of Children" value={form.number_of_children} />
               <ViewField inline label="Pregnant / Spouse Pregnant" value={form.is_pregnant ? 'Yes' : 'No'} />
@@ -423,8 +423,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
 
             {/* Dynamic fields */}
             {form.current_status && CURRENT_STATUS[form.current_status] && (
-              <div className="rsp-grid-3" style={{
-                display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px',
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5" style={{
                 background: 'var(--color-tint-warning)', padding: '14px', borderRadius: '6px',
                 border: '1px solid var(--color-brand-accent-lt)'
               }}>
@@ -467,7 +466,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           {/* Personal & Family Status (includes Family Background fields) */}
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>Personal & Family Status</div>
-            <div className="rsp-grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
               <div>
                 <label style={labelStyle}>Marital Status</label>
                 <select style={inputStyle(false)} value={form.marital_status}
@@ -552,8 +551,8 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
           </div>
 
           {/* Save / Cancel Buttons */}
-          <div className="rsp-submit-row" style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-            <button type="submit" disabled={saving} style={{
+          <div className="flex flex-col md:flex-row gap-3 md:justify-end">
+            <button type="submit" disabled={saving} className="w-full md:w-auto" style={{
               background: saving ? 'var(--color-border-subtle)' : 'var(--color-success)',
               color: '#fff', border: 'none', borderRadius: '6px',
               padding: '12px 32px', fontSize: '14px', fontWeight: '700',
@@ -561,7 +560,7 @@ export default function PersonalInfo({ participant, onUpdate, readOnly = false }
             }}>
               {saving ? 'Saving...' : 'Save Profile'}
             </button>
-            <button type="button" onClick={handleCancel} style={{
+            <button type="button" onClick={handleCancel} className="w-full md:w-auto" style={{
               background: 'transparent', color: 'var(--color-text-subdued)',
               border: '1px solid var(--color-border-subtle)', borderRadius: '6px',
               padding: '12px 24px', fontSize: '14px',

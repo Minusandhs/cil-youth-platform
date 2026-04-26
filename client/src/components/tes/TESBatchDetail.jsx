@@ -339,9 +339,9 @@ export default function TESBatchDetail({ batch, onBack, onBatchUpdate, isAdmin, 
           </div>
         </div>
 
-        <div className="rsp-submit-row" style={{display:'flex', gap:'8px'}}>
+        <div className="flex flex-col md:flex-row gap-2">
           {/* Export Button */}
-          <button onClick={handleExport} disabled={exporting} style={{
+          <button onClick={handleExport} disabled={exporting} className="w-full md:w-auto" style={{
             background:'var(--color-info)', color:'#fff', border:'none',
             borderRadius:'6px', padding:'8px 16px', fontSize:'12px',
             fontWeight:'600', cursor: exporting ? 'not-allowed' : 'pointer',
@@ -352,7 +352,7 @@ export default function TESBatchDetail({ batch, onBack, onBatchUpdate, isAdmin, 
 
           {/* Add Application — LDC only, batch open, deadline not passed */}
           {!isAdmin && isOpen && !deadlinePassed && (
-            <button onClick={() => setShowForm(true)} style={{
+            <button onClick={() => setShowForm(true)} className="w-full md:w-auto" style={{
               background:'var(--color-brand-primary)', color:'var(--color-brand-accent)', border:'none',
               borderRadius:'6px', padding:'8px 16px', fontSize:'12px',
               fontWeight:'700', cursor:'pointer', fontFamily:'inherit'

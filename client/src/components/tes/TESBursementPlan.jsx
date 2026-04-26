@@ -180,10 +180,7 @@ export default function TESBursementPlan({ application, batch, readOnly, onBack 
       </div>
 
       {/* Summary strip */}
-      <div style={{
-        display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'12px',
-        marginBottom:'20px'
-      }} className="rsp-grid-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
         {[
           { label:'Approved',        value: fmt(application.amount_approved), color:'var(--color-text-heading)' },
           { label:'Total Planned',   value: fmt(totalPlanned),   color: remaining < 0 ? 'var(--color-danger)' : 'var(--color-info)' },
@@ -231,9 +228,7 @@ export default function TESBursementPlan({ application, batch, readOnly, onBack 
         <div style={card}>
           <div style={sectionTitle}>Add Installment</div>
           <form onSubmit={handleAdd}>
-            <div className="rsp-grid-3" style={{
-              display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'16px', marginBottom:'16px'
-            }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
               <div>
                 <label style={labelStyle}>Label</label>
                 <input
@@ -278,8 +273,8 @@ export default function TESBursementPlan({ application, batch, readOnly, onBack 
                 style={inputStyle}
               />
             </div>
-            <div className="rsp-submit-row" style={{display:'flex', gap:'12px'}}>
-              <button type="submit" disabled={saving} style={{
+            <div className="flex flex-col md:flex-row gap-3">
+              <button type="submit" disabled={saving} className="w-full md:w-auto" style={{
                 background:'var(--color-brand-primary)', color:'var(--color-brand-accent)',
                 border:'none', borderRadius:'6px', padding:'10px 24px',
                 fontSize:'13px', fontWeight:'700', cursor: saving ? 'not-allowed' : 'pointer',

@@ -159,10 +159,7 @@ export default function Certifications({ participantId, readOnly = false }) {
       )}
 
       {/* Header */}
-      <div className="rsp-section-header" style={{
-        display:'flex', justifyContent:'space-between',
-        alignItems:'center', marginBottom:'20px'
-      }}>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-8">
         <div>
           <h3 style={{fontSize:'16px', fontWeight:'700'}}>
             Certifications & Qualifications
@@ -172,7 +169,7 @@ export default function Certifications({ participantId, readOnly = false }) {
           </p>
         </div>
         {!showForm && !readOnly && (
-          <button onClick={openCreate} style={{
+          <button onClick={openCreate} className="w-full md:w-auto" style={{
             background:'var(--color-brand-primary)', color:'var(--color-brand-accent)', border:'none',
             borderRadius:'6px', padding:'9px 18px', fontSize:'13px',
             fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
@@ -192,10 +189,7 @@ export default function Certifications({ participantId, readOnly = false }) {
           <form onSubmit={handleSave}>
 
             {/* Type & Name */}
-            <div className="rsp-grid-2" style={{
-              display:'grid', gridTemplateColumns:'1fr 1fr',
-              gap:'14px', marginBottom:'14px'
-            }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-3.5">
               <div>
                 <label style={labelStyle}>Certificate Type *</label>
                 <select style={inputStyle} value={form.cert_type_id}
@@ -217,10 +211,7 @@ export default function Certifications({ participantId, readOnly = false }) {
             </div>
 
             {/* Issuing Body & NVQ Level */}
-            <div className="rsp-grid-2" style={{
-              display:'grid', gridTemplateColumns:'1fr 1fr',
-              gap:'14px', marginBottom:'14px'
-            }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-3.5">
               <div>
                 <label style={labelStyle}>Issuing Body / Institution *</label>
                 <input style={inputStyle} value={form.issuing_body}
@@ -242,10 +233,7 @@ export default function Certifications({ participantId, readOnly = false }) {
             </div>
 
             {/* Dates & Grade */}
-            <div className="rsp-grid-2" style={{
-              display:'grid', gridTemplateColumns:'1fr 1fr',
-              gap:'14px', marginBottom:'14px'
-            }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-3.5">
               <div>
                 <label style={labelStyle}>Issue Date *</label>
                 <input style={inputStyle} type="date"
@@ -283,8 +271,8 @@ export default function Certifications({ participantId, readOnly = false }) {
             </div>
 
             {/* Buttons */}
-            <div className="rsp-submit-row" style={{display:'flex', gap:'10px'}}>
-              <button type="submit" disabled={saving} style={{
+            <div className="flex flex-col md:flex-row gap-2.5">
+              <button type="submit" disabled={saving} className="w-full md:w-auto" style={{
                 background: saving ? 'var(--color-border-subtle)' : 'var(--color-success)',
                 color:'#fff', border:'none', borderRadius:'6px',
                 padding:'10px 24px', fontSize:'13px', fontWeight:'700',
@@ -293,7 +281,7 @@ export default function Certifications({ participantId, readOnly = false }) {
               }}>
                 {saving ? 'Saving...' : editCert ? 'Save Changes' : 'Add Certification'}
               </button>
-              <button type="button" onClick={cancelForm} style={{
+              <button type="button" onClick={cancelForm} className="w-full md:w-auto" style={{
                 background:'transparent', color:'var(--color-text-subdued)',
                 border:'1px solid var(--color-border-subtle)', borderRadius:'6px',
                 padding:'10px 20px', fontSize:'13px',

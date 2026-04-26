@@ -372,9 +372,7 @@ export default function TESApplicationForm({
           )}
           <div style={sectionStyle} className="rsp-section">
             <div style={secTitle}>Personal Information (Auto-filled)</div>
-            <div className="rsp-grid-3" style={{
-              display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'14px'
-            }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
               <div>
                 <label style={labelStyle}>Full Name</label>
                 <input style={readonlyStyle}
@@ -469,9 +467,7 @@ export default function TESApplicationForm({
           {/* Contact & Identity */}
           <div style={sectionStyle} className="rsp-section">
             <div style={secTitle}>Contact & Identity</div>
-            <div className="rsp-grid-2" style={{
-              display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'
-            }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               <div>
                 <label style={labelStyle}>Contact Number *</label>
                 <input style={inputStyle} value={form.contact_number}
@@ -502,9 +498,7 @@ export default function TESApplicationForm({
           {/* Institution & Course */}
           <div style={sectionStyle} className="rsp-section">
             <div style={secTitle}>Institution & Course Information</div>
-            <div className="rsp-grid-2" style={{
-              display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'
-            }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               <div>
                 <label style={labelStyle}>Institution Name *</label>
                 <input style={inputStyle} value={form.institution_name}
@@ -563,10 +557,7 @@ export default function TESApplicationForm({
           {/* Financial */}
           <div style={sectionStyle} className="rsp-section">
             <div style={secTitle}>Financial Information</div>
-            <div className="rsp-grid-2" style={{
-              display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px',
-              marginBottom:'14px'
-            }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-3.5">
               <div>
                 <label style={labelStyle}>Course / Tuition Fee (LKR) *</label>
                 <input style={inputStyle} type="number" min="0" step="0.01"
@@ -706,9 +697,7 @@ export default function TESApplicationForm({
               }}>
                 For Official Use Only
               </div>
-              <div className="rsp-grid-2" style={{
-                display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'
-              }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 <div>
                   <label style={{...labelStyle, color:'var(--color-warning)'}}>
                     Amount Approved (LKR) *
@@ -732,8 +721,8 @@ export default function TESApplicationForm({
           </div>
 
           {/* Submit */}
-          <div className="rsp-submit-row" style={{display:'flex', gap:'12px', flexWrap:'wrap'}}>
-            <button type="submit" disabled={saving} style={{
+          <div className="flex flex-col md:flex-row gap-3 md:flex-wrap">
+            <button type="submit" disabled={saving} className="w-full md:w-auto" style={{
               background: saving ? 'var(--color-border-subtle)' : 'var(--color-success)',
               color:'#fff', border:'none', borderRadius:'6px',
               padding:'12px 32px', fontSize:'14px', fontWeight:'700',
@@ -741,7 +730,7 @@ export default function TESApplicationForm({
             }}>
               {saving ? 'Saving...' : existingApp ? 'Save Changes' : 'Submit Application'}
             </button>
-            <button type="button" onClick={onBack} style={{
+            <button type="button" onClick={onBack} className="w-full md:w-auto" style={{
               background:'transparent', color:'var(--color-text-subdued)',
               border:'1px solid var(--color-border-subtle)', borderRadius:'6px',
               padding:'12px 24px', fontSize:'14px',

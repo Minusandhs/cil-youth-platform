@@ -336,10 +336,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
       {/* ── OL TAB ───────────────────────────────────────────── */}
       {activeTab === 'ol' && (
         <div>
-          <div className="rsp-section-header" style={{
-            display:'flex', justifyContent:'space-between',
-            alignItems:'center', marginBottom:'16px'
-          }}>
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-8">
             <h3 style={{fontSize:'16px', fontWeight:'700'}}>O/Level Results</h3>
             {!showOLForm && !readOnly && (
               <button onClick={() => {
@@ -350,7 +347,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                   results_verified:false, notes:'', subjects:[]
                 });
                 setShowOLForm(true);
-              }} style={{
+              }} className="w-full md:w-auto" style={{
                 background:'var(--color-brand-primary)', color:'var(--color-brand-accent)', border:'none',
                 borderRadius:'6px', padding:'9px 18px', fontSize:'13px',
                 fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
@@ -364,10 +361,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                 {editOL ? 'Edit OL Result' : 'Add OL Result'}
               </h4>
               <form onSubmit={handleSaveOL}>
-                <div className="rsp-grid-3" style={{
-                  display:'grid', gridTemplateColumns:'1fr 1fr 1fr',
-                  gap:'14px', marginBottom:'20px'
-                }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 mb-5">
                   <div>
                     <label style={labelStyle}>Exam Year *</label>
                     <input style={inputStyle} type="number" required
@@ -557,7 +551,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
       {/* ── AL TAB ───────────────────────────────────────────── */}
       {activeTab === 'al' && (
         <div>
-          <div className="rsp-section-header" style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px'}}>
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-8">
             <h3 style={{fontSize:'16px', fontWeight:'700'}}>A/Level Results</h3>
             {!showALForm && !readOnly && (
               <button onClick={() => {
@@ -572,7 +566,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                   notes:'', subjects:[]
                 });
                 setShowALForm(true);
-              }} style={{background:'var(--color-brand-primary)', color:'var(--color-brand-accent)', border:'none', borderRadius:'6px', padding:'9px 18px', fontSize:'13px', fontWeight:'700', cursor:'pointer', fontFamily:'inherit'}}>+ Add AL Result</button>
+              }} className="w-full md:w-auto" style={{background:'var(--color-brand-primary)', color:'var(--color-brand-accent)', border:'none', borderRadius:'6px', padding:'9px 18px', fontSize:'13px', fontWeight:'700', cursor:'pointer', fontFamily:'inherit'}}>+ Add AL Result</button>
             )}
           </div>
 
@@ -580,7 +574,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
             <div style={sectionStyle}>
               <h4 style={{fontSize:'14px', fontWeight:'700', marginBottom:'16px'}}>{editAL ? 'Edit AL Result' : 'Add AL Result'}</h4>
               <form onSubmit={handleSaveAL}>
-                <div className="rsp-grid-3" style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'14px', marginBottom:'16px'}}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 mb-4">
                   <div>
                     <label style={labelStyle}>Exam Year *</label>
                     <input style={inputStyle} type="number" required value={alForm.exam_year} onChange={e => setAlForm({...alForm, exam_year:e.target.value})} />
@@ -721,7 +715,7 @@ export default function AcademicRecords({ participantId, readOnly = false }) {
                     <label htmlFor="uni_selected" style={{fontSize:'13px', fontWeight:'600', cursor:'pointer'}}>Selected for University</label>
                   </div>
                   {alForm.university_selected && (
-                    <div className="rsp-grid-2" style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px'}}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                       <div>
                         <label style={labelStyle}>University Name *</label>
                         <input style={inputStyle} required value={alForm.university_name} onChange={e => setAlForm({...alForm, university_name:e.target.value})} />

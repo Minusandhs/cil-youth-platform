@@ -299,9 +299,7 @@ export default function Career({ participantId, readOnly = false }) {
         {/* VIEW */}
         {!editMode && plan && (
           <div>
-            <div className="rsp-grid-2" style={{
-              display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px',
-            }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <ViewField label="Career Aspiration" value={plan.career_aspiration} />
               <ViewField label="Aspired Industry" value={plan.aspired_industry ? industryLabel(plan.aspired_industry) : ''} />
               <ViewField label="Long Term Plan (5 years)" value={plan.long_term_plan} fullWidth />
@@ -347,7 +345,7 @@ export default function Career({ participantId, readOnly = false }) {
         {(editMode || !plan) && (
           <div>
             <div style={{ display: 'grid', gap: '14px' }}>
-              <div className="rsp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 <div>
                   <label style={labelStyle}>Career Aspiration</label>
                   <input
@@ -464,9 +462,7 @@ export default function Career({ participantId, readOnly = false }) {
 
         {!editMode && plan ? (
           hollandCodeSaved ? (
-            <div className="rsp-grid-3" style={{
-              display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px',
-            }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {['Primary', 'Secondary', 'Tertiary'].map((rank, i) => {
                 const code = [plan.holland_primary, plan.holland_secondary, plan.holland_tertiary][i];
                 const meta = config.holland_codes.find(h => h.value === code);
@@ -528,10 +524,7 @@ export default function Career({ participantId, readOnly = false }) {
               Pick the three personality types that best match this participant, in order of fit.
               The top three letters form their Holland Code (e.g. <strong>SIA</strong>).
             </div>
-            <div className="rsp-grid-3" style={{
-              display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px',
-              marginBottom: '14px',
-            }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3.5">
               {[
                 { key: 'holland_primary', label: 'Primary' },
                 { key: 'holland_secondary', label: 'Secondary' },
@@ -645,9 +638,7 @@ export default function Career({ participantId, readOnly = false }) {
               }}>
                 This participant is looking for employment opportunities.
               </div>
-              <div className="rsp-grid-2" style={{
-                display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px',
-              }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <ViewField label="Preferred Industry"
                   value={plan.interest_industry ? industryLabel(plan.interest_industry) : ''} />
                 <ViewField label="Notes" value={plan.interest_notes} fullWidth />
@@ -691,7 +682,7 @@ export default function Career({ participantId, readOnly = false }) {
             </div>
 
             {form.interested_to_apply && (
-              <div className="rsp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                 <div>
                   <label style={labelStyle}>Preferred Industry</label>
                   <select
@@ -869,15 +860,13 @@ export default function Career({ participantId, readOnly = false }) {
 
       {/* ── Save Row at Bottom ───────────────────────────────── */}
       {(editMode || !plan) && !readOnly && (
-        <div className="rsp-submit-row" style={{
-          display: 'flex', gap: '10px', marginTop: '10px', justifyContent: 'flex-end',
-        }}>
+        <div className="flex flex-col md:flex-row gap-2.5 mt-2.5 md:justify-end">
           {plan && (
-            <button type="button" onClick={handleCancel} style={btnGhost}>
+            <button type="button" onClick={handleCancel} className="w-full md:w-auto" style={btnGhost}>
               Cancel
             </button>
           )}
-          <button type="button" onClick={handleSave} disabled={saving} style={{ ...btnSuccess, opacity: saving ? 0.7 : 1 }}>
+          <button type="button" onClick={handleSave} disabled={saving} className="w-full md:w-auto" style={{ ...btnSuccess, opacity: saving ? 0.7 : 1 }}>
             {saving ? 'Saving...' : 'Save Career Plan'}
           </button>
         </div>

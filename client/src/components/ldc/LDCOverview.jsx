@@ -217,7 +217,7 @@ export default function LDCOverview() {
                 </div>
               )}
 
-              <div className="rsp-submit-row" style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+              <div className="flex flex-col md:flex-row gap-3 md:items-start">
                 <div style={{ flex: 1 }}>
                   <select
                     aria-label="Export type"

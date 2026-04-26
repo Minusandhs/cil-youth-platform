@@ -219,9 +219,8 @@ export default function AdminOverview() {
       </p>
 
       {/* ── Page-level LDC filter + snapshot controls ─────────────── */}
-      <div className="rsp-section-header" style={{ display:'flex', justifyContent:'space-between',
-        alignItems:'center', marginBottom:'20px',
-        paddingBottom:'12px', borderBottom:'1px solid var(--color-divider)', gap:'12px' }}>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-8" style={{
+        paddingBottom:'12px', borderBottom:'1px solid var(--color-divider)' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'14px', flexWrap:'wrap' }}>
           <div style={{ fontSize:'13px', fontWeight:'600', color:'var(--color-text-subdued)' }}>
             Scope:
@@ -345,7 +344,7 @@ export default function AdminOverview() {
                 </div>
               )}
 
-              <div className="rsp-submit-row" style={{ display:'flex', gap:'12px', alignItems:'flex-start' }}>
+              <div className="flex flex-col md:flex-row gap-3 md:items-start">
                 <div style={{ flex:1 }}>
                   <select
                     aria-label="Export type"

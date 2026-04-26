@@ -381,10 +381,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
       )}
 
       {/* Header — year selector + PDF button */}
-      <div className="rsp-section-header" style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        marginBottom: '20px', gap: '12px',
-      }}>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-8">
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <h3 style={{
             fontSize: '16px', fontWeight: '700',
@@ -482,9 +479,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
 
             {goalsEdit ? (
               <form onSubmit={handleSaveGoals}>
-                <div className="rsp-grid-2" style={{
-                  display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px',
-                }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                   {PLAN_GOALS.map(g => (
                     <div key={g.key}>
                       <label style={labelStyle}>{g.label}</label>
@@ -498,10 +493,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                   ))}
                 </div>
 
-                <div className="rsp-grid-2" style={{
-                  display: 'grid', gridTemplateColumns: '1fr 1fr',
-                  gap: '14px', marginTop: '14px',
-                }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 mt-3.5">
                   <div>
                     <label style={labelStyle}>Primary Mentor</label>
                     <input style={inputStyle}
@@ -522,11 +514,11 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                   </div>
                 </div>
 
-                <div className="rsp-submit-row" style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
-                  <button type="submit" disabled={savingGoals} style={btnSuccess}>
+                <div className="flex flex-col md:flex-row gap-2.5 mt-4">
+                  <button type="submit" disabled={savingGoals} className="w-full md:w-auto" style={btnSuccess}>
                     {savingGoals ? 'Saving...' : 'Save Goals'}
                   </button>
-                  <button type="button" onClick={() => {
+                  <button type="button" className="w-full md:w-auto" onClick={() => {
                     setGoalsEdit(false);
                     setGoalsForm({
                       spiritual_goal:  plan.spiritual_goal  || '',
@@ -542,9 +534,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
               </form>
             ) : (
               <>
-                <div className="rsp-grid-2" style={{
-                  display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px 24px',
-                }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-1 md:gap-x-6">
                   {PLAN_GOALS.map(g => (
                     <ViewField key={g.key} label={g.label} value={plan[g.key]} />
                   ))}
@@ -584,9 +574,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                 border: '1px solid var(--color-border-subtle)',
                 borderRadius: '6px', padding: '16px', marginBottom: '16px',
               }}>
-                <div className="rsp-grid-2" style={{
-                  display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px',
-                }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
                     <label style={labelStyle}>Goal Type</label>
                     <select style={inputStyle}
@@ -627,11 +615,11 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                     onChange={e => setNewItemForm({ ...newItemForm, due_date: e.target.value })}
                   />
                 </div>
-                <div className="rsp-submit-row" style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
-                  <button type="submit" disabled={savingItem} style={btnSuccess}>
+                <div className="flex flex-col md:flex-row gap-2.5 mt-3">
+                  <button type="submit" disabled={savingItem} className="w-full md:w-auto" style={btnSuccess}>
                     {savingItem ? 'Adding...' : 'Add Item'}
                   </button>
-                  <button type="button" onClick={() => {
+                  <button type="button" className="w-full md:w-auto" onClick={() => {
                     setShowAddItem(false);
                     setNewItemForm(emptyItem);
                   }} style={btnGhost}>Cancel</button>
@@ -666,9 +654,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                         <tr key={item.id}>
                           <td colSpan={5} data-label="Edit" style={{ padding: '12px 10px' }}>
                             <form onSubmit={handleSaveItem}>
-                              <div className="rsp-grid-2" style={{
-                                display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px',
-                              }}>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                                 <div>
                                   <label style={labelStyle}>Goal Type</label>
                                   <select style={inputStyle}
@@ -707,11 +693,11 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                                   onChange={e => setEditItemForm({ ...editItemForm, due_date: e.target.value })}
                                 />
                               </div>
-                              <div className="rsp-submit-row" style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-                                <button type="submit" disabled={savingItem} style={{ ...btnSuccess, padding: '7px 16px', fontSize: '12px' }}>
+                              <div className="flex flex-col md:flex-row gap-2 mt-2.5">
+                                <button type="submit" disabled={savingItem} className="w-full md:w-auto" style={{ ...btnSuccess, padding: '7px 16px', fontSize: '12px' }}>
                                   {savingItem ? 'Saving...' : 'Save'}
                                 </button>
-                                <button type="button" onClick={() => setEditItemId(null)} style={{ ...btnGhost, padding: '7px 14px', fontSize: '12px' }}>
+                                <button type="button" onClick={() => setEditItemId(null)} className="w-full md:w-auto" style={{ ...btnGhost, padding: '7px 14px', fontSize: '12px' }}>
                                   Cancel
                                 </button>
                               </div>
@@ -786,9 +772,7 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                   marginBottom: '12px',
                 }}>Log New Conversation</div>
                 <form onSubmit={handleSaveConv}>
-                  <div className="rsp-grid-2" style={{
-                    display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px',
-                  }}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                       <label style={labelStyle}>Date &amp; Time</label>
                       <input type="datetime-local" style={inputStyle}
@@ -821,11 +805,11 @@ export default function DevelopmentPlan({ participantId, participant, readOnly =
                       onChange={val => setConvForm({ ...convForm, completion_rate: val })}
                     />
                   </div>
-                  <div className="rsp-submit-row" style={{ display: 'flex', gap: '10px', marginTop: '14px' }}>
-                    <button type="submit" disabled={savingConv} style={btnSuccess}>
+                  <div className="flex flex-col md:flex-row gap-2.5 mt-3.5">
+                    <button type="submit" disabled={savingConv} className="w-full md:w-auto" style={btnSuccess}>
                       {savingConv ? 'Saving...' : 'Save Conversation'}
                     </button>
-                    <button type="button" onClick={() => setConvForm(emptyConv)} style={btnGhost}>
+                    <button type="button" onClick={() => setConvForm(emptyConv)} className="w-full md:w-auto" style={btnGhost}>
                       Clear
                     </button>
                   </div>

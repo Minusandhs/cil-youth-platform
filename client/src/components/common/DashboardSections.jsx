@@ -236,17 +236,18 @@ export function HeroStats({ hero, isAdmin, loading }) {
         { label: 'Active Male',            value: hero.male,    color: 'var(--color-success)' },
         { label: 'Active Female',          value: hero.female,  color: 'var(--color-special)' },
       ];
-  const cls = isAdmin ? 'rsp-grid-3' : 'rsp-grid-4';
-  const cols = isAdmin ? 'repeat(3,1fr)' : 'repeat(4,1fr)';
+  const cls = isAdmin
+    ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'
+    : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4';
   return (
     <div style={{ marginBottom: '32px' }}>
       <div style={sectionTitle}>Summary</div>
-      <div className={cls} style={{ display: 'grid', gridTemplateColumns: cols, gap: '16px', marginBottom: isAdmin ? '16px' : '0' }}>
+      <div className={cls} style={{ marginBottom: isAdmin ? '16px' : '0' }}>
         {cards.slice(0, isAdmin ? 3 : 4).map(c =>
           <StatCard key={c.label} {...c} loading={loading} />)}
       </div>
       {isAdmin && (
-        <div className="rsp-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {cards.slice(3).map(c => <StatCard key={c.label} {...c} loading={loading} />)}
         </div>
       )}
@@ -262,7 +263,7 @@ export function ParticipantDemographics({ statusBreakdown, personalInfo }) {
 
   return (
     <div style={{ marginBottom: '32px' }}>
-      <div className="rsp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* 2A Status breakdown */}
         <div style={card}>
           <div style={subTitle}>
@@ -318,7 +319,7 @@ export function AcademicSection({ academic }) {
   return (
     <div style={{ marginBottom: '32px' }}>
       <div style={sectionTitle}>Academic Performance</div>
-      <div className="rsp-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '16px' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
 
         {/* O/L */}
         <div style={card}>
@@ -421,7 +422,7 @@ export function DevelopmentSection({ devPlans, mentorSessions, actionItems }) {
     <div style={{ marginBottom: '32px' }}>
       <div style={sectionTitle}>Development Plans & Mentoring</div>
 
-      <div className="rsp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
 
         {/* 5A — Plan Status donut + counts */}
         <div style={card}>
@@ -527,7 +528,7 @@ export function NeedsRisksSection({ needsRisks }) {
   return (
     <div style={{ marginBottom: '32px' }}>
       <div style={sectionTitle}>Needs & Risks</div>
-      <div className="rsp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         <div style={{ ...card, background: 'var(--color-tint-info)', borderColor: 'var(--color-info)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
@@ -576,7 +577,7 @@ export function HomeVisitsSection({ homeVisits }) {
   return (
     <div style={{ marginBottom: '32px' }}>
       <div style={sectionTitle}>Home Visits</div>
-      <div className="rsp-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         <div style={card}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -635,7 +636,7 @@ export function TalentsSection({ talents }) {
     <div style={{ marginBottom: '32px' }}>
       <div style={sectionTitle}>Talents & Skills</div>
       <div style={card}>
-        <div className="rsp-grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '14px' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 mb-3.5">
           <div style={miniCard}>
             <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--color-info)' }}>
               {fmt(talents.total_records)}

@@ -71,10 +71,7 @@ export default function GradeManagement({ readOnly = false }) {
 
   return (
     <div>
-      <div className="rsp-section-header" style={{
-        display:'flex', justifyContent:'space-between',
-        alignItems:'center', marginBottom:'20px'
-      }}>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-8">
         <div>
           <h2 style={{fontSize:'20px', fontWeight:'700'}}>Exam Grade Management</h2>
           <p style={{color:'var(--color-text-subdued)', fontSize:'13px', marginTop:'2px'}}>
@@ -82,7 +79,7 @@ export default function GradeManagement({ readOnly = false }) {
           </p>
         </div>
         {!readOnly && (
-          <button onClick={() => setShowForm(!showForm)} style={{
+          <button onClick={() => setShowForm(!showForm)} className="w-full md:w-auto" style={{
             background:'var(--color-brand-primary)', color:'var(--color-brand-accent)', border:'none',
             borderRadius:'6px', padding:'10px 18px', fontSize:'13px',
             fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
@@ -117,10 +114,7 @@ export default function GradeManagement({ readOnly = false }) {
             Add New Grade
           </h3>
           <form onSubmit={handleCreate}>
-            <div className="rsp-grid-4" style={{
-              display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr',
-              gap:'14px', marginBottom:'14px'
-            }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-3.5">
               <div>
                 <label style={labelStyle}>Grade Name</label>
                 <input style={inputStyle} value={form.grade_name}
@@ -162,8 +156,8 @@ export default function GradeManagement({ readOnly = false }) {
                 Counts as a Pass
               </label>
             </div>
-            <div className="rsp-submit-row" style={{display:'flex'}}>
-              <button type="submit" style={{
+            <div className="flex flex-col md:flex-row gap-2.5">
+              <button type="submit" className="w-full md:w-auto" style={{
                 background:'var(--color-success)', color:'#fff', border:'none',
                 borderRadius:'6px', padding:'10px 24px', fontSize:'13px',
                 fontWeight:'700', cursor:'pointer', fontFamily:'inherit'
